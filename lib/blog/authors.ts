@@ -12,6 +12,7 @@ export const authors: Author[] = [
     initials: "K",
     bio: "Builds web products and writes about the parts that are usually left undocumented.",
     websiteUrl: "/",
+    twitterUrl: "https://x.com/kauntiaketan",
     followLinks: true,
   },
 ];

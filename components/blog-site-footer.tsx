@@ -12,7 +12,16 @@ export function BlogSiteFooter() {
     <footer className="mt-auto border-t">
       <div className="mx-auto flex max-w-shell flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <p>
-          © {new Date().getFullYear()} {siteConfig.name}. Built by Ketan.
+          © {new Date().getFullYear()} {siteConfig.name}. Built by{" "}
+          <a
+            href="https://x.com/kauntiaketan"
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-foreground underline underline-offset-4 hover:no-underline"
+          >
+            Ketan
+          </a>
+          .
         </p>
         <nav className="flex flex-wrap items-center gap-x-4 gap-y-2" aria-label="Footer">
           {FOOTER_LINKS.map((link) => (

@@ -47,9 +47,9 @@ const SITE_URL = resolveSiteUrl();
  */
 export const siteConfig = {
   /** Used as the RSS channel title and the Open Graph `site_name`. */
-  name: "Ink",
-  /** Short brand shown in the header. */
-  shortName: "Ink",
+  name: "NextJs Blog System",
+  /** Short brand shown in the header, where the full name does not fit. */
+  shortName: "Blog System",
   /** Feed description and the fallback meta description. */
   description:
     "A file-based blog system for Next.js: write markdown, get fast, structured, search-ready pages.",
@@ -59,14 +59,14 @@ export const siteConfig = {
   ogImage: "/opengraph-image",
   /** Publisher used in Article/Organization JSON-LD. */
   organization: {
-    name: "Ink",
+    name: "NextJs Blog System",
     url: SITE_URL,
     logo: "/icon.svg",
   },
   /** Optional profile links rendered in the footer. Empty entries are skipped. */
   social: {
     github: "https://github.com/ketankauntia/NextJs-Blog-System",
-    x: "",
+    x: "https://x.com/kauntiaketan",
   },
 } as const;
 

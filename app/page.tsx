@@ -9,7 +9,8 @@ import { PostCard } from "@/components/blog/post-card";
 import { PostGrid } from "@/components/blog/post-grid";
 import { FeatureGrid } from "@/components/blog/feature-grid";
 import { SiteJsonLd } from "@/components/blog/site-json-ld";
-import { categoryToSlug, getAllPosts, getCategories } from "@/lib/blog/content";
+import { categoryToSlug, getAllPosts, getAllTags, getCategories, paginate } from "@/lib/blog/content";
+import { authors } from "@/lib/blog/authors";
 import { buildPageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -17,7 +18,7 @@ import { siteConfig } from "@/lib/site";
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: ["A file-based blog system for Next.js", siteConfig.name],
+  title: ["Markdown in, structured pages out", siteConfig.name],
   description:
     "Write markdown, get fast and structured pages. Schema, feeds, social cards and a local authoring studio are already wired up for you.",
   path: "/",
@@ -29,6 +30,16 @@ export default function HomePage() {
   const posts = getAllPosts();
   const categories = getCategories().map((c) => ({ label: c, slug: categoryToSlug(c) }));
   const lead = posts.find((p) => p.featured) ?? posts[0];
+
+  // Same arithmetic the sitemap uses, so the count on the page is the real one.
+  const { totalPages } = paginate(new Array(posts.filter((p) => !p.featured).length), 1);
+  const pageCount =
+    2 + // home + /blog
+    Math.max(0, totalPages - 1) +
+    posts.length +
+    categories.length +
+    getAllTags().length +
+    authors.length;
   const latest = posts.filter((p) => p.slug !== lead?.slug).slice(0, LATEST_COUNT);
 
   return (
@@ -103,7 +114,7 @@ export default function HomePage() {
         </section>
 
         <div className="mt-20 border-t pt-14">
-          <FeatureGrid />
+          <FeatureGrid pageCount={pageCount} />
         </div>
       </main>
       <BlogSiteFooter />

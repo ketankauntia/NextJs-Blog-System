@@ -20,7 +20,7 @@ export type SiteSettings = {
 export const DEFAULT_SETTINGS: SiteSettings = {
   blogTemplate: "classic",
   postTemplate: "standard",
-  fontPairing: "editorial",
+  fontPairing: "modern",
 };
 
 /** Display copy for the font picker. Kept beside the ids so the two cannot drift. */

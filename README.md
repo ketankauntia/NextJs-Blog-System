@@ -1,8 +1,8 @@
-# Ink
+# NextJs Blog System
 
 A file-based blog system for Next.js. Posts are markdown files in your repository; the structure, table of contents, structured data, feeds and social cards are all derived from them.
 
-Built by Ketan. MIT licensed.
+Built by [Ketan](https://x.com/kauntiaketan). MIT licensed.
 
 ```bash
 npm install
