@@ -32,7 +32,12 @@ export function SearchableSelect({
   const ref = useRef<HTMLDivElement>(null);
 
   // Reset the visible window when the query changes or the panel opens.
-  useEffect(() => setVisible(pageSize), [debounced, pageSize, open]);
+  const windowKey = `${debounced}|${pageSize}|${open}`;
+  const [lastWindowKey, setLastWindowKey] = useState(windowKey);
+  if (lastWindowKey !== windowKey) {
+    setLastWindowKey(windowKey);
+    setVisible(pageSize);
+  }
 
   // Close on outside click.
   useEffect(() => {

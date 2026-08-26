@@ -4,14 +4,15 @@
   "private": false,
   "license": "MIT",
   "author": "Ketan",
-  "description": "A file-based, SEO-first blog system for Next.js. Markdown in, static pages out — with a local authoring studio.",
+  "description": "A file-based, SEO-first blog system for Next.js. Markdown in, static pages out \u00e2\u20ac\u201d with a local authoring studio.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
-    "validate": "npm run lint && npm run type-check && npm run build"
+    "validate": "npm run lint && npm run type-check && npm run audit:content && npm run build",
+    "audit:content": "node scripts/audit-content.mjs"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^13.11.1",

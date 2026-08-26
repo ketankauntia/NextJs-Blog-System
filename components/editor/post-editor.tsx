@@ -144,11 +144,15 @@ export function PostEditor({
   }, [draft]);
 
   // On first mount, offer to restore an autosaved copy of the initially-loaded post if it differs.
+  // This runs once and reads an external store. It cannot move into a state
+  // initialiser without a hydration mismatch, and it cannot be a useSyncExternalStore
+  // snapshot because this same component writes the key on every autosave tick.
   useEffect(() => {
     try {
       const saved = localStorage.getItem(autosaveKey(draft.slug));
       if (saved) {
         const parsed = JSON.parse(saved) as EditablePost;
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time mount read, see above
         if (JSON.stringify(parsed) !== JSON.stringify(draft)) setRestorable(parsed);
       }
     } catch {

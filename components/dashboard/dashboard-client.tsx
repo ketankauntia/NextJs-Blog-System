@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   IconArrowUpRight,
@@ -90,8 +90,14 @@ export function DashboardClient({ rows }: { rows: PostRow[] }) {
     );
   }, [rows, query, filters]);
 
-  // Reset to page 1 whenever the result set changes.
-  useEffect(() => setPage(1), [query, filters]);
+  // Reset to page 1 whenever the result set changes. Adjusting during render
+  // rather than in an effect avoids rendering the stale page once first.
+  const resultKey = JSON.stringify([query, filters]);
+  const [lastResultKey, setLastResultKey] = useState(resultKey);
+  if (lastResultKey !== resultKey) {
+    setLastResultKey(resultKey);
+    setPage(1);
+  }
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const current = Math.min(page, totalPages);

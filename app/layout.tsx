@@ -46,7 +46,11 @@ export const metadata: Metadata = {
     url: siteConfig.url,
   },
   twitter: { card: "summary_large_image" },
-  robots: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
   formatDetection: { telephone: false, address: false, email: false },
 };
 

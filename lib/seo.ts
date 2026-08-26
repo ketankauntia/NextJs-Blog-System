@@ -173,7 +173,19 @@ export function buildPageMetadata(input: PageMetadataInput): Metadata {
     title: { absolute: resolvedTitle },
     description: resolvedDescription,
     ...(keywords?.length ? { keywords } : {}),
-    robots: { index, follow },
+    robots: {
+      index,
+      follow,
+      // Next replaces the whole robots object per page, so the crawler directives
+      // that matter for rich results have to be restated wherever robots is set.
+      googleBot: {
+        index,
+        follow,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
     alternates: { canonical: url },
     openGraph: {
       title: resolvedTitle,

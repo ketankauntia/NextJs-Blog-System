@@ -1,7 +1,7 @@
 import type { PostSection } from "./types";
 
 /**
- * Parser for the constrained Markdown authoring format maintained in private project documentation.
+ * Parser for the constrained Markdown authoring format documented in docs/content-format.md.
  * Client-safe (no fs) on purpose — the /editor live preview reuses it in the browser.
  */
 

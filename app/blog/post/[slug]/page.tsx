@@ -84,6 +84,8 @@ export async function generateMetadata({
         index: !post.noindex,
         follow: true,
         "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
       },
     },
     openGraph: {

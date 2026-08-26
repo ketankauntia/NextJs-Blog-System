@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { IconCalendar, IconClock } from "@tabler/icons-react";
 import { Badge } from "@/components/blog-ui/badge";
@@ -13,21 +13,13 @@ import { PostCover } from "@/components/blog/post-cover";
 import { TldrBlock } from "@/components/blog/tldr-block";
 import { parseSections, estimateReadingMinutes } from "@/lib/blog/parse";
 import type { EditablePost } from "@/components/editor/post-editor";
+import { useStoredValue } from "@/lib/use-stored-value";
 
 /** Renders the editor's autosaved draft exactly as the live post page would. */
 export function PreviewClient() {
   const params = useSearchParams();
   const key = params.get("key") ?? "__new__";
-  const [draft, setDraft] = useState<EditablePost | null>(null);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(`be-editor:autosave:${key === "__new__" ? "__new__" : key}`);
-      if (raw) setDraft(JSON.parse(raw) as EditablePost);
-    } catch {
-      /* ignore */
-    }
-  }, [key]);
+  const draft = useStoredValue<EditablePost>(`be-editor:autosave:${key}`);
 
   const sections = useMemo(() => (draft ? parseSections(draft.body) : []), [draft]);
 

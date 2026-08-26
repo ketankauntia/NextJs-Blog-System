@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -50,7 +50,8 @@ export function PreviewThemesClient({
 }) {
   const router = useRouter();
   // Snapshot of what was saved when the page opened — Revert restores this.
-  const snapshot = useRef<SiteSettings>(initial);
+  // It is read during render (see `dirty`), so it has to be state rather than a ref.
+  const [snapshot, setSnapshot] = useState<SiteSettings>(initial);
   const [current, setCurrent] = useState<SiteSettings>(initial);
   const [route, setRoute] = useState("/blog");
   const [frameKey, setFrameKey] = useState(0);
@@ -58,8 +59,8 @@ export function PreviewThemesClient({
   const [error, setError] = useState("");
 
   const dirty =
-    current.blogTemplate !== snapshot.current.blogTemplate ||
-    current.postTemplate !== snapshot.current.postTemplate;
+    current.blogTemplate !== snapshot.blogTemplate ||
+    current.postTemplate !== snapshot.postTemplate;
 
   async function apply(next: SiteSettings) {
     setBusy(true);
@@ -82,13 +83,13 @@ export function PreviewThemesClient({
   }
 
   async function keep() {
-    snapshot.current = current;
+    setSnapshot(current);
     router.push("/dashboard/settings");
     router.refresh();
   }
 
   async function revert() {
-    await apply(snapshot.current);
+    await apply(snapshot);
   }
 
   function go(path: string) {

@@ -16,9 +16,9 @@ import { siteConfig } from "@/lib/site";
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: [siteConfig.description, siteConfig.name],
-  description: siteConfig.description,
-  descriptionExtras: ["Markdown in, structured and search-ready pages out, with a local authoring studio."],
+  title: ["A file-based blog system for Next.js", siteConfig.name],
+  description:
+    "Write markdown, get fast and structured pages. Schema, feeds, social cards and a local authoring studio are already wired up for you.",
   path: "/",
 });
 
