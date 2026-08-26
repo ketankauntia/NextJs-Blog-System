@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ink
 
-## Getting Started
+A file-based blog system for Next.js. Posts are markdown files in your repository; the structure, table of contents, structured data, feeds and social cards are all derived from them.
 
-First, run the development server:
+Built by Ketan. MIT licensed.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [localhost:3000](http://localhost:3000) for the site and [localhost:3000/dashboard](http://localhost:3000/dashboard) for the authoring studio.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What you get
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Content pipeline.** Markdown with YAML frontmatter, parsed into typed blocks so the article body, table of contents, search index, RSS content and JSON-LD all derive from one source rather than drifting apart. Drafts, scheduled publishing, categories, tags, authors and related posts are built in.
 
-## Learn More
+**Routes.** Home, paginated archive, post, category (paginated), tag and author pages. All statically generated, all revalidating hourly so a scheduled post appears without a rebuild.
 
-To learn more about Next.js, take a look at the following resources:
+**Templates.** Three listing layouts and three post layouts, switchable from settings without touching a component.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**SEO, done properly.** Self-referencing canonicals, length-checked titles and descriptions, complete Open Graph and Twitter cards, `BlogPosting` + `FAQPage` + `BreadcrumbList` + `WebSite` + `Organization` structured data, a sitemap that respects `noindex` and lifts cornerstone content, and `robots.txt`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Machine-readable output.** RSS with full content, an `llms.txt` index, a static search index, and every post available as raw markdown at `/blog/post/<slug>.md`. Social cards are generated at build time from the post title, so there is no image asset to keep in sync.
 
-## Deploy on Vercel
+**Authoring studio.** A rich-text editor with live SEO and readability scoring, internal-link suggestions, a SERP preview and a template previewer. It writes the same markdown files, and it exists in development only.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Configuration
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Everything brand-related lives in [`lib/site.ts`](lib/site.ts). Set the name, description, social links and default social card there.
+
+Set the origin per environment:
+
+```bash
+# .env.local
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+```
+
+Every absolute URL — canonicals, `og:url`, sitemap entries, RSS links, JSON-LD identifiers — derives from that one value. Without it, builds fall back to `http://localhost:3000`, which is correct locally and wrong everywhere else.
+
+Authors are code, in [`lib/blog/authors.ts`](lib/blog/authors.ts). Optional surfaces — author pages, tag pages, the newsletter block, share buttons, the "ask AI" menu — are toggled in [`lib/features.ts`](lib/features.ts).
+
+## Writing a post
+
+Create `content/posts/my-post.md`:
+
+```markdown
+---
+title: "How the thing works"
+description: "A description between 115 and 158 characters, which is the window search results will show without truncating."
+category: Engineering
+tags: [example]
+publishedAt: "2026-08-26"
+author: ketan
+tldr: "The answer, stated first, in the words you would want an LLM to lift."
+keyTakeaways:
+  - "One durable point per line."
+faqs:
+  - q: "A question people actually ask?"
+    a: "A direct answer."
+---
+
+## First section
+
+Body text. See docs/content-format.md for every block the parser supports.
+```
+
+Then `npm run audit:content` to check it against the length and completeness rules.
+
+The full contract is in [docs/content-format.md](docs/content-format.md).
+
+## Commands
+
+| Command | Does |
+| --- | --- |
+| `npm run dev` | Development server, including the authoring studio |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run type-check` | `tsc --noEmit` |
+| `npm run audit:content` | Check every post's metadata; exits non-zero on failures |
+| `npm run validate` | All of the above, in order |
+
+## Layout
+
+```
+app/
+  blog/              archive, post, category, tag and author routes
+  dashboard/         authoring studio (development only)
+  api/editor/        studio write endpoints (development only)
+  api/markdown/      raw markdown, served at /blog/post/<slug>.md
+  rss.xml/  llms.txt/  search-index.json/
+  sitemap.ts  robots.ts  manifest.ts  opengraph-image.tsx
+components/
+  blog/              article, listing and structured-data components
+  blog-ui/           primitives
+  editor/  dashboard/   studio (development only)
+lib/
+  blog/              parser, loader, types, authors, search
+  editor/            SEO checks and link suggestions
+  site.ts            everything you edit to make this yours
+content/
+  posts/*.md         the blog
+  settings.json      active templates
+```
+
+## Notes
+
+The studio's routes are compiled into a production build even though they 404 there, so the editor's dependencies sit in a chunk that no public page references. It costs deploy size, not load time. Delete `app/dashboard`, `app/api/editor`, `components/editor` and `components/dashboard` if you would rather author by hand.
+
+Image optimisation is enabled with no remote patterns configured. Add hosts to `next.config.ts` if you serve covers from a CDN.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
