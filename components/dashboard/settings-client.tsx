@@ -3,7 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { IconArrowLeft, IconCheck, IconDeviceFloppy, IconEye } from "@tabler/icons-react";
+import {
+  IconArrowLeft,
+  IconCheck,
+  IconDeviceFloppy,
+  IconEye,
+  IconTypography,
+} from "@tabler/icons-react";
 import { Button } from "@/components/blog-ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -41,7 +47,8 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
       const res = await fetch("/api/editor/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ blogTemplate, postTemplate }),
+        // Spread `initial` so saving templates cannot drop the font choice.
+        body: JSON.stringify({ ...initial, blogTemplate, postTemplate }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Save failed");
@@ -65,6 +72,12 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
           <p className="mt-1 text-muted-foreground">Choose how the blog and posts are laid out. Preview any post/page after saving.</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/fonts">
+              <IconTypography className="size-4" />
+              Typography
+            </Link>
+          </Button>
           <Button variant="outline" asChild>
             <Link href="/dashboard/preview">
               <IconEye className="size-4" />

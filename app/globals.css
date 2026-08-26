@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-fraunces), var(--font-geist-sans), ui-serif, Georgia, serif;
+  --font-sans: var(--font-body-active), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-heading-active), var(--font-body-active), ui-serif, Georgia, serif;
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -103,9 +103,51 @@
   --chart-5: oklch(0.75 0.16 70);
 }
 
+/*
+ * Font pairings. The picker at /dashboard/fonts writes the chosen id to
+ * content/settings.json; the root layout stamps it on <body data-font>.
+ * Every pairing must set both variables, so `editorial` is also the bare
+ * :root default and no data-font value can leave text unstyled.
+ */
+:root,
+[data-font="editorial"] {
+  --font-heading-active: var(--font-fraunces);
+  --font-body-active: var(--font-geist-sans);
+}
+
+[data-font="classic"] {
+  --font-heading-active: var(--font-instrument-serif);
+  --font-body-active: var(--font-inter);
+}
+
+[data-font="modern"] {
+  --font-heading-active: var(--font-bricolage);
+  --font-body-active: var(--font-inter);
+}
+
+[data-font="technical"] {
+  --font-heading-active: var(--font-space-grotesk);
+  --font-body-active: var(--font-ibm-plex-sans);
+}
+
+[data-font="literary"] {
+  --font-heading-active: var(--font-newsreader);
+  --font-body-active: var(--font-newsreader);
+}
+
+/* Instrument Serif ships one weight, so a bold heading would be synthesised
+   into a smear. Let its headings sit at their real weight instead. */
+[data-font="classic"] :is(h1, h2, h3, h4, h5, h6) {
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  body {
+    font-family: var(--font-sans);
   }
   body {
     @apply bg-background text-foreground;

@@ -7,6 +7,7 @@ import { Button } from "@/components/blog-ui/button";
 import { CategoryChips } from "@/components/blog/category-chips";
 import { PostCard } from "@/components/blog/post-card";
 import { PostGrid } from "@/components/blog/post-grid";
+import { FeatureGrid } from "@/components/blog/feature-grid";
 import { SiteJsonLd } from "@/components/blog/site-json-ld";
 import { categoryToSlug, getAllPosts, getCategories } from "@/lib/blog/content";
 import { buildPageMetadata } from "@/lib/seo";
@@ -57,6 +58,24 @@ export default function HomePage() {
               <a href="/rss.xml">Subscribe by RSS</a>
             </Button>
           </div>
+
+          <dl className="mt-10 flex flex-wrap gap-x-10 gap-y-4 border-t pt-6">
+            {[
+              { value: String(posts.length), label: "articles published" },
+              { value: String(categories.length), label: "categories" },
+              { value: "0", label: "database rows" },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <dt className="sr-only">{stat.label}</dt>
+                <dd>
+                  <span className="font-heading text-2xl font-bold tracking-tight">
+                    {stat.value}
+                  </span>{" "}
+                  <span className="text-sm text-muted-foreground">{stat.label}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
         </section>
 
         {lead ? (
@@ -82,6 +101,10 @@ export default function HomePage() {
             <PostGrid posts={latest} />
           </div>
         </section>
+
+        <div className="mt-20 border-t pt-14">
+          <FeatureGrid />
+        </div>
       </main>
       <BlogSiteFooter />
     </div>

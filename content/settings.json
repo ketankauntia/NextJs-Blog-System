@@ -1,4 +1,5 @@
 {
   "blogTemplate": "classic",
-  "postTemplate": "standard"
+  "postTemplate": "standard",
+  "fontPairing": "editorial"
 }

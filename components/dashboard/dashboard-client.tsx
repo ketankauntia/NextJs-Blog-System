@@ -10,6 +10,7 @@ import {
   IconSearch,
   IconSettings,
   IconStarFilled,
+  IconTypography,
   IconX,
 } from "@tabler/icons-react";
 import { Badge } from "@/components/blog-ui/badge";
@@ -132,6 +133,12 @@ export function DashboardClient({ rows }: { rows: PostRow[] }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/fonts">
+              <IconTypography className="size-4" />
+              Typography
+            </Link>
+          </Button>
           <Button variant="outline" asChild>
             <Link href="/dashboard/settings">
               <IconSettings className="size-4" />
