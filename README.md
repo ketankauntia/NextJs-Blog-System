@@ -36,7 +36,9 @@ Set the origin per environment:
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
 
-Every absolute URL — canonicals, `og:url`, sitemap entries, RSS links, JSON-LD identifiers — derives from that one value. Without it, builds fall back to `http://localhost:3000`, which is correct locally and wrong everywhere else.
+Every absolute URL — canonicals, `og:url`, sitemap entries, RSS links, JSON-LD identifiers — derives from that one value. A trailing slash, a stray path or a missing scheme are normalised away, so `example.com` works as well as `https://example.com/`.
+
+On Vercel the variable is optional: if it is unset **or empty**, the build falls back to `NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL`, then `NEXT_PUBLIC_VERCEL_URL`, then `http://localhost:3000`. Deployments therefore work with no configuration, but set a real domain before launch or every canonical will point at `*.vercel.app`.
 
 Authors are code, in [`lib/blog/authors.ts`](lib/blog/authors.ts). Optional surfaces — author pages, tag pages, the newsletter block, share buttons, the "ask AI" menu — are toggled in [`lib/features.ts`](lib/features.ts).
 
