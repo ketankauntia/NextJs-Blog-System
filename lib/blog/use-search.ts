@@ -6,7 +6,9 @@ import type { SearchRecord } from "@/lib/blog/content";
 
 /**
  * Loads the static search index once and returns a debounced Fuse search.
- * ~200ms debounce (Algolia's guidance for local search); no network per keystroke.
+ * The index is fetched a single time, so the debounce only throttles scoring,
+ * never a request. 200ms is long enough to skip most intermediate keystrokes
+ * and short enough that results still feel attached to typing.
  */
 export function useSearch(query: string, debounceMs = 200) {
   const [index, setIndex] = useState<SearchRecord[] | null>(null);

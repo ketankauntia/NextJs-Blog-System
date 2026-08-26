@@ -27,9 +27,7 @@ export async function generateMetadata({
   return buildPageMetadata({
     title: [`#${tag} articles`, `#${tag}`],
     description: `Every article tagged "${tag}" on ${siteConfig.name}.`,
-    descriptionExtras: [
-      "Research, comparisons, and practical steps for Google Summer of Code applicants",
-    ],
+    descriptionExtras: [siteConfig.description],
     path: `/blog/tag/${slug}`,
     index: false,
   });

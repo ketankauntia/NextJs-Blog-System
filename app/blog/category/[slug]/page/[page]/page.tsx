@@ -40,9 +40,7 @@ export async function generateMetadata({
   return buildPageMetadata({
     title: [`${category} - Page ${page}`, `${category} guides`],
     description: `Page ${page} of articles filed under ${category.toLowerCase()} on ${siteConfig.name}.`,
-    descriptionExtras: [
-      "Research, comparisons, and practical steps for Google Summer of Code applicants",
-    ],
+    descriptionExtras: [siteConfig.description],
     path: `/blog/category/${slug}/page/${page}`,
   });
 }
