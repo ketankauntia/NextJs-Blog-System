@@ -1,8 +1,11 @@
-# NextJs Blog System
+<img width="1223" height="554" alt="image" src="https://github.com/user-attachments/assets/ec208e4f-6fbc-4375-8d85-e48f932e8694" /># NextJs Blog System
 
 A file-based blog system for Next.js. Posts are markdown files in your repository; the structure, table of contents, structured data, feeds and social cards are all derived from them.
 
 Built by [Ketan](https://x.com/kauntiaketan). MIT licensed.
+
+<img width="1223" height="554" alt="image" src="https://github.com/user-attachments/assets/8d278041-55a1-4446-8ba2-0680a8615086" />
+
 
 ```bash
 npm install
