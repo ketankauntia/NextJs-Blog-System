@@ -4,7 +4,7 @@
   "private": false,
   "license": "MIT",
   "author": "Ketan",
-  "description": "A file-based, SEO-first blog system for Next.js. Markdown in, static pages out \u00e2\u20ac\u201d with a local authoring studio.",
+  "description": "A file-based, SEO-first blog system for Next.js. Markdown in, static pages out â€” with a local authoring studio.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -34,6 +34,7 @@
     "@tiptap/pm": "^3.27.1",
     "@tiptap/react": "^3.27.1",
     "@tiptap/starter-kit": "^3.27.1",
+    "@vercel/analytics": "^2.0.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "fuse.js": "^7.4.2",
