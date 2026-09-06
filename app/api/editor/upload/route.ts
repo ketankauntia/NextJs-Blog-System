@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { rejectStudioMutation } from "@/lib/studio-access";
 
 export const dynamic = "force-dynamic";
 
@@ -33,9 +34,8 @@ function slugStem(name: string): string {
  * Dev-only by design (the deployed content dir is read-only).
  */
 export async function POST(req: Request) {
-  if (process.env.NODE_ENV !== "development") {
-    return Response.json({ error: "Uploads are only available in development" }, { status: 403 });
-  }
+  const rejection = rejectStudioMutation();
+  if (rejection) return rejection;
 
   const form = await req.formData();
   const file = form.get("file");

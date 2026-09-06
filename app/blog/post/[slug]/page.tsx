@@ -15,6 +15,7 @@ import { PostBody } from "@/components/blog/post-body";
 import { PostBreadcrumbs } from "@/components/blog/post-breadcrumbs";
 import { PostCover } from "@/components/blog/post-cover";
 import { PostJsonLd } from "@/components/blog/json-ld";
+import { ProductCta } from "@/components/blog/product-cta";
 import { ReadingProgress } from "@/components/blog/reading-progress";
 import { RelatedPosts } from "@/components/blog/related-posts";
 import { ShareActions } from "@/components/blog/share-actions";
@@ -174,7 +175,7 @@ export default async function BlogPostPage({
   );
 
   const tocCard = (tocItems.length > 0 || post.faqs.length > 0) && (
-    <div className="rounded-xl border bg-card p-5">
+    <div className="rounded-2xl border bg-card p-5 shadow-sm">
       <TableOfContents items={tocItems} hasFaqs={post.faqs.length > 0} />
     </div>
   );
@@ -185,10 +186,10 @@ export default async function BlogPostPage({
         <Badge variant="secondary">{post.category}</Badge>
         {post.draft && <Badge variant="destructive">Draft</Badge>}
       </div>
-      <h1 className="mt-3 font-heading text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
+      <h1 className="text-balance mt-4 font-heading text-4xl font-semibold leading-[1.06] tracking-[-0.04em] sm:text-5xl">
         {post.title}
       </h1>
-      <p className="mt-3 text-lg text-muted-foreground">{post.description}</p>
+      <p className="mt-5 text-lg leading-8 text-muted-foreground">{post.description}</p>
     </>
   );
 
@@ -215,6 +216,7 @@ export default async function BlogPostPage({
         author={author}
         profileHref={features.authorPages ? `/blog/author/${author.slug}` : undefined}
       />
+      <ProductCta />
       <NewsletterCta />
     </>
   );
@@ -224,7 +226,7 @@ export default async function BlogPostPage({
   if (postTemplate === "centered") {
     // Single centered reading column — no sidebar; TOC + actions inline.
     return (
-      <main className="mx-auto w-full max-w-content flex-1 px-4 py-8 sm:px-6">
+      <main id="main-content" className="mx-auto w-full max-w-content flex-1 px-4 py-10 sm:px-6 sm:py-14">
         <PostJsonLd post={post} author={author} />
         <ReadingProgress />
         {breadcrumbs}
@@ -238,7 +240,7 @@ export default async function BlogPostPage({
             post={post}
             preload
             sizes="(min-width: 1024px) 704px, 100vw"
-            className="h-56 sm:h-72"
+            className="h-56 rounded-2xl sm:h-80"
           />
           <TldrBlock text={post.tldr} />
           <KeyTakeaways items={post.keyTakeaways} />
@@ -256,7 +258,7 @@ export default async function BlogPostPage({
   if (postTemplate === "hero") {
     // Full-width cover banner with overlaid title, then a centered reading column.
     return (
-      <main className="w-full flex-1 pb-8">
+      <main id="main-content" className="w-full flex-1 pb-8">
         <PostJsonLd post={post} author={author} />
         <ReadingProgress />
         <div className="relative">
@@ -299,12 +301,12 @@ export default async function BlogPostPage({
 
   // "standard" — two-column with sticky TOC/actions sidebar (the original).
   return (
-    <main className="mx-auto w-full max-w-shell flex-1 px-4 py-8 sm:px-6">
+    <main id="main-content" className="mx-auto w-full max-w-shell flex-1 px-4 py-10 sm:px-6 sm:py-14">
       <PostJsonLd post={post} author={author} />
       <ReadingProgress />
 
       {/* Breadcrumb + header + article share one column so every element starts at the same left edge */}
-      <div className="mt-2 lg:grid lg:grid-cols-[1fr_16rem] lg:gap-12">
+      <div className="mt-2 lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-14">
         <div className="mx-auto w-full max-w-content">
           {breadcrumbs}
           <header className="mt-6">
@@ -319,7 +321,7 @@ export default async function BlogPostPage({
               post={post}
               preload
               sizes="(min-width: 1024px) 704px, 100vw"
-              className="h-56 sm:h-72"
+              className="h-56 rounded-2xl sm:h-80"
             />
             <TldrBlock text={post.tldr} />
             <KeyTakeaways items={post.keyTakeaways} />

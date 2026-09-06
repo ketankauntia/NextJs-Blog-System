@@ -4,7 +4,7 @@
   "private": false,
   "license": "MIT",
   "author": "Ketan",
-  "description": "A file-based, SEO-first blog system for Next.js. Markdown in, static pages out \u00e2\u20ac\u201d with a local authoring studio.",
+  "description": "A repository-native, SEO-first publishing system for Next.js with a local authoring studio.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -43,6 +43,7 @@
     "radix-ui": "^1.6.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-resizable-panels": "^4.12.3",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

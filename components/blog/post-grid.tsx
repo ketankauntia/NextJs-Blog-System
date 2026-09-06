@@ -7,7 +7,7 @@ export function PostGrid({ posts }: { posts: Post[] }) {
     return <p className="py-12 text-center text-muted-foreground">No articles here yet.</p>;
   }
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
       {posts.map((post) => (
         <PostCard key={post.slug} post={post} />
       ))}

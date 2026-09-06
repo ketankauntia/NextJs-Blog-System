@@ -23,7 +23,7 @@ const FEATURES: Feature[] = [
   {
     icon: IconArticle,
     title: "The article page",
-    body: "Built for something longer than a changelog entry. Every part below is generated from the markdown — nothing is assembled by hand per post.",
+    body: "Built for something longer than a changelog entry. Every part below is generated from the markdown, with nothing assembled by hand per post.",
     points: [
       "Answer-first TL;DR and key takeaways",
       "Contents sidebar with scroll-spy",
@@ -100,7 +100,7 @@ const FEATURES: Feature[] = [
   {
     icon: IconLayoutGrid,
     title: "Changed from settings",
-    body: "Three listing layouts, three post layouts and five typeface pairings. Preview them against real posts, then save — no component edits.",
+    body: "Three listing layouts, three post layouts and five typeface pairings. Preview them against real posts, then save without component edits.",
     points: [
       "Classic, magazine and minimal listings",
       "Standard, centered and hero posts",
@@ -155,7 +155,7 @@ export function FeatureGrid({ pageCount }: { pageCount: number }) {
         What you get
       </h2>
       <p className="mt-2 max-w-2xl text-muted-foreground">
-        Every article on this site is rendered by the system below — the reading experience, the
+        Every article on this site is rendered by the system below, including the reading experience, the
         author blocks, the structured data and the editor that scored the drafts. It is open source,
         and all of it is markdown files plus a Next.js app.
       </p>
@@ -216,7 +216,7 @@ export function FeatureGrid({ pageCount }: { pageCount: number }) {
         <p className="mt-6 border-t pt-5 text-sm text-muted-foreground">
           The honest caveat: an article still ships around 200 KB of compressed JavaScript, and
           almost all of it is React and the Next.js runtime rather than anything here. What the blog
-          controls is that the text does not wait for it — the words are in the HTML and paint
+          controls is that the text does not wait for it. The words are in the HTML and paint
           before a single line of that JavaScript executes.
         </p>
       </div>

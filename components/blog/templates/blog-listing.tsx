@@ -35,7 +35,7 @@ function ClassicListing({ posts, isFirstPage }: { posts: Post[]; isFirstPage: bo
   const featured = isFirstPage ? posts.find((p) => p.featured) : undefined;
   const rest = featured ? posts.filter((p) => p.slug !== featured.slug) : posts;
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       {featured && <PostCard post={featured} featured />}
       {rest.length > 0 ? <PostGrid posts={rest} /> : null}
     </div>

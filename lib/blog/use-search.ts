@@ -12,6 +12,7 @@ import type { SearchRecord } from "@/lib/blog/content";
  */
 export function useSearch(query: string, debounceMs = 200) {
   const [index, setIndex] = useState<SearchRecord[] | null>(null);
+  const [error, setError] = useState(false);
   const [debounced, setDebounced] = useState(query);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -19,11 +20,16 @@ export function useSearch(query: string, debounceMs = 200) {
   useEffect(() => {
     let alive = true;
     fetch("/search-index.json")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("Search unavailable");
+        return r.json();
+      })
       .then((data: SearchRecord[]) => {
         if (alive) setIndex(data);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (alive) setError(true);
+      });
     return () => {
       alive = false;
     };
@@ -62,5 +68,5 @@ export function useSearch(query: string, debounceMs = 200) {
     return fuse.search(q, { limit: 12 }).map((r) => r.item);
   }, [fuse, debounced]);
 
-  return { results, ready: index !== null };
+  return { results, ready: index !== null, error };
 }

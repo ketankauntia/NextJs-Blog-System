@@ -57,13 +57,14 @@ export default async function CategoryPaginatedPage({
   if (!Number.isInteger(pageNum) || pageNum < 1) notFound();
   if (pageNum === 1) redirect(`/blog/category/${slug}`);
 
-  const categories = getCategories().map((c) => ({ label: c, slug: categoryToSlug(c) }));
-  const posts = getAllPosts().filter((p) => p.category === category);
+  const allPosts = getAllPosts();
+  const categories = getCategories().map((label) => ({ label, slug: categoryToSlug(label), count: allPosts.filter((post) => post.category === label).length }));
+  const posts = allPosts.filter((p) => p.category === category);
   const { items, totalPages, page: current } = paginate(posts, pageNum);
   if (current !== pageNum) notFound();
 
   return (
-    <main className="mx-auto w-full max-w-shell flex-1 px-4 py-10 sm:px-6">
+    <main id="main-content" className="mx-auto w-full max-w-shell flex-1 px-4 py-12 sm:px-6 sm:py-16">
       <PostBreadcrumbs
         trail={[
           { label: "Blog", href: "/blog" },
@@ -71,9 +72,10 @@ export default async function CategoryPaginatedPage({
           { label: `Page ${pageNum}` },
         ]}
       />
-      <header className="mt-6 max-w-2xl">
-        <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">{category}</h1>
-        <p className="mt-2 text-muted-foreground">Page {pageNum} of {totalPages}</p>
+      <header className="mt-7 max-w-2xl">
+        <p className="font-mono text-xs tracking-[0.16em] text-primary">TOPIC ARCHIVE</p>
+        <h1 className="mt-3 font-heading text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">{category}</h1>
+        <p className="mt-3 text-muted-foreground">Page {pageNum} of {totalPages}</p>
       </header>
 
       <CategoryChips categories={categories} activeSlug={slug} />

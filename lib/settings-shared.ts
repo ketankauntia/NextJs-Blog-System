@@ -47,7 +47,7 @@ export const FONT_PAIRING_META: Record<
     heading: "Bricolage Grotesque",
     body: "Inter",
     blurb:
-      "Characterful contemporary display sans. No serifs anywhere — confident rather than literary.",
+      "Characterful contemporary display sans. No serifs anywhere, with a confident rather than literary tone.",
   },
   technical: {
     name: "Technical",

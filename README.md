@@ -1,4 +1,4 @@
-# NextJs Blog System
+# Next.js Blog System
 
 A file-based blog system for Next.js. Posts are markdown files in your repository; the structure, table of contents, structured data, feeds and social cards are all derived from them.
 
@@ -23,7 +23,9 @@ Open [localhost:3000](http://localhost:3000) for the site and [localhost:3000/da
 
 **Machine-readable output.** RSS with full content, an `llms.txt` index, a static search index, and every post available as raw markdown at `/blog/post/<slug>.md`. Social cards are generated at build time from the post title, so there is no image asset to keep in sync.
 
-**Authoring studio.** A rich-text editor with live SEO and readability scoring, internal-link suggestions, a SERP preview and a template previewer. It writes the same markdown files, and it exists in development only.
+**Authoring studio.** A content-first rich-text editor with live SEO and readability scoring, internal-link suggestions, structured blocks, a SERP preview and a template previewer. The Studio is a public read-only product tour in production. When run locally in development, it writes the same Markdown files used by the build.
+
+**Agent-ready setup.** Share `/agent-setup.md` with a coding agent for a repository-aware integration contract. It covers discovery, required questions, route conflicts, monorepos, existing CMS installations, production safety, accessibility, validation, and rollback.
 
 ## Configuration
 
@@ -36,11 +38,11 @@ Set the origin per environment:
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ```
 
-Every absolute URL — canonicals, `og:url`, sitemap entries, RSS links, JSON-LD identifiers — derives from that one value. A trailing slash, a stray path or a missing scheme are normalised away, so `example.com` works as well as `https://example.com/`.
+Every absolute URL, including canonicals, `og:url`, sitemap entries, RSS links, and JSON-LD identifiers, derives from that one value. A trailing slash, a stray path, or a missing scheme is normalised away, so `example.com` works as well as `https://example.com/`.
 
 On Vercel the variable is optional: if it is unset **or empty**, the build falls back to `NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL`, then `NEXT_PUBLIC_VERCEL_URL`, then `http://localhost:3000`. Deployments therefore work with no configuration, but set a real domain before launch or every canonical will point at `*.vercel.app`.
 
-Authors are code, in [`lib/blog/authors.ts`](lib/blog/authors.ts). Optional surfaces — author pages, tag pages, the newsletter block, share buttons, the "ask AI" menu — are toggled in [`lib/features.ts`](lib/features.ts).
+Authors are code in [`lib/blog/authors.ts`](lib/blog/authors.ts). Optional surfaces, including author pages, tag pages, the newsletter block, share buttons, and the "ask AI" menu, are toggled in [`lib/features.ts`](lib/features.ts).
 
 ## Writing a post
 
@@ -82,12 +84,18 @@ The full contract is in [docs/content-format.md](docs/content-format.md).
 | `npm run audit:content` | Check every post's metadata; exits non-zero on failures |
 | `npm run validate` | All of the above, in order |
 
+## Documentation and AI setup
+
+The website includes a complete guide at `/docs`, a Markdown copy at `/docs.md`, and a guided AI installation flow at `/docs/agent-setup`. The AI contract itself is available at `/agent-setup.md` so any coding agent with web access can read it directly.
+
+The documentation interface includes Copy as Markdown, Share to AI, raw Markdown, and a copyable setup prompt that automatically uses the current deployment origin.
+
 ## Layout
 
 ```
 app/
   blog/              archive, post, category, tag and author routes
-  dashboard/         authoring studio (development only)
+  dashboard/         public demo, writable only in development
   api/editor/        studio write endpoints (development only)
   api/markdown/      raw markdown, served at /blog/post/<slug>.md
   rss.xml/  llms.txt/  search-index.json/
@@ -95,7 +103,7 @@ app/
 components/
   blog/              article, listing and structured-data components
   blog-ui/           primitives
-  editor/  dashboard/   studio (development only)
+  editor/  dashboard/   studio interface
 lib/
   blog/              parser, loader, types, authors, search
   editor/            SEO checks and link suggestions
@@ -107,7 +115,7 @@ content/
 
 ## Notes
 
-The studio's routes are compiled into a production build even though they 404 there, so the editor's dependencies sit in a chunk that no public page references. It costs deploy size, not load time. Delete `app/dashboard`, `app/api/editor`, `components/editor` and `components/dashboard` if you would rather author by hand.
+The Studio routes are visible in production so evaluators can inspect the product. All editor POST endpoints reject requests outside development before parsing request bodies or touching the filesystem. UI controls are also disabled where a hosted action would require a write. This is a demo boundary, not an authenticated production CMS. If the repository contains private drafts, set `STUDIO_DEMO_ENABLED=false` to remove Studio navigation and return 404 for all Studio pages in production. If you add hosted editing, implement authentication, authorization, durable storage, validation, rate limiting, and audit logging instead of removing only the environment guard.
 
 Image optimisation is enabled with no remote patterns configured. Add hosts to `next.config.ts` if you serve covers from a CDN.
 

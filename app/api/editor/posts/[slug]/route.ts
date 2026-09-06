@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { rejectStudioMutation } from "@/lib/studio-access";
 
 export const dynamic = "force-dynamic";
 
@@ -9,13 +10,12 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  if (process.env.NODE_ENV !== "development") {
-    return Response.json({ error: "The editor can only save in development" }, { status: 403 });
-  }
+  const rejection = rejectStudioMutation();
+  if (rejection) return rejection;
 
   const { slug } = await params;
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) {
-    return Response.json({ error: "Invalid slug — use lowercase words separated by hyphens" }, { status: 400 });
+    return Response.json({ error: "Invalid slug. Use lowercase words separated by hyphens" }, { status: 400 });
   }
 
   const { frontmatter, body } = (await req.json()) as {

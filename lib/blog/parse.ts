@@ -136,8 +136,8 @@ export function parseSections(body: string): PostSection[] {
         i++;
       }
       let attribution: string | undefined;
-      if (quoted.length > 1 && quoted[quoted.length - 1].startsWith("— ")) {
-        attribution = quoted.pop()!.slice(2).trim();
+      if (quoted.length > 1 && /^(?:—|-) /.test(quoted[quoted.length - 1])) {
+        attribution = quoted.pop()!.replace(/^(?:—|-) /, "").trim();
       }
       current.blocks.push({ type: "quote", text: quoted.join(" "), attribution });
       continue;

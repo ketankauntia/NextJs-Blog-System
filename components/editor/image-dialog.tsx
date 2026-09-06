@@ -22,12 +22,15 @@ export function ImageDialog({
   onOpenChange,
   onInsert,
   uploadSlug,
+  canUpload = true,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onInsert: (data: ImageData) => void;
-  /** Current post slug — decides the upload folder (falls back to "misc"). */
+  /** Current post slug decides the upload folder and falls back to "misc". */
   uploadSlug?: string;
+  /** Hosted demos accept image URLs but cannot write uploaded files. */
+  canUpload?: boolean;
 }) {
   const [src, setSrc] = useState("");
   const [alt, setAlt] = useState("");
@@ -64,7 +67,7 @@ export function ImageDialog({
 
   function insert() {
     if (!src) {
-      setError("Add an image — upload a file or paste a URL.");
+      setError("Add an image by uploading a file or pasting a URL.");
       return;
     }
     if (!alt.trim()) {
@@ -92,10 +95,11 @@ export function ImageDialog({
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Image file</Label>
+            <Label htmlFor="editor-image-file">Image file</Label>
             <div className="flex items-center gap-2">
               <input
                 ref={fileRef}
+                id="editor-image-file"
                 type="file"
                 accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/svg+xml"
                 className="hidden"
@@ -104,17 +108,20 @@ export function ImageDialog({
                   if (f) upload(f);
                 }}
               />
-              <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
+              <Button type="button" variant="outline" size="sm" disabled={uploading || !canUpload} onClick={() => fileRef.current?.click()}>
                 {uploading ? <IconLoader2 className="size-4 animate-spin" /> : <IconUpload className="size-4" />}
-                {uploading ? "Uploading…" : "Upload file"}
+                {uploading ? "Uploading..." : canUpload ? "Upload file" : "Upload disabled"}
               </Button>
-              <span className="text-xs text-muted-foreground">PNG, JP, WebP, AVIF, GIF, SVG · ≤8 MB</span>
+              <span className="text-xs text-muted-foreground">
+                {canUpload ? "PNG, JPG, WebP, AVIF, GIF, SVG, up to 8 MB" : "Use an image URL in this read-only demo"}
+              </span>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label>…or image URL</Label>
+            <Label htmlFor="editor-image-url">Or image URL</Label>
             <Input
+              id="editor-image-url"
               value={src}
               onChange={(e) => setSrc(e.target.value)}
               placeholder="/blog/diagram.svg or https://…"
@@ -127,13 +134,14 @@ export function ImageDialog({
           )}
 
           <div className="space-y-1.5">
-            <Label>Alt text (required — SEO &amp; screen readers)</Label>
-            <Input value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="Describe what the image shows" />
+            <Label htmlFor="editor-image-alt">Alt text (required for SEO and screen readers)</Label>
+            <Input id="editor-image-alt" value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="Describe what the image shows" />
           </div>
 
           <div className="space-y-1.5">
-            <Label>Description / caption (shown below the image as “Fig: …”)</Label>
+            <Label htmlFor="editor-image-caption">Description or caption</Label>
             <Input
+              id="editor-image-caption"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional caption readers will see"

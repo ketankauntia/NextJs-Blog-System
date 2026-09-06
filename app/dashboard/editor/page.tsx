@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import matter from "gray-matter";
 import { PostEditor, type EditablePost } from "@/components/editor/post-editor";
 import { authors, DEFAULT_AUTHOR_SLUG } from "@/lib/blog/authors";
+import { canMutateStudio } from "@/lib/studio-access";
 
 export const metadata: Metadata = {
   title: "Post editor",
@@ -56,16 +56,12 @@ export default async function EditorPage({
 }: {
   searchParams: Promise<{ slug?: string }>;
 }) {
-  if (process.env.NODE_ENV === "production") {
-    notFound();
-  }
-
   const { slug } = await searchParams;
   return (
     <PostEditor
       posts={loadEditablePosts()}
       authorSlugs={authors.map((a) => a.slug)}
-      canSave={process.env.NODE_ENV === "development"}
+      canSave={canMutateStudio()}
       initialSlug={slug}
     />
   );

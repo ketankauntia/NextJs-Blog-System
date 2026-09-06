@@ -17,16 +17,34 @@ const AiPageActionsMenu = dynamic(
   { ssr: false },
 );
 
-export function AiPageActions() {
+export function AiPageActions({
+  label = "Ask AI",
+  prompt,
+  resourcePath,
+}: {
+  label?: string;
+  prompt?: string;
+  resourcePath?: string;
+} = {}) {
   const [opened, setOpened] = useState(false);
 
   // Once the real menu is mounted it owns its own open state and trigger.
-  if (opened) return <AiPageActionsMenu defaultOpen />;
+  if (opened) {
+    return (
+      <AiPageActionsMenu
+        open
+        onOpenChange={setOpened}
+        label={label}
+        prompt={prompt}
+        resourcePath={resourcePath}
+      />
+    );
+  }
 
   return (
     <Button variant="outline" size="sm" onClick={() => setOpened(true)}>
       <IconSparkles className="size-4" aria-hidden />
-      Ask AI
+      {label}
       <IconChevronDown className="size-4" aria-hidden />
     </Button>
   );

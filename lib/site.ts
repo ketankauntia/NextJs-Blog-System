@@ -47,19 +47,19 @@ const SITE_URL = resolveSiteUrl();
  */
 export const siteConfig = {
   /** Used as the RSS channel title and the Open Graph `site_name`. */
-  name: "NextJs Blog System",
+  name: "Next.js Blog System",
   /** Short brand shown in the header, where the full name does not fit. */
-  shortName: "Blog System",
+  shortName: "Next.js Blog",
   /** Feed description and the fallback meta description. */
   description:
-    "A file-based blog system for Next.js: write markdown, get fast, structured, search-ready pages.",
+    "A repository-native publishing system for Next.js with a complete reader, search, social, and AI experience.",
   /** Absolute origin, no trailing slash. See {@link resolveSiteUrl}. */
   url: SITE_URL,
   /** Default social card. Generated on demand by app/opengraph-image.tsx. */
   ogImage: "/opengraph-image",
   /** Publisher used in Article/Organization JSON-LD. */
   organization: {
-    name: "NextJs Blog System",
+    name: "Next.js Blog System",
     url: SITE_URL,
     logo: "/icon.svg",
   },

@@ -23,7 +23,7 @@ import {
 const BLOG_META: Record<BlogTemplate, { name: string; blurb: string }> = {
   classic: { name: "Classic", blurb: "Featured card on top, clean card grid below. The all-rounder." },
   magazine: { name: "Magazine", blurb: "Full-width cover hero, editorial secondary stories, compact list." },
-  minimal: { name: "Minimal", blurb: "Text-first list. No imagery — titles and ideas do the talking." },
+  minimal: { name: "Minimal", blurb: "Text-first list. No imagery, so titles and ideas do the talking." },
 };
 
 const POST_META: Record<PostTemplate, { name: string; blurb: string }> = {
@@ -53,7 +53,7 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Save failed");
       setState("saved");
-      setMessage("Saved — the blog now uses these templates.");
+      setMessage("Saved. The blog now uses these templates.");
       router.refresh();
     } catch (e) {
       setState("error");
@@ -62,7 +62,7 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
   }
 
   return (
-    <main className="mx-auto w-full max-w-shell flex-1 px-4 py-10 sm:px-6">
+    <main id="main-content" className="mx-auto w-full max-w-shell flex-1 px-4 py-10 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Link href="/dashboard" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">

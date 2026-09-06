@@ -43,24 +43,41 @@ const AI_PROVIDERS: {
   { name: "Google AI Mode", Icon: SiGoogle, buildUrl: (p) => `https://www.google.com/search?udm=50&q=${encodeURIComponent(p)}` },
 ];
 
-export function AiPageActionsMenu({ defaultOpen = false }: { defaultOpen?: boolean }) {
+export function AiPageActionsMenu({
+  defaultOpen = false,
+  open,
+  onOpenChange,
+  label = "Ask AI",
+  prompt = SUMMARY_PROMPT,
+  resourcePath,
+}: {
+  defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  label?: string;
+  prompt?: string;
+  resourcePath?: string;
+}) {
   function openIn(buildUrl: (prompt: string) => string) {
-    const url = buildUrl(SUMMARY_PROMPT + window.location.href.replace(/#.*$/, ""));
+    const resourceUrl = resourcePath
+      ? new URL(resourcePath, window.location.origin).href
+      : window.location.href.replace(/#.*$/, "");
+    const url = buildUrl(`${prompt.trim()} ${resourceUrl}`);
     window.open(url, "_blank", "noopener,noreferrer");
   }
 
   return (
-    <DropdownMenu defaultOpen={defaultOpen}>
+    <DropdownMenu defaultOpen={defaultOpen} open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
           <IconSparkles className="size-4" />
-          Ask AI
+          {label}
           <IconChevronDown className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56 p-1.5">
         <DropdownMenuLabel className="px-2 pb-1 pt-1.5 text-xs font-medium text-muted-foreground">
-          Summarize &amp; ask questions
+          Choose an AI assistant
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {AI_PROVIDERS.map(({ name, Icon, buildUrl }) => (

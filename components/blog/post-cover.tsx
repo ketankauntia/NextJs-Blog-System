@@ -3,13 +3,25 @@ import { cn } from "@/lib/utils";
 import type { Post } from "@/lib/blog/types";
 
 const tones: Record<Post["coverTone"], string> = {
-  primary: "from-primary/90 to-primary/40",
-  "chart-2": "from-chart-2/90 to-chart-2/40",
-  "chart-3": "from-chart-3/90 to-chart-3/40",
-  "chart-5": "from-chart-5/90 to-chart-5/40",
+  primary: "cover-ink",
+  "chart-2": "cover-paper",
+  "chart-3": "cover-blue",
+  "chart-5": "cover-clay",
 };
 
-/** Responsive post art with a gradient fallback. Reused by cards and article heroes. */
+const coverType: Record<string, [string, string]> = {
+  Engineering: ["{ query }", "A CLOSER LOOK AT THE SYSTEM"],
+  Design: ["Aa", "FORM FOLLOWS READING"],
+  "Artificial Intelligence": ["context.", "INTELLIGENCE IN PERSPECTIVE"],
+  Product: ["Decide.", "THOUGHTFUL PRODUCT WORK"],
+  Travel: ["Elsewhere", "A DIFFERENT POINT OF VIEW"],
+  Food: ["To taste.", "NOTES FROM THE KITCHEN"],
+  Climate: ["Tomorrow", "SYSTEMS FOR A CHANGING WORLD"],
+  "Personal Finance": ["Over time.", "THE LONG VIEW"],
+  Health: ["Find pace.", "A PRACTICE, NOT A FINISH LINE"],
+};
+
+/** Responsive images with original typographic covers when an image is absent. */
 export function PostCover({
   post,
   className,
@@ -18,7 +30,10 @@ export function PostCover({
   sizes = "100vw",
   showCategory,
 }: {
-  post: Pick<Post, "coverTone" | "category" | "title" | "coverImage" | "coverAlt" | "ogImage">;
+  post: Pick<
+    Post,
+    "coverTone" | "category" | "title" | "coverImage" | "coverAlt" | "ogImage"
+  >;
   className?: string;
   /** Linked cards already have a text heading, so their repeated cover image should have empty alt text. */
   decorative?: boolean;
@@ -26,17 +41,23 @@ export function PostCover({
   preload?: boolean;
   /** Responsive source-size hint passed to next/image. */
   sizes?: string;
-  /** Defaults to visible on gradient fallbacks and hidden on real images. */
+  /** Optional category overlay on real images; typographic covers include their own label. */
   showCategory?: boolean;
 }) {
   const imageSrc = post.coverImage ?? post.ogImage;
-  const displayCategory = imageSrc ? showCategory === true : showCategory !== false;
+  const [coverWord, coverCaption] = coverType[post.category] ?? [
+    post.category,
+    "IDEAS WORTH EXPLORING",
+  ];
+  const displayCategory = imageSrc
+    ? showCategory === true
+    : showCategory !== false;
 
   return (
     <div
       className={cn(
         "relative flex items-end overflow-hidden rounded-lg bg-card",
-        !imageSrc && "bg-linear-to-br",
+        !imageSrc && "typographic-cover",
         !imageSrc && tones[post.coverTone],
         className,
       )}
@@ -51,7 +72,16 @@ export function PostCover({
           className="object-cover"
         />
       ) : (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,white_0%,transparent_45%)] opacity-20" />
+        <div className="cover-typesetting" aria-hidden="true">
+          <span className="cover-edition">
+            THE JOURNAL <span>/{post.category}</span>
+          </span>
+          <span className="cover-word">{coverWord}</span>
+          <span className="cover-caption">
+            {coverCaption}
+            <span>↗</span>
+          </span>
+        </div>
       )}
       {displayCategory && (
         <span className="relative z-10 m-4 rounded-md bg-background/85 px-2 py-1 text-xs font-medium text-foreground">

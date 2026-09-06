@@ -7,14 +7,14 @@ import {
   DEFAULT_SETTINGS,
   type SiteSettings,
 } from "@/lib/settings";
+import { rejectStudioMutation } from "@/lib/studio-access";
 
 export const dynamic = "force-dynamic";
 
 /** Persists dashboard settings to content/settings.json. Dev-only, like post saves. */
 export async function POST(req: Request) {
-  if (process.env.NODE_ENV !== "development") {
-    return Response.json({ error: "Settings can only be saved in development" }, { status: 403 });
-  }
+  const rejection = rejectStudioMutation();
+  if (rejection) return rejection;
 
   const body = (await req.json()) as Partial<SiteSettings>;
 

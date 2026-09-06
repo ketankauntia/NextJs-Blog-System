@@ -73,7 +73,7 @@ export function loadPostRows(): PostRow[] {
       return {
         slug,
         title: (data.title as string) ?? slug,
-        category: (data.category as string) ?? "—",
+        category: (data.category as string) ?? "Not set",
         author: (data.author as string) ?? DEFAULT_AUTHOR_SLUG,
         authorName: getAuthor((data.author as string) ?? DEFAULT_AUTHOR_SLUG).name,
         status,

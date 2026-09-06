@@ -11,7 +11,7 @@ export function PostBody({ sections }: { sections: PostSection[] }) {
           {section.heading && (
             <h2
               id={section.id}
-              className="scroll-mt-24 font-heading text-2xl font-semibold tracking-tight"
+              className="scroll-mt-24 font-heading text-2xl font-semibold leading-tight tracking-[-0.025em] sm:text-3xl"
             >
               {section.heading}
             </h2>
@@ -31,7 +31,7 @@ function Block({ block }: { block: PostBlock }) {
   switch (block.type) {
     case "paragraph":
       return (
-        <p className="leading-relaxed text-foreground/90">
+        <p className="text-[1.035rem] leading-8 text-foreground/88">
           <Inline text={block.text} />
         </p>
       );
@@ -107,18 +107,18 @@ function Block({ block }: { block: PostBlock }) {
     }
     case "quote":
       return (
-        <blockquote className="border-l-2 border-primary pl-4 italic text-muted-foreground">
+        <blockquote className="rounded-r-xl border-l-2 border-primary bg-muted/35 py-4 pl-5 pr-4 text-lg italic leading-8 text-muted-foreground">
           <p>
             &ldquo;
             <Inline text={block.text} />
             &rdquo;
           </p>
-          {block.attribution && <footer className="mt-1 text-sm not-italic">— {block.attribution}</footer>}
+          {block.attribution && <footer className="mt-2 text-sm not-italic">{block.attribution}</footer>}
         </blockquote>
       );
     case "callout":
       return (
-        <div className="rounded-lg border border-primary/25 bg-primary/5 p-4">
+        <div className="rounded-xl border border-primary/25 bg-primary/5 p-5">
           <p className="mb-1 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
             <IconInfoCircle className="size-4" />
             {block.title}
@@ -130,7 +130,7 @@ function Block({ block }: { block: PostBlock }) {
       );
     case "code":
       return (
-        <pre className="overflow-x-auto rounded-lg border bg-muted p-4 font-mono text-sm">
+        <pre className="overflow-x-auto rounded-xl border bg-foreground p-5 font-mono text-sm text-background shadow-sm">
           <code>{block.code}</code>
         </pre>
       );

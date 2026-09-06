@@ -60,7 +60,7 @@ const EMPTY_FILTERS: Filters = {
   noindexOnly: false,
 };
 
-export function DashboardClient({ rows }: { rows: PostRow[] }) {
+export function DashboardClient({ rows, readOnly = false }: { rows: PostRow[]; readOnly?: boolean }) {
   const [rawQuery, setRawQuery] = useState("");
   const query = useDebounced(rawQuery, 250);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
@@ -124,12 +124,15 @@ export function DashboardClient({ rows }: { rows: PostRow[] }) {
   }, [rows]);
 
   return (
-    <main className="mx-auto w-full max-w-shell flex-1 px-4 py-10 sm:px-6">
+    <main id="main-content" className="mx-auto w-full max-w-shell flex-1 px-4 py-10 sm:px-6 sm:py-14">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-heading text-3xl font-bold tracking-tight">Content Dashboard</h1>
+          <p className="font-mono text-[0.68rem] tracking-[0.16em] text-primary">
+            {readOnly ? "PUBLIC PRODUCT TOUR" : "LOCAL AUTHORING STUDIO"}
+          </p>
+          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Content dashboard</h1>
           <p className="mt-1 text-muted-foreground">
-            Every post at a glance — status, freshness, and SEO health.
+            Every post at a glance, including status, freshness, and SEO health.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -145,17 +148,17 @@ export function DashboardClient({ rows }: { rows: PostRow[] }) {
               Settings
             </Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="button-ink h-10 px-4">
             <Link href="/dashboard/editor">
               <IconPencilPlus className="size-4" />
-              New post
+              {readOnly ? "Explore editor" : "New post"}
             </Link>
           </Button>
         </div>
       </div>
 
       {/* Stat tiles */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <StatTile label="Total posts" value={stats.total} />
         <StatTile label="Published" value={stats.published} tone="text-success" />
         <StatTile label="Drafts" value={stats.drafts} tone="text-muted-foreground" />
@@ -190,7 +193,7 @@ export function DashboardClient({ rows }: { rows: PostRow[] }) {
       </div>
 
       {/* Table */}
-      <div className="mt-4 overflow-x-auto rounded-xl border">
+      <div className="mt-4 overflow-x-auto rounded-2xl border bg-card shadow-sm">
         <table className="w-full min-w-230 text-sm">
           <thead className="border-b bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
@@ -212,9 +215,9 @@ export function DashboardClient({ rows }: { rows: PostRow[] }) {
                   {(current - 1) * PER_PAGE + i + 1}
                 </td>
                 <td className="max-w-xs px-4 py-3">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-start gap-1.5">
                     {r.featured && <IconStarFilled className="size-3.5 shrink-0 text-warning" aria-label="Featured" />}
-                    <span className="truncate font-medium">{r.title}</span>
+                    <Link href={`/dashboard/editor?slug=${r.slug}`} className="font-medium leading-6 hover:text-primary">{r.title}</Link>
                   </div>
                   <div className="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
                     <span className="truncate">/{r.slug}</span>
@@ -237,13 +240,13 @@ export function DashboardClient({ rows }: { rows: PostRow[] }) {
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex items-center justify-end gap-2">
-                    <Button size="sm" asChild>
+                    <Button variant="ghost" size="sm" asChild>
                       <Link href={`/dashboard/editor?slug=${r.slug}`}>
                         <IconEdit className="size-4" />
-                        Edit
+                        {readOnly ? "Explore" : "Edit"}
                       </Link>
                     </Button>
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="ghost" size="sm" asChild>
                       <Link href={`/blog/post/${r.slug}`} target="_blank">
                         <IconArrowUpRight className="size-4" />
                         Preview

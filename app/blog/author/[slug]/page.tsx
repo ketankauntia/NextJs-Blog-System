@@ -61,14 +61,14 @@ export default async function AuthorPage({
   });
 
   return (
-    <main className="mx-auto w-full max-w-shell flex-1 px-4 py-10 sm:px-6">
+    <main id="main-content" className="mx-auto w-full max-w-shell flex-1 px-4 py-12 sm:px-6 sm:py-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd }} />
       <PostBreadcrumbs trail={[{ label: "Blog", href: "/blog" }, { label: author.name }]} />
-      <div className="mx-auto mt-6 max-w-content">
+      <div className="mx-auto mt-7 max-w-content">
         <AuthorCard author={author} />
       </div>
-      <section aria-label={`Articles by ${author.name}`} className="mt-10">
-        <h2 className="mb-4 font-heading text-2xl font-semibold tracking-tight">
+      <section aria-label={`Articles by ${author.name}`} className="mt-14 border-t pt-10">
+        <h2 className="mb-6 font-heading text-2xl font-semibold tracking-tight">
           Articles by {author.name} ({posts.length})
         </h2>
         <PostGrid posts={posts} />

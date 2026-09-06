@@ -26,6 +26,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [
     { url: absoluteUrl("/"), lastModified: newest, changeFrequency: "daily", priority: 1 },
     { url: absoluteUrl("/blog"), lastModified: newest, changeFrequency: "daily", priority: 0.9 },
+    { url: absoluteUrl("/docs"), lastModified: newest, changeFrequency: "monthly", priority: 0.8 },
+    { url: absoluteUrl("/docs/agent-setup"), lastModified: newest, changeFrequency: "monthly", priority: 0.7 },
   ];
 
   // Paginated archive pages 2..N (page 1 is /blog and is already listed).

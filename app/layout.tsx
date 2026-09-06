@@ -8,7 +8,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — markdown in, fast pages out`,
+    default: `${siteConfig.name} | Markdown in, complete publishing out`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -48,7 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const { fontPairing } = getSettings();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body data-font={fontPairing} className={`${fontVariables} antialiased`}>
         <ThemeProvider
           attribute="class"

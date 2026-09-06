@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { loadPostRows } from "@/lib/blog/dashboard";
+import { canMutateStudio } from "@/lib/studio-access";
 
 export const metadata: Metadata = {
   title: "Studio",
@@ -9,9 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardPage() {
-  if (process.env.NODE_ENV === "production") {
-    notFound();
-  }
-
-  return <DashboardClient rows={loadPostRows()} />;
+  return <DashboardClient rows={loadPostRows()} readOnly={!canMutateStudio()} />;
 }
