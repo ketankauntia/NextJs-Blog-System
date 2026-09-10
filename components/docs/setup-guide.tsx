@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { IconArrowDown, IconArrowRight, IconCloud, IconFolder, IconTransfer, IconArchive, IconDeviceLaptop, IconLock, IconServer } from "@tabler/icons-react";
+import { IconArrowDown, IconArrowRight, IconCloud, IconFolder, IconTransfer, IconArchive, IconDeviceLaptop, IconLock, IconServer, IconX } from "@tabler/icons-react";
 import { SiGithub, SiSupabase, SiCloudflare, SiVercel } from "@icons-pack/react-simple-icons";
 import { AgentSetupActions } from "@/components/docs/agent-setup-actions";
-import { createPublishingSetup, defaultPublishingSetup, serializePublishingSetup, type ContentDestination, type PublishingMode, type HostingTarget, type PublishingSetup, type InstallationTarget, type ExistingContent } from "@/lib/publishing/config";
+import { createPublishingSetup, serializePublishingSetup, type ContentDestination, type PublishingMode, type HostingTarget, type PublishingSetup, type ExistingContent } from "@/lib/publishing/config";
 import { ProviderOption } from "@/components/publishing/provider-option";
 import { getSetupGuide } from "@/lib/publishing/guide";
 
@@ -13,11 +13,11 @@ import { getSetupGuide } from "@/lib/publishing/guide";
 const inputClass = "w-full rounded-md border bg-background px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function SetupGuide() {
-  const [installation, setInstallation] = useState<InstallationTarget>("fresh");
+  const installation = "existing";
+  const [showFreshNotice, setShowFreshNotice] = useState(false);
   const [mode, setMode] = useState<PublishingMode>("local");
   const [remoteDestination, setRemoteDestination] = useState<ContentDestination>("github");
-  const [hosting, setHosting] = useState<HostingTarget>("vercel");
-  const [name, setName] = useState(defaultPublishingSetup.projectName ?? "");
+  const [hosting, setHosting] = useState<HostingTarget>("existing");
   const [contentPath, setContentPath] = useState("content");
   const [blogRoute, setBlogRoute] = useState("/blog");
   const [existingContent, setExistingContent] = useState<ExistingContent>("keep");
@@ -29,7 +29,7 @@ export function SetupGuide() {
   const destination = local ? "github" : remoteDestination;
   const assets = local ? "repository" : destination === "r2" || useR2 ? "r2" : "repository";
   const existing = installation === "existing";
-  const selection = { installation, projectName: existing ? null : name, mode, destination, hosting, contentPath, blogRoute, existingContent: existing ? existingContent : null, loginRoute, assets } as const;
+  const selection = { installation, projectName: null, mode, destination, hosting, contentPath, blogRoute, existingContent, loginRoute, assets } as const;
 
   function clearFeedback() { setNotice(""); setError(""); }
 
@@ -68,14 +68,11 @@ export function SetupGuide() {
           <fieldset>
             <legend className="mb-3 text-sm font-semibold">Where are you adding your blog?</legend>
             <div className="grid gap-2 sm:grid-cols-2">
-              <ProviderOption name="installation" value="fresh" label="Fresh project" description="Start a new website from the starter." selected={!existing} icon={<IconDeviceLaptop className="size-4" />} onSelect={() => { setInstallation("fresh"); if (existing) setHosting("vercel"); clearFeedback(); }} />
-              <ProviderOption name="installation" value="existing" label="Existing website" description="Add a blog to your app. Keep its identity and setup." selected={existing} icon={<IconServer className="size-4" />} onSelect={() => { setInstallation("existing"); if (!existing) setHosting("existing"); clearFeedback(); }} />
+              <ProviderOption name="installation" value="fresh" label="Fresh project" description="Create your Next.js app first." selected={false} disabled disabledReason="Unavailable" icon={<IconDeviceLaptop className="size-4" />} onSelect={() => {}} onDisabledSelect={() => setShowFreshNotice(true)} />
+              <ProviderOption name="installation" value="existing" label="Existing website" description="Add a blog to your app. Keep its identity and setup." selected icon={<IconServer className="size-4" />} onSelect={() => {}} />
             </div>
           </fieldset>
-          {!existing ? <div className="sm:max-w-sm">
-            <label htmlFor="project-name" className="mb-2 block text-sm font-semibold">Project name</label>
-            <input id="project-name" name="projectName" value={name} required maxLength={80} onChange={event => { setName(event.target.value); clearFeedback(); }} className={inputClass} />
-          </div> : <p className="text-sm leading-7 text-muted-foreground">Your site keeps its name, branding and current setup.</p>}
+          <p className="text-sm leading-7 text-muted-foreground">Your site keeps its name, branding and current setup.</p>
 
           <fieldset>
             <legend className="mb-3 text-sm font-semibold">How would you like to write?</legend>
@@ -187,6 +184,14 @@ export function SetupGuide() {
           <Link href="/dashboard/editor" className="mt-8 inline-flex min-h-11 items-center gap-2 rounded text-sm font-medium outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring">Explore the editor<IconArrowRight className="size-4" aria-hidden /></Link>
         </section>
       </>}
+      {showFreshNotice && <div className="fixed bottom-5 right-5 z-50 flex w-[calc(100%-2.5rem)] max-w-sm items-start gap-3 rounded-lg border bg-popover p-4 text-popover-foreground shadow-lg">
+        <div role="status" className="min-w-0 flex-1 text-sm leading-6">
+          <p>The least you can do is create a Next.js app ;)</p>
+          <code className="mt-2 block select-all break-words font-mono text-xs">npx create-next-app@latest</code>
+          <p className="mt-2 text-xs text-muted-foreground">Then come back and add your blog.</p>
+        </div>
+        <button type="button" aria-label="Dismiss notification" onClick={() => setShowFreshNotice(false)} className="flex size-8 shrink-0 items-center justify-center rounded hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><IconX className="size-4" aria-hidden /></button>
+      </div>}
     </section>
   );
 }

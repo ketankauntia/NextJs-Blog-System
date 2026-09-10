@@ -5,12 +5,16 @@ import { IconCheck } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 
 export function ProviderOption({ name, value, label, description, selected, disabled = false, disabledReason,
-  icon, onSelect }: { name: string; value: string; label: string; description: string; selected: boolean;
-  disabled?: boolean; disabledReason?: string; icon: ReactNode; onSelect: () => void }) {
+  icon, onSelect, onDisabledSelect }: { name: string; value: string; label: string; description: string; selected: boolean;
+  disabled?: boolean; disabledReason?: string; icon: ReactNode; onSelect: () => void; onDisabledSelect?: () => void }) {
   const hintId = useId();
   return (
     <label className={cn("group relative block", disabled ? "cursor-not-allowed" : "cursor-pointer")}
       tabIndex={disabled ? 0 : undefined} aria-disabled={disabled || undefined}
+      onClick={disabled && onDisabledSelect ? onDisabledSelect : undefined}
+      onKeyDown={disabled && onDisabledSelect ? event => {
+        if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onDisabledSelect(); }
+      } : undefined}
       aria-describedby={disabled ? hintId : undefined} title={disabled ? disabledReason : undefined}>
       <input type="radio" className="peer sr-only" name={name} value={value} disabled={disabled}
         checked={selected} onChange={onSelect} />
