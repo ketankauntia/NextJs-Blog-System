@@ -1,10 +1,5 @@
-# Resume here
+# Project context
 
-Updated 2026-09-10. This folder is the current handoff, superseding conflicting historical status and port notes in docs/REVAMP_CONTEXT.md. Architecture documents describe targets unless explicitly marked implemented here.
+Read [current implementation](CURRENT_STATE.md), [next steps](NEXT_STEPS.md), and [local development](LOCAL_DEVELOPMENT.md) before changing the publishing system. Follow the root AGENTS.md, [design system](../DESIGN_SYSTEM.md), and [publishing setup](../publishing/README.md).
 
-1. Read [current state](CURRENT_STATE.md).
-2. Read [decisions and next steps](NEXT_STEPS.md).
-3. Follow [local run and validation](LOCAL_DEVELOPMENT.md).
-4. Read root AGENTS.md, docs/DESIGN_SYSTEM.md and relevant docs/publishing documents before code changes.
-
-Update these files after meaningful work. Preserve historical design notes in docs/REVAMP_CONTEXT.md. Keep private business research, customer information and credentials outside the public repository.
+Keep these documents focused on reusable OSS behavior and verified limitations. Keep maintainer account details, private business plans, customer information, credentials and internal work logs outside this repository.

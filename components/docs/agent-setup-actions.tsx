@@ -1,75 +1,59 @@
 "use client";
 
 import { useState } from "react";
-import { IconCheck, IconCopy, IconExternalLink } from "@tabler/icons-react";
+import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { Button } from "@/components/blog-ui/button";
-import { buildAgentSetupPrompt } from "@/lib/agent-setup";
+import { buildAgentSetupPrompt, buildAgentSetupLinkPrompt } from "@/lib/agent-setup";
 import { createPublishingSetup, type SetupInput } from "@/lib/publishing/config";
 import { productConfig } from "@/lib/product";
 
-type SetupChoice = SetupInput;
-
-export function AgentSetupActions({ selection, compact = false }: { selection?: SetupChoice; compact?: boolean }) {
+export function AgentSetupActions({ selection, compact = false }: { selection?: SetupInput; compact?: boolean }) {
   const [status, setStatus] = useState("");
-  const [visiblePrompt, setVisiblePrompt] = useState("");
-  const [setupLink, setSetupLink] = useState("");
+  const [fallback, setFallback] = useState("");
+  const [copied, setCopied] = useState(false);
 
-  async function copyLink() {
-    try {
-      const url = new URL(productConfig.routes.agentSetup, window.location.origin);
-      if (selection) url.searchParams.set("setup", JSON.stringify(createPublishingSetup(selection)));
-      setSetupLink(url.href);
-      try {
-        await navigator.clipboard.writeText(url.href);
-        setStatus("Setup link copied. Ask your agent to read it and follow the instructions. A localhost link works only for an agent with access to this computer; otherwise copy the full prompt.");
-      } catch {
-        setStatus("Clipboard unavailable. Select and copy the setup link below.");
-      }
-    } catch (error) { setStatus(error instanceof Error ? error.message : "Check your setup choices."); }
-  }
-
-  function getPrompt() {
-    return buildAgentSetupPrompt(selection ? createPublishingSetup(selection) : undefined);
-  }
-
-  async function copyPrompt() {
+  async function copyPrompt(full = false) {
     let prompt: string;
-    try { prompt = getPrompt(); }
-    catch (error) { setStatus(error instanceof Error ? error.message : "Check your setup choices."); return; }
+    try {
+      const setup = selection ? createPublishingSetup(selection) : undefined;
+      const url = new URL(productConfig.routes.agentSetup, window.location.origin);
+      if (setup) url.searchParams.set("setup", JSON.stringify(setup));
+      prompt = full ? buildAgentSetupPrompt(setup) : buildAgentSetupLinkPrompt(url.href);
+    } catch (error) {
+      setCopied(false);
+      setStatus(error instanceof Error ? error.message : "Check your setup choices.");
+      return;
+    }
     try {
       await navigator.clipboard.writeText(prompt);
-      setStatus("Complete setup instructions copied. Paste them into your coding agent.");
+      setCopied(true);
+      setFallback("");
+      setStatus("Copied. Paste it into your coding agent in the project you want to set up.");
     } catch {
-      setVisiblePrompt(prompt);
-      setStatus("Clipboard unavailable. Select and copy the complete instructions below.");
+      setCopied(false);
+      setFallback(prompt);
+      setStatus("Select and copy the prompt below.");
     }
   }
 
-  function showPrompt() {
-    try { setVisiblePrompt(getPrompt()); setStatus(""); }
-    catch (error) { setStatus(error instanceof Error ? error.message : "Check your setup choices."); }
-  }
-
   return (
-    <div className={compact ? "w-full" : undefined}>
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" variant={compact ? "outline" : "default"} onClick={copyLink}><IconCopy className="size-4" aria-hidden />Copy setup link</Button>
-        <Button type="button" variant={compact ? "outline" : "default"} onClick={copyPrompt}>
-          {status.startsWith("Complete") ? <IconCheck className="size-4" aria-hidden /> : <IconCopy className="size-4" aria-hidden />}
-          Copy full prompt
-        </Button>
-        <Button type="button" variant="ghost" onClick={showPrompt}>View instructions</Button>
-        {!compact && <Button variant="outline" asChild><a href={productConfig.routes.agentSetup} target="_blank" rel="noreferrer">Raw contract<IconExternalLink className="size-4" aria-hidden /></a></Button>}
-      </div>
-      <p className="mt-3 text-xs leading-relaxed text-muted-foreground" role="status" aria-live="polite">
-        {status || "The link includes your choices. Use the full prompt if your agent cannot open this website. Provider sign-in and your go-ahead come first."}
-      </p>
-      {setupLink && <label className="mt-4 block text-xs font-medium">Agent setup link<input readOnly value={setupLink} onFocus={event => event.currentTarget.select()} className="mt-2 w-full rounded-lg border bg-background p-3 text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring" /></label>}
-      {visiblePrompt && <label className="mt-4 block text-xs font-medium">
-        Complete agent instructions
-        <textarea readOnly value={visiblePrompt} rows={10} onFocus={(event) => event.currentTarget.select()}
-          className="mt-2 w-full rounded-lg border bg-background p-3 font-mono text-xs leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+    <div className="w-full">
+      <Button type="button" variant={compact ? "outline" : "default"} onClick={() => copyPrompt()}>
+        {copied ? <IconCheck className="size-4" aria-hidden /> : <IconCopy className="size-4" aria-hidden />}
+        Copy setup prompt
+      </Button>
+      <p role="status" aria-live="polite" className="mt-3 text-xs leading-relaxed text-muted-foreground">{status}</p>
+      {fallback && <label className="mt-3 block text-xs font-medium">Setup prompt
+        <textarea readOnly value={fallback} rows={5} onFocus={event => event.currentTarget.select()} className="mt-2 w-full rounded-lg border bg-background p-3 text-xs leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring" />
       </label>}
+      <details className="mt-3 text-xs text-muted-foreground">
+        <summary className="w-fit cursor-pointer rounded outline-none focus-visible:ring-2 focus-visible:ring-ring">Agent cannot open the link?</summary>
+        <p className="mt-3 max-w-xl leading-6">A localhost link is only reachable from your computer. Copy the full instructions if your agent cannot access the website, then paste them into the same conversation.</p>
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          <Button type="button" size="sm" variant="outline" onClick={() => copyPrompt(true)}>Copy full instructions</Button>
+          <a href={productConfig.routes.agentGuide} className="rounded underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring">Read the setup guide</a>
+        </div>
+      </details>
     </div>
   );
 }

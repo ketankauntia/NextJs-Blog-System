@@ -22,7 +22,11 @@ A repository-native publishing system built for the Next.js App Router. Content 
 - Next.js App Router when integrating into an existing application
 - A Git branch or clean rollback point before integration
 
-## Quick start
+## Automatic setup with an AI agent
+
+Open /docs and copy the setup prompt. It includes this website's absolute /agent-setup.md URL. Paste it into your coding agent in the target project; the agent reads the full instructions, inspects the repository, asks for required access and confirmation, then installs and validates. It asks about blockers and decisions it cannot infer. If it cannot access the URL, use the collapsed full-instructions fallback on /docs.
+
+## Manual quick start
 
 \`\`\`bash
 git clone ${productConfig.repositoryUrl}.git

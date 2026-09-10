@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   IconArrowRight,
-  IconBrandGithub,
   IconCheck,
   IconCode,
   IconExternalLink,
@@ -15,25 +14,26 @@ import {
 import { BlogSiteFooter } from "@/components/blog-site-footer";
 import { BlogSiteHeader } from "@/components/blog-site-header";
 import { Button } from "@/components/blog-ui/button";
-import { DocsActions } from "@/components/docs/docs-actions";
+import { AgentSetupActions } from "@/components/docs/agent-setup-actions";
 import { buildPageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
+import { productConfig } from "@/lib/product";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Documentation",
   description:
-    "Install, configure, write, and deploy the repository-native Next.js Blog System.",
+    `Install, configure, write, and deploy the repository-native ${productConfig.name}.`,
   path: "/docs",
 });
 
 const steps = [
   {
-    id: "get-started",
+    id: "clone-and-run",
     number: "01",
     icon: IconCode,
     title: "Clone and run",
     body: "Start with the complete application, including the public blog, local studio, content pipeline, and production metadata.",
-    code: `git clone https://github.com/ketankauntia/NextJs-Blog-System.git\ncd NextJs-Blog-System\nnpm install\nnpm run dev`,
+    code: `git clone ${productConfig.repositoryUrl}.git\ncd NextJs-Blog-System\nnpm install\nnpm run dev`,
   },
   {
     id: "configure",
@@ -88,11 +88,7 @@ export default function DocsPage() {
             <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
               Get the app running, make it your own, and publish your first post. Everything you need, from the first clone to your own domain.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild className="button-ink h-10 px-4"><a href="#get-started">Start the quick guide<IconArrowRight className="size-4" aria-hidden /></a></Button>
-              <Button variant="outline" asChild><a href={siteConfig.social.github} target="_blank" rel="noreferrer"><IconBrandGithub className="size-4" aria-hidden />View source</a></Button>
-            </div>
-            <div className="mt-6"><DocsActions /></div>
+
           </div>
         </header>
 
@@ -101,16 +97,31 @@ export default function DocsPage() {
             <nav aria-label="Documentation sections" className="sticky top-24 text-sm">
               <p className="font-semibold">On this page</p>
               <ul className="mt-4 space-y-3 border-l pl-4 text-muted-foreground">
+                <li><a href="#agent-setup" className="hover:text-foreground">Set up with AI</a></li>
+                <li><a href="#manual-setup" className="hover:text-foreground">Set up manually</a></li>
                 {steps.map((step) => <li key={step.id}><a href={`#${step.id}`} className="hover:text-foreground">{step.title}</a></li>)}
                 <li><a href="#architecture" className="hover:text-foreground">Architecture</a></li>
                 <li><a href="#studio" className="hover:text-foreground">Studio safety</a></li>
-                <li><a href="#agent-setup" className="hover:text-foreground">Install with AI</a></li>
+
                 <li><a href="#routes" className="hover:text-foreground">Generated routes</a></li>
               </ul>
             </nav>
           </aside>
 
-          <div className="min-w-0 max-w-4xl">
+          <div id="get-started" className="min-w-0 max-w-4xl scroll-mt-24">
+            <section id="agent-setup" className="scroll-mt-24 rounded-2xl border border-primary/25 bg-primary/5 p-6 sm:p-8" aria-labelledby="agent-setup-title">
+              <p className="font-mono text-xs tracking-[0.16em] text-primary">AUTOMATIC SETUP</p>
+              <h2 id="agent-setup-title" className="mt-3 font-heading text-2xl font-semibold tracking-tight sm:text-3xl">Set up with an AI agent</h2>
+              <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">Copy the prompt into your coding agent. It reads the setup guide, inspects your project, and handles installation and checks. If it needs access or runs into a decision, it asks you.</p>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">For connected providers, sign in and give the agent the go-ahead when prompted.</p>
+              <div className="mt-6"><AgentSetupActions /></div>
+            </section>
+
+            <div id="manual-setup" className="mb-6 mt-14 scroll-mt-24 border-t pt-10">
+              <p className="font-mono text-xs tracking-[0.16em] text-muted-foreground">MANUAL SETUP</p>
+              <h2 className="mt-3 font-heading text-2xl font-semibold tracking-tight">Prefer to do it yourself?</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">Follow the steps below to install, configure and publish.</p>
+            </div>
             <section aria-labelledby="before-title" className="rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
               <h2 id="before-title" className="font-heading text-2xl font-semibold tracking-tight">Before you begin</h2>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -177,30 +188,7 @@ export default function DocsPage() {
               </div>
             </section>
 
-            <section id="agent-setup" className="mt-20 scroll-mt-24 border-t pt-16" aria-labelledby="agent-setup-title">
-              <p className="font-mono text-xs tracking-[0.16em] text-primary">AGENT-READY INSTALLATION</p>
-              <h2 id="agent-setup-title" className="mt-3 font-heading text-3xl font-semibold tracking-tight">Give your coding agent one link.</h2>
-              <p className="mt-4 max-w-2xl leading-7 text-muted-foreground">
-                The setup contract tells an AI agent what to inspect, which questions to ask, how to choose an integration mode, which edge cases to protect, and which acceptance tests must pass. It supports an existing app, a monorepo, a fresh clone, or a content-engine-only integration.
-              </p>
-              <div className="mt-7 rounded-2xl border bg-card p-6 shadow-sm">
-                <ol className="grid gap-5 sm:grid-cols-3">
-                  {[
-                    ["1", "Copy the prompt", "It includes the absolute contract URL for your deployment."],
-                    ["2", "Paste it into your agent", "The agent inspects the repository before asking anything."],
-                    ["3", "Approve the plan", "It implements, validates, tests routes, and reviews the final diff."],
-                  ].map(([number, title, body]) => (
-                    <li key={number} className="text-sm"><span className="flex size-7 items-center justify-center rounded-full bg-primary/10 font-mono text-xs text-primary">{number}</span><h3 className="mt-3 font-semibold">{title}</h3><p className="mt-1 leading-6 text-muted-foreground">{body}</p></li>
-                  ))}
-                </ol>
-                <div className="mt-6 flex flex-wrap gap-3 border-t pt-5">
-                  <Button asChild><Link href="/docs/agent-setup">Open guided setup<IconArrowRight className="size-4" /></Link></Button>
-                  <Button variant="outline" asChild><a href="/agent-setup.md" target="_blank" rel="noreferrer">View agent contract<IconExternalLink className="size-4" /></a></Button>
-                </div>
-              </div>
-            </section>
-
-            <section id="routes" className="mt-20 scroll-mt-24 border-t pt-16" aria-labelledby="routes-title">
+<section id="routes" className="mt-20 scroll-mt-24 border-t pt-16" aria-labelledby="routes-title">
               <p className="font-mono text-xs tracking-[0.16em] text-primary">PUBLIC OUTPUT</p>
               <h2 id="routes-title" className="mt-3 font-heading text-3xl font-semibold tracking-tight">Routes you can inspect right now.</h2>
               <div className="mt-7 overflow-hidden rounded-2xl border bg-card">

@@ -128,7 +128,7 @@ export function PublishingSetupPanel() {
 
           <div className="border-t pt-6">
             <h2 className="text-sm font-semibold">Let your coding agent set it up</h2>
-            <p className="mb-4 mt-2 text-sm leading-relaxed text-muted-foreground">Copy the setup link or full prompt. Your agent first asks you to sign in to the required provider accounts and confirm it can proceed, then handles the available setup steps. You never paste passwords or tokens here.</p>
+            <p className="mb-4 mt-2 text-sm leading-relaxed text-muted-foreground">Copy the setup prompt and paste it into your coding agent. Your agent first asks you to sign in to the required provider accounts and confirm it can proceed, then handles the available setup steps. You never paste passwords or tokens here.</p>
             <AgentSetupActions key={JSON.stringify(selection)} compact selection={selection} />
           </div>
           <p className="text-xs leading-relaxed text-muted-foreground">Local and login-based self-hosting are the open-source scope. Managed hosting, OAuth, audit logs and advanced team features are for later.</p>

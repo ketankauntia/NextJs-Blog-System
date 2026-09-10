@@ -89,7 +89,6 @@ export default function AgentSetupPage() {
             <ul className="rounded-2xl border bg-card p-6 shadow-sm">{acceptance.map((item) => <li key={item} className="flex gap-3 border-b py-4 first:pt-0 last:border-0 last:pb-0"><IconCheck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden /><span className="text-sm leading-6">{item}</span></li>)}</ul>
           </section>
 
-          <section className="mt-20 rounded-2xl bg-muted/55 p-7 sm:p-9"><h2 className="font-heading text-2xl font-semibold">Ready to integrate?</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Copy the prompt, open your coding agent in the target repository, and paste it. The contract handles the discovery and question sequence.</p><div className="mt-6"><AgentSetupActions /></div></section>
         </div>
       </main>
       <BlogSiteFooter />

@@ -1,17 +1,9 @@
-# Decisions and continuation
+# Next steps
 
-Updated 2026-09-10. Supersedes earlier managed/R2-only and team-RBAC-first plans.
+The open-source scope is one publication per installation: local repository authoring first, then email/password self-hosting with GitHub or Supabase Storage content and optional R2 uploads.
 
-Build the single-project open-source basics first:
+Remote runtime work still needs owner-bound Supabase sessions, server-protected Studio reads/writes, durable storage adapters and public publication readers. Verify expired/foreign sessions, unauthorized reads/writes, draft privacy, concurrent edits and persisted provider writes before enabling hosted editing. Never use ephemeral production filesystem writes for durable content.
 
-1. Local writing in the customer's repository with a chosen data folder. No database or login required.
-2. Login-based self-hosting, email/password at `/login` or the chosen route. Supabase Auth handles individual accounts; content may stay in GitHub or Supabase Storage. R2 is optional for uploads.
-3. Managed hosting and OAuth remain Coming soon. Audit logs, advanced team roles, workspaces, billing and other operations are later work.
+Keep Managed and OAuth disabled. Do not make billing, audit logs, workspaces or advanced roles prerequisites for basic setup.
 
-The setup UI, config and agent contract implement these choices. Remote runtime adapters and actual login are still missing. The next implementation is verified owner-bound Supabase sessions and a protected Studio, then GitHub and Supabase Storage persistence/public readers, then optional R2 upload delivery. Do not expose the local development writer in production or treat an auth page alone as a working CMS.
-
-Test unauthorized reads/writes, expired sessions, foreign users, draft privacy, concurrent edits and durable provider writes. Prove the actual deployed publication result before claiming remote publishing works. Avoid imposing the older multi-tenant schema and enterprise operations on a basic install.
-
-The agent must ask customers to sign in to required providers and give explicit go-ahead before private account access or provisioning. Verify their chosen account/resources and keep secrets out of prompts and publishing.json. Complete independent local work while waiting; report missing tools/access accurately. The platform maintainer's identity is not a customer's identity.
-
-For maintainer provider work only, the prior intended account is ketankauntia26@gmail.com; verify it and the intended project before access. No provider access was needed or performed for the current UI/configuration work.
+The installation agent must ask for required provider sign-in and explicit go-ahead before private provider access or provisioning, then verify the customer's selected account/resources. Keep secrets in secure environment storage and report genuine blockers. The platform maintainer's account is never a default customer account.

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import {
-  IconArrowUpRight,
-  IconBrandGithub,
   IconRss,
 } from "@tabler/icons-react";
 import { siteConfig } from "@/lib/site";
 import { isStudioVisible } from "@/lib/studio-access";
+import { ProductCredit } from "@/components/product-credit";
+import { productConfig } from "@/lib/product";
 
 const columns = [
   {
@@ -41,24 +41,14 @@ export function BlogSiteFooter() {
               className="inline-flex items-center gap-2.5 font-heading font-semibold"
             >
               <span className="brand-glyph" aria-hidden>
-                N
+                {productConfig.glyph}
               </span>
-              Next.js Blog System
+              {productConfig.name}
             </Link>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
               Great writing, native to Next.js. A complete publishing system,
               built around content you own.
             </p>
-            <a
-              href={siteConfig.social.github}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-5 inline-flex items-center gap-2 text-sm font-medium hover:text-primary"
-            >
-              <IconBrandGithub className="size-4" aria-hidden />
-              View source
-              <IconArrowUpRight className="size-3.5" aria-hidden />
-            </a>
           </div>
 
           {columns.map((column) => (
@@ -140,7 +130,10 @@ export function BlogSiteFooter() {
           <p>
             © {new Date().getFullYear()} {siteConfig.name}. MIT licensed.
           </p>
-          <p>Built with Next.js, React, Tailwind CSS, and shadcn/ui.</p>
+          <div className="flex flex-col gap-1 sm:items-end">
+            <ProductCredit />
+            <p>Built with Next.js, React, Tailwind CSS, and shadcn/ui.</p>
+          </div>
         </div>
       </div>
     </footer>

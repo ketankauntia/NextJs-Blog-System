@@ -1,6 +1,6 @@
 # Basic OSS setup and agent installation
 
-Updated 2026-09-10. This supersedes earlier onboarding/provider decisions in the architecture documents in this folder. Those documents are future/historical plans, not shipped capabilities.
+Updated 2026-09-10. This describes the basic open-source setup and its current limitations.
 
 | Mode | Blog data | Authentication | Status |
 | --- | --- | --- | --- |
@@ -18,8 +18,8 @@ Without publishing.json the app retains its current `content` directory. Configu
 
 ## Agent setup
 
-The user can copy a personalized link to `/agent-setup.md?setup=...`, or the full self-contained prompt. Links contain validated, non-secret choices. On localhost an external agent may not be able to fetch the URL; use the full prompt instead. Once this website is deployed, links use its actual origin automatically.
+The user copies a short setup prompt containing the `/agent-setup.md` link. The setup page adds validated non-secret choices via `?setup=...`. On localhost an external agent may not be able to fetch the URL; a collapsed fallback supplies the full instructions. Once this website is deployed, links use its actual origin automatically.
 
 The agent first asks the user to sign in to their selected provider accounts and confirm it may proceed. It verifies the account/project, then performs authorized setup and validation autonomously. Local writing needs no provider. GitHub remote content requires GitHub plus Supabase Auth; Supabase Storage requires Supabase; R2 additionally requires Cloudflare. Credentials stay in secure environment/secret storage, never links or prompts.
 
-See [agent automation](AGENT_AUTOMATION.md) and [current state](../context/CURRENT_STATE.md) for honest runtime limitations. Existing database and authorization scaffolding is preserved but does not constitute connected authentication or storage.
+See [agent automation](AGENT_AUTOMATION.md) and [current state](../context/CURRENT_STATE.md) for honest runtime limitations. Connected authentication and remote storage are not implemented yet.

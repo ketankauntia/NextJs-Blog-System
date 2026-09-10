@@ -1,4 +1,4 @@
-/** Platform identity, links and commercial display values. Never customer canonicals. */
+/** Platform identity and public integration options. Never customer canonicals. */
 export const productConfig = {
   name: "Next.js Blog System",
   shortName: "Next.js Blog",
@@ -31,13 +31,5 @@ export const productConfig = {
   branding: {
     creditPrefix: "Powered by",
     linkRel: "nofollow",
-    removal: { amountCents: 1000, currency: "USD", interval: "one-time", scope: "project" },
   },
 } as const;
-
-export function brandingRemovalPrice(): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency", currency: productConfig.branding.removal.currency,
-    maximumFractionDigits: 0,
-  }).format(productConfig.branding.removal.amountCents / 100);
-}
