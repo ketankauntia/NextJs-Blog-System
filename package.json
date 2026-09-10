@@ -1,7 +1,7 @@
 {
   "name": "blog-system-next",
   "version": "0.1.0",
-  "private": false,
+  "private": true,
   "license": "MIT",
   "author": "Ketan",
   "description": "A repository-native, SEO-first publishing system for Next.js with a local authoring studio.",

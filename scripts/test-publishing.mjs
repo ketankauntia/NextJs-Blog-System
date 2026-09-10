@@ -7,6 +7,45 @@ test("default setup is local GitHub without a database", () => {
   assert.deepEqual(createPublishingSetup(defaultPublishingSetup), defaultPublishingSetup);
 });
 
+test("existing sites need no identity and preserve hosting by default; older links still work", () => {
+  const existing = { installation: "existing", mode: "local", destination: "github" };
+  for (const projectName of [undefined, null, "", "Old form name"]) {
+    const setup = createPublishingSetup({ ...existing, projectName });
+    assert.equal(setup.projectName, null);
+    assert.equal(setup.hosting, "existing");
+    assert.deepEqual(createPublishingSetup(JSON.parse(serializePublishingSetup(setup))), setup);
+  }
+  const legacy = { projectName: "Original", mode: "local", destination: "github" };
+  assert.equal(createPublishingSetup(legacy).installation, "fresh");
+  for (const projectName of [undefined, null, {}, 1]) assert.throws(() => createPublishingSetup({ ...legacy, projectName }), /project name/);
+  assert.throws(() => createPublishingSetup({ ...legacy, installation: "unknown" }));
+  assert.throws(() => createPublishingSetup({ ...legacy, hosting: "existing" }));
+});
+
+test("existing integration guides never prescribe cloning, renaming or npm-only scripts", () => {
+  for (const hosting of ["existing", "vercel", "self-hosted"]) {
+    for (const [mode, destination, assets] of [
+      ["local", "github", "repository"],
+      ["self-hosted", "github", "repository"],
+      ["self-hosted", "github", "r2"],
+      ["self-hosted", "supabase", "supabase"],
+      ["self-hosted", "supabase", "r2"],
+    ]) {
+      const setup = createPublishingSetup({ installation: "existing", mode, destination, assets, hosting, contentPath: "data/journal", loginRoute: "/staff/sign-in" });
+      const guide = getSetupGuide(setup);
+      const markdown = renderSetupGuideMarkdown(setup);
+      assert.doesNotMatch(markdown, /git clone|npm (install|run)|Update lib\/site.ts/);
+      assert.match(markdown, /duplicate slugs/);
+      assert.match(markdown, /hardcoded routes/);
+      assert.match(markdown, /Preserve the website's authentication/);
+      assert.match(markdown, /selected app root/);
+      assert.match(markdown, /actual scripts/);
+      assert.equal(guide.steps.some(step => step.title === "Keep your current deployment"), hosting === "existing");
+      for (const step of guide.steps) assert.ok(markdown.includes(step.body));
+    }
+  }
+});
+
 test("selected guides cover every supported content, asset and hosting combination", () => {
   for (const hosting of ["vercel", "self-hosted"]) {
     for (const [mode, destination, assets, accounts] of [

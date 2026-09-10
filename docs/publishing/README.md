@@ -12,6 +12,8 @@ R2 is an optional image/upload store for login-based setups. OAuth is disabled. 
 
 ## Local setup
 
+First choose Fresh project or Existing website. Only a fresh project needs a project name. Existing websites keep their identity and default to current hosting. The generated manual and agent guides inspect the target app and package manager, resolve route/auth/content conflicts, and preserve the host application's pages and deployment. In a monorepo, content paths are relative to the selected app root. Integration is currently from source; see [npm readiness](NPM_READINESS.md) for the package work required before release.
+
 Use `/docs#get-started`, select Local and enter a repository-relative content folder such as `content` or `data/blog`. Download `publishing.json` to the app root. Before selecting a new root for existing content, copy posts/settings into that folder without overwriting or deleting originals. The app reads posts at `<contentPath>/posts/*.md` and settings at `<contentPath>/settings.json`; public image paths remain unchanged. Restart the app and validate. Paths cannot escape the repository or traverse symlinks/public/code folders.
 
 Without publishing.json the app retains its current `content` directory. Configuration export does not modify or migrate files. Do not put a remote configuration in the app root until a working authenticated provider adapter has been implemented; it deliberately fails closed.

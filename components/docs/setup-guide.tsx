@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { IconArrowDown, IconArrowRight, IconBrandGithub, IconCloud, IconDatabase, IconDeviceLaptop, IconLock, IconServer } from "@tabler/icons-react";
 import { AgentSetupActions } from "@/components/docs/agent-setup-actions";
-import { createPublishingSetup, defaultPublishingSetup, serializePublishingSetup, type ContentDestination, type PublishingMode, type HostingTarget, type PublishingSetup } from "@/lib/publishing/config";
+import { createPublishingSetup, defaultPublishingSetup, serializePublishingSetup, type ContentDestination, type PublishingMode, type HostingTarget, type PublishingSetup, type InstallationTarget } from "@/lib/publishing/config";
 import { ProviderOption } from "@/components/publishing/provider-option";
 import { getSetupGuide } from "@/lib/publishing/guide";
 import { productConfig } from "@/lib/product";
@@ -12,10 +12,11 @@ import { productConfig } from "@/lib/product";
 const inputClass = "w-full rounded-lg border bg-background px-3.5 py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function SetupGuide() {
+  const [installation, setInstallation] = useState<InstallationTarget>("fresh");
   const [mode, setMode] = useState<PublishingMode>("local");
   const [remoteDestination, setRemoteDestination] = useState<ContentDestination>("github");
   const [hosting, setHosting] = useState<HostingTarget>("vercel");
-  const [name, setName] = useState(defaultPublishingSetup.projectName);
+  const [name, setName] = useState(defaultPublishingSetup.projectName ?? "");
   const [contentPath, setContentPath] = useState("content");
   const [loginRoute, setLoginRoute] = useState("/login");
   const [useR2, setUseR2] = useState(false);
@@ -24,7 +25,8 @@ export function SetupGuide() {
   const local = mode === "local";
   const destination = local ? "github" : remoteDestination;
   const assets = local ? "repository" : useR2 ? "r2" : destination === "github" ? "repository" : "supabase";
-  const selection = { projectName: name, mode, destination, hosting, contentPath, loginRoute, assets } as const;
+  const existing = installation === "existing";
+  const selection = { installation, projectName: existing ? null : name, mode, destination, hosting, contentPath, loginRoute, assets } as const;
 
   function clearFeedback() { setNotice(""); setError(""); }
 
@@ -60,10 +62,17 @@ export function SetupGuide() {
       </div>
       <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
         <div className="space-y-8 p-6 sm:p-8">
-          <div className="sm:max-w-sm">
+          <fieldset>
+            <legend className="mb-3 text-sm font-semibold">Where are you adding your blog?</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <ProviderOption name="installation" value="fresh" label="Fresh project" description="Start a new website from the starter." selected={!existing} icon={<IconDeviceLaptop className="size-5" />} onSelect={() => { setInstallation("fresh"); setHosting("vercel"); clearFeedback(); }} />
+              <ProviderOption name="installation" value="existing" label="Existing website" description="Add a blog to your app. Keep its identity and setup." selected={existing} icon={<IconServer className="size-5" />} onSelect={() => { setInstallation("existing"); setHosting("existing"); clearFeedback(); }} />
+            </div>
+          </fieldset>
+          {!existing ? <div className="sm:max-w-sm">
             <label htmlFor="project-name" className="mb-2 block text-sm font-semibold">Project name</label>
             <input id="project-name" name="projectName" value={name} required maxLength={80} onChange={event => { setName(event.target.value); clearFeedback(); }} className={inputClass} />
-          </div>
+          </div> : <p className="text-sm leading-7 text-muted-foreground">No new project name needed. Your agent checks the target app, existing routes, content and login before merging the blog. Keep your current branding, domain and package manager.</p>}
 
           <fieldset>
             <legend className="mb-3 text-sm font-semibold">How would you like to write?</legend>
@@ -108,12 +117,13 @@ export function SetupGuide() {
           <div>
             <label htmlFor="content-path" className="mb-2 block text-sm font-semibold">{destination === "supabase" ? "Content folder / storage prefix" : "Blog data folder in your repository"}</label>
             <input id="content-path" name="contentPath" value={contentPath} required maxLength={200} spellCheck={false} onChange={event => { setContentPath(event.target.value); clearFeedback(); }} aria-describedby="content-path-help" className={inputClass} placeholder="content" />
-            <p id="content-path-help" className="mt-2 text-xs leading-relaxed text-muted-foreground">For example, content or data/blog. Posts use &lt;folder&gt;/posts and settings use &lt;folder&gt;/settings.json. Public images keep their existing URLs.</p>
+            <p id="content-path-help" className="mt-2 text-xs leading-relaxed text-muted-foreground">For example, content or data/blog. Posts use &lt;folder&gt;/posts and settings use &lt;folder&gt;/settings.json. {destination === "supabase" ? "This is a prefix in your selected storage bucket." : "Paths are relative to the target app root, including in a monorepo."} Existing content must be checked before using this folder.</p>
           </div>
 
           <fieldset>
             <legend className="mb-3 text-sm font-semibold">Website hosting</legend>
             <div className="grid gap-3 sm:grid-cols-2">
+              {existing && <ProviderOption name="hosting" value="existing" label="Keep current hosting" description="Use your existing domain and deployment workflow." selected={hosting === "existing"} icon={<IconServer className="size-5" />} onSelect={() => { setHosting("existing"); clearFeedback(); }} />}
               {productConfig.providers.hosting.map(option => <ProviderOption key={option.value} name="hosting" {...option} selected={hosting === option.value} icon={option.value === "vercel" ? <IconCloud className="size-5" /> : <IconServer className="size-5" />} onSelect={() => { setHosting(option.value); clearFeedback(); }} />)}
             </div>
           </fieldset>
@@ -124,7 +134,7 @@ export function SetupGuide() {
       {setup && guide && <>
         <div className="mt-5 rounded-xl bg-muted/45 p-5" aria-live="polite">
           <p className="text-sm font-semibold">{guide.title}</p>
-          <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">{setup.contentPath}/posts · {local ? "No login" : `Login at ${setup.loginRoute}`} · {hosting === "vercel" ? "Vercel website" : "Your own server"}</p>
+          <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">{existing ? "Existing website" : setup.projectName} · {setup.contentPath}/posts · {local ? "No blog login" : `Login at ${setup.loginRoute}`} · {hosting === "existing" ? "Current hosting" : hosting === "vercel" ? "Vercel website" : "Your own server"}</p>
           {!local && <p className="mt-3 text-sm leading-6 text-muted-foreground">This path requires implementing and verifying authentication and storage adapters. The guide covers that work; selecting these options does not activate hosted editing.</p>}
         </div>
 

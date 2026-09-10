@@ -24,9 +24,9 @@ A repository-native publishing system built for the Next.js App Router. Content 
 
 ## Automatic setup with an AI agent
 
-Open /docs#get-started, choose your writing mode, content store, paths and hosting, then copy the setup prompt. It includes this website's absolute /agent-setup.md URL. The link contains the selected configuration and returns its matching plan. The manual guide below uses the same choices. Paste it into your coding agent in the target project; the agent reads the full instructions, inspects the repository, asks for required access and confirmation, then installs and validates. It asks about blockers and decisions it cannot infer. If it cannot access the URL, use the collapsed full-instructions fallback on /docs.
+Open /docs#get-started, choose Fresh project or Existing website, then your writing mode, content store, paths and hosting, then copy the setup prompt. It includes this website's absolute /agent-setup.md URL. The link contains the selected configuration and returns its matching plan. The manual guide below uses the same choices. Paste it into your coding agent in the target project; the agent reads the full instructions, inspects the repository, asks for required access and confirmation, then installs and validates. It asks about blockers and decisions it cannot infer. If it cannot access the URL, use the collapsed full-instructions fallback on /docs.
 
-## Manual quick start
+## Manual quick start for a fresh project
 
 \`\`\`bash
 git clone ${productConfig.repositoryUrl}.git
@@ -168,13 +168,13 @@ Determine these facts from files and commands first:
 
 ## Questions to ask when unanswered
 
-Ask the minimum relevant subset:
+The selected installation plan takes precedence over these generic alternatives. Existing website means integration: do not ask for a new project name or propose full replacement. Ask the minimum relevant subset:
 
 1. Should this be a full product replacement, a blog mounted inside the current app, or only the content engine and components?
 2. What route should own the publication if \`/blog\` is unavailable?
 3. Should existing posts be migrated, kept in their current CMS, or left untouched?
 4. Who authors content, and should production remain read-only or use a secured remote backend?
-5. What publication name, description, canonical domain, brand colors, fonts, logo, authors, and social links should be used?
+5. For a fresh project, what publication identity should be used? For an existing site, infer and preserve its identity, domain and branding; ask only about missing blog-specific metadata.
 6. Which features are required: Studio, search, RSS, llms.txt, Ask AI, newsletter UI, comments, analytics, or internationalization?
 7. Which deployment targets and package manager commands must the result support?
 8. Are there compliance, accessibility, privacy, or browser-support requirements beyond sensible defaults?
@@ -220,7 +220,12 @@ Install the parser, types, validation, and machine-readable outputs without repl
 - Dirty worktree: preserve changes and avoid broad rewrites.
 - Unsupported Next.js or Node.js: report the minimum upgrade and its migration risk before changing versions.
 - Multiple lockfiles: identify the actual workspace tool before installing.
-- Monorepo: scope commands and changes to the selected package.
+- Monorepo: locate the actual app root, resolve package-manager ownership from packageManager/lockfile/CI, and scope commands and content paths to that app. Ask which app if several qualify. Never create a second lockfile.
+- Existing installation: compare configuration and reuse compatible components; rerunning setup must not duplicate routes, resources, demo posts or users.
+- Existing auth: preserve sessions, cookies and middleware; Local mode adds no blog login and must not remove website authentication. A different auth provider requires a scoped integration decision before adding Supabase Auth.
+- Publication routes: the starter hardcodes its mounts. A different blog/Studio mount requires consistent code changes across links, handlers, feeds, sitemap and metadata; selecting a login route does not relocate them.
+- Static export or edge-only hosting: inspect runtime requirements first and ask about incompatible features instead of silently switching hosts.
+- Existing Markdown/MDX: preserve the source and URL map, check supported syntax and duplicate slugs, and agree on a repeatable migration before changing formats.
 - Custom base path or locale: generate internal links and metadata through shared helpers.
 - Remote images: update image policy only for approved hosts.
 - Draft or future content: exclude it from public outputs consistently.
@@ -234,8 +239,8 @@ Install the parser, types, validation, and machine-readable outputs without repl
 ## Acceptance tests
 
 - Lint, type-check, content audit, unit tests, and production build pass.
-- Home, blog, article, pagination, category, tag, author, docs, and Studio routes return the expected status.
-- RSS, sitemap, robots, search index, llms.txt, docs.md, and agent-setup.md are valid and reachable.
+- Existing website routes and auth still work. Selected blog, article, pagination, category, tag, author and Studio routes return expected statuses at their resolved mounts. Add product/docs pages only if requested.
+- Selected RSS, sitemap, robots, search and machine-readable outputs are valid and reachable; preserve existing site entries. Do not copy the product marketing/docs website into an existing app by default.
 - Navigation reaches all primary routes by keyboard and has visible focus states.
 - Headings, labels, landmarks, dialogs, menus, and status messages have accessible names.
 - Layout works at 320, 768, 1024, and 1440 pixel widths without horizontal page overflow.

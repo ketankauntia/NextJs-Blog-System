@@ -2,6 +2,8 @@
 
 ## Available
 
+- Setup distinguishes Fresh project from Existing website. Only fresh projects require a name. Existing-site exports clear the replacement identity and default to preserving hosting; manual and agent plans inspect workspace/package manager, routes, content/CMS and existing auth before changes. Older setup links without an installation choice retain fresh-project behavior.
+
 - Public blog, SEO outputs and local Studio. Hosted Studio is read-only; local development can save posts/settings and upload images. Public readers omit draft/future posts.
 - `/docs#get-started` owns the complete setup flow: configuration, AI setup, then matching manual instructions. The former dashboard setup URL redirects here, even when the Studio demo is disabled. Studio navigation contains authoring tools only. One button copies a short prompt and the absolute `/agent-setup.md` URL. A collapsed fallback provides full instructions when an agent cannot reach the URL. The docs header has no duplicate source, Markdown or AI toolbar.
 - `/docs#get-started` exports validated, non-secret schema-v2 `publishing.json`: Local with a repository-relative content folder, or login-based self-hosting with a custom login route, GitHub/Supabase content and optional R2 assets. Managed and OAuth stay disabled.
@@ -9,6 +11,8 @@
 - `/agent-setup.md?setup=...` serves validated personalized instructions without caching. Local, GitHub login and Supabase login each generate their own plan, with optional R2 and hosting steps. `lib/publishing/guide.ts` supplies both manual steps and the agent plan so they stay aligned. Invalid choices return 400. The agent waits for required provider sign-in and explicit go-ahead, verifies account/resources and carries out authorized setup. It asks for unavailable access and decisions it cannot infer.
 
 ## Not implemented
+
+An installable npm package or automated migration tool. Existing websites currently use guided source integration. The application manifest blocks npm publication while the package boundary and consumer-fixture checks in [npm readiness](../publishing/NPM_READINESS.md) are pending.
 
 Supabase sessions, a working custom login page, authenticated hosted editing, GitHub remote writes, Supabase Storage and R2 adapters. These are integration work, not active features. A remote publishing.json fails closed in the current local runtime. Local saves do not automatically commit, push or deploy.
 
