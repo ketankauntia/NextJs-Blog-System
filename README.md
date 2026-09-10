@@ -9,6 +9,8 @@ A repository native publishing system for Next.js. Markdown remains the source o
 
 **[Live publication](https://get-nextjs-blogs.vercel.app/)** · **[Studio](https://get-nextjs-blogs.vercel.app/dashboard)** · **[Documentation](https://get-nextjs-blogs.vercel.app/docs)**
 
+<img width="1223" height="554" alt="Next.js Blog System preview" src="https://github.com/user-attachments/assets/8d278041-55a1-4446-8ba2-0680a8615086" />
+
 ## What is included
 
 - File based Markdown posts with typed frontmatter, categories, tags, authors, drafts, scheduled dates, and related content.
