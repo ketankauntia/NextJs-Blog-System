@@ -2,6 +2,10 @@
 
 ## Available
 
+- The folder picker defaults to app/ + a blog placeholder (effective app/blog), with src/app/, content/ and data/ alternatives. Local paths may colocate posts/*.md and settings.json beneath app/ or src/app/ without replacing route files. Existing installations without configuration still read content/; setup does not move data automatically.
+- The AI section centers its copy action above an exact prompt preview. Manual steps and agent instructions share bullet lists and labeled code examples. The required publishing.json appears inline instead of a download button. The documentation sidebar tracks nested sections and layout changes, with aria-current and a visible active marker.
+- Migration must preserve unsupported records in a private migration-review folder with source, URL, reason and follow-up details. Start fresh applies to old blog data after backup and exact scope confirmation; keep mode leaves migration to the user.
+
 - The compact setup panel includes inline SVG provider logos, URL previews for blog/login routes, GitHub or all-content R2 selection, and optional R2 uploads with GitHub. Supabase Storage is disabled in both the UI and validation (Auth is separate). Existing content choices are keep, migrate or replace after a scoped backup/removal confirmation. AI setup shares the configuration panel; an OR divider separates the manual guide.
 - blogRoute is a requested integration mount, not an automatic runtime route switch. Existing hosting answers preserve that provider. The agent checks collisions and implements route changes before activation.
 

@@ -9,6 +9,7 @@ import {
 import { BlogSiteFooter } from "@/components/blog-site-footer";
 import { BlogSiteHeader } from "@/components/blog-site-header";
 import { Button } from "@/components/blog-ui/button";
+import { DocsNavigation } from "@/components/docs/docs-navigation";
 import { SetupGuide } from "@/components/docs/setup-guide";
 import { buildPageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
@@ -54,18 +55,7 @@ export default function DocsPage() {
 
         <div className="mx-auto grid max-w-shell gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[13rem_1fr] lg:py-20">
           <aside className="hidden lg:block">
-            <nav aria-label="Documentation sections" className="sticky top-24 text-sm">
-              <p className="font-semibold">On this page</p>
-              <ul className="mt-4 space-y-3 border-l pl-4 text-muted-foreground">
-                <li><a href="#get-started" className="hover:text-foreground">Choose your setup</a></li>
-                <li><a href="#agent-setup" className="hover:text-foreground">Set up with AI</a></li>
-                <li><a href="#manual-setup" className="hover:text-foreground">Set up manually</a></li>
-                <li><a href="#architecture" className="hover:text-foreground">Architecture</a></li>
-                <li><a href="#studio" className="hover:text-foreground">Studio safety</a></li>
-
-                <li><a href="#routes" className="hover:text-foreground">Generated routes</a></li>
-              </ul>
-            </nav>
+            <DocsNavigation />
           </aside>
 
           <div className="min-w-0 max-w-4xl">

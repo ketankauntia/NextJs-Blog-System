@@ -4,7 +4,7 @@ import { createPublishingSetup, type PublishingSetup } from "@/lib/publishing/co
 
 /** Small entry prompt; the complete, versioned runbook is served at the URL. */
 export function buildAgentSetupLinkPrompt(url: string): string {
-  return `Read the complete setup instructions at ${url} and set up the Next.js Blog System in my current project. Inspect the repository and preserve existing work. Ask me to sign in to any required providers and confirm access before proceeding, then carry out setup and validation. Ask if you hit a blocker or a decision you cannot infer; never guess credentials or overwrite existing data. If you cannot open the link, ask me for the full instructions.`;
+  return `Set up the Next.js Blog System in my current project using the guide below. Inspect the repository, preserve existing work and follow my selected content migration choice. Ask me to sign in to required providers and confirm access, then complete setup and validation. Ask about blockers; never guess credentials or silently discard data. Read the full guide before making changes. If you cannot open it, ask me for the full instructions.\n\nSetup guide: ${url}`;
 }
 
 /** Complete portable instructions, usable without a reachable deployment or skill. */

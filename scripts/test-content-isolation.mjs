@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile, rm, symlink } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, readFile, rm, symlink } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { isPublished, isContentSlug, readPostSources } from "../lib/blog/source.mjs";
@@ -49,19 +49,22 @@ test("custom content roots are shared by readers and writers and fail closed", a
   const original = process.cwd();
   try {
     process.chdir(root);
-    const setup = { schemaVersion: 2, mode: "local", destination: "github", contentPath: "data/blog" };
+    const setup = { schemaVersion: 2, mode: "local", destination: "github", contentPath: "app/blog" };
+    await mkdir(path.join(root, "app", "blog"), { recursive: true });
+    await writeFile(path.join(root, "app", "blog", "page.tsx"), "EXISTING_ROUTE");
     await writeFile("publishing.json", JSON.stringify(setup));
     assert.deepEqual(readPostSources(), []);
     await mkdir(resolveLocalContent("posts"), { recursive: true });
     await writeFile(resolveLocalContent("posts", "custom.md"), "---\ntitle: Custom\npublishedAt: '2020-01-01'\n---\nCUSTOM_ROOT");
     assert.equal(readPostSources()[0].content.trim(), "CUSTOM_ROOT");
-    assert.equal(resolveLocalContent("settings.json"), path.join(root, "data", "blog", "settings.json"));
+    assert.equal(await readFile(path.join(root, "app", "blog", "page.tsx"), "utf8"), "EXISTING_ROUTE");
+    assert.equal(resolveLocalContent("settings.json"), path.join(root, "app", "blog", "settings.json"));
     assert.throws(() => resolveLocalContent("..", "outside"));
     await writeFile("publishing.json", JSON.stringify({ ...setup, contentPath: "../outside" }));
     assert.throws(() => readPostSources());
     await writeFile("publishing.json", JSON.stringify({ ...setup, mode: "self-hosted" }));
     assert.throws(() => readPostSources(), /adapter/);
-    await symlink(path.join(root, "data"), path.join(root, "linked"), "junction");
+    await symlink(path.join(root, "app"), path.join(root, "linked"), "junction");
     await writeFile("publishing.json", JSON.stringify({ ...setup, contentPath: "linked/blog" }));
     assert.throws(() => readPostSources(), /symbolic links/);
   } finally { process.chdir(original); await rm(root, { recursive: true, force: true }); }

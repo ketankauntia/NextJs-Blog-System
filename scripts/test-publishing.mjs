@@ -41,7 +41,7 @@ test("existing integration guides never prescribe cloning, renaming or npm-only 
       assert.match(markdown, /selected app root/);
       assert.match(markdown, /actual scripts/);
       assert.equal(guide.steps.some(step => step.title === "Keep your current deployment"), true);
-      for (const step of guide.steps) assert.ok(markdown.includes(step.body));
+      for (const step of guide.steps) for (const point of step.points) assert.ok(markdown.includes(`- ${point}`));
     }
   }
 });
@@ -67,7 +67,7 @@ test("selected guides cover every supported content, asset and hosting combinati
       assert.equal(titles.includes("Host on your own Node.js server"), hosting === "self-hosted");
       const markdown = renderSetupGuideMarkdown(setup);
       assert.ok(markdown.includes("data/journal/posts"));
-      for (const step of guide.steps) assert.ok(markdown.includes(step.body));
+      for (const step of guide.steps) for (const point of step.points) assert.ok(markdown.includes(`- ${point}`));
       assert.ok(markdown.includes("Recovery and completion"));
       if (mode !== "local") assert.ok(markdown.includes("current local runtime deliberately rejects a remote configuration"));
     }
@@ -156,4 +156,19 @@ test("content policy and public route choices survive serialization; disabled st
   assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, existingContent: "replace" }));
   for (const blogRoute of ["/", "/api/blog", "//evil.com", "/a?x=1", "/a/../b"]) assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, blogRoute }));
   for (const [blogRoute, loginRoute] of [["/journal", "/journal"], ["/journal", "/journal/login"], ["/staff/blog", "/staff"]]) assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, mode: "self-hosted", authentication: "email-password", database: "supabase", blogRoute, loginRoute }), /overlap/);
+});
+
+
+test("app-root data locations remain validated and migration preserves rejected records", () => {
+  for (const contentPath of ["app/blog", "src/app/blog", "content/blog", "data/blog"]) {
+    const setup = createPublishingSetup({ installation: "existing", mode: "local", destination: "github", contentPath, existingContent: "migrate" });
+    const guide = getSetupGuide(setup);
+    assert.equal(setup.contentPath, contentPath);
+    assert.match(renderSetupGuideMarkdown(setup), /private migration-review folder/);
+    assert.match(renderSetupGuideMarkdown(setup), /Do not silently drop/);
+    const config = guide.steps.find(step => step.id === "config");
+    assert.equal(JSON.parse(config.command).contentPath, contentPath);
+    assert.equal(config.language, "json");
+  }
+  for (const contentPath of ["app", "src/app", "app/public/blog", "src/app/../blog", "app/lib", "pages/blog"]) assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, contentPath }));
 });
