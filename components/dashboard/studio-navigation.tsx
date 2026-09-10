@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   IconFileText,
+  IconLayoutKanban,
   IconLayout,
   IconPencil,
   IconSettings,
@@ -13,6 +14,7 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/dashboard", label: "Content", icon: IconFileText },
+  { href: "/dashboard/board", label: "Board", icon: IconLayoutKanban },
   { href: "/dashboard/editor", label: "Editor", icon: IconPencil },
   { href: "/dashboard/preview", label: "Appearance", icon: IconLayout },
   { href: "/dashboard/fonts", label: "Typography", icon: IconTypography },

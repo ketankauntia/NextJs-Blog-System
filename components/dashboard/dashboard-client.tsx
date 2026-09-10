@@ -8,12 +8,12 @@ import {
   IconFilter,
   IconPencilPlus,
   IconSearch,
-  IconSettings,
   IconStarFilled,
-  IconTypography,
+  IconCheck,
+  IconAlertCircle,
   IconX,
 } from "@tabler/icons-react";
-import { Badge } from "@/components/blog-ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/blog-ui/select";
 import { Button } from "@/components/blog-ui/button";
 import { Input } from "@/components/blog-ui/input";
 import { Label } from "@/components/blog-ui/label";
@@ -60,7 +60,9 @@ const EMPTY_FILTERS: Filters = {
   noindexOnly: false,
 };
 
-export function DashboardClient({ rows, readOnly = false }: { rows: PostRow[]; readOnly?: boolean }) {
+export function DashboardClient({ rows, readOnly = false, view = "list" }: { rows: PostRow[]; readOnly?: boolean; view?: "list" | "board" }) {
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [sort, setSort] = useState("updated");
   const [rawQuery, setRawQuery] = useState("");
   const query = useDebounced(rawQuery, 250);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
@@ -88,12 +90,12 @@ export function DashboardClient({ rows, readOnly = false }: { rows: PostRow[]; r
         (!filters.cornerstoneOnly || r.cornerstone) &&
         (!filters.noindexOnly || r.noindex) &&
         (q === "" || r.title.toLowerCase().includes(q) || r.slug.includes(q)),
-    );
-  }, [rows, query, filters]);
+    ).sort((a, b) => sort === "title" ? a.title.localeCompare(b.title) : (b.updatedAt || b.publishedAt).localeCompare(a.updatedAt || a.publishedAt));
+  }, [rows, query, filters, sort]);
 
   // Reset to page 1 whenever the result set changes. Adjusting during render
   // rather than in an effect avoids rendering the stale page once first.
-  const resultKey = JSON.stringify([query, filters]);
+  const resultKey = JSON.stringify([query, filters, sort]);
   const [lastResultKey, setLastResultKey] = useState(resultKey);
   if (lastResultKey !== resultKey) {
     setLastResultKey(resultKey);
@@ -103,6 +105,8 @@ export function DashboardClient({ rows, readOnly = false }: { rows: PostRow[]; r
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const current = Math.min(page, totalPages);
   const pageRows = filtered.slice((current - 1) * PER_PAGE, current * PER_PAGE);
+
+  const selected = pageRows.find(row => row.slug === selectedSlug) ?? pageRows[0];
 
   const activeCount =
     (filters.status !== "all" ? 1 : 0) +
@@ -124,30 +128,18 @@ export function DashboardClient({ rows, readOnly = false }: { rows: PostRow[]; r
   }, [rows]);
 
   return (
-    <main id="main-content" className="mx-auto w-full max-w-shell flex-1 px-4 py-10 sm:px-6 sm:py-14">
+    <main id="main-content" className="mx-auto w-full max-w-shell flex-1 px-4 py-8 sm:px-6 sm:py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="font-mono text-[0.68rem] tracking-[0.16em] text-primary">
             {readOnly ? "PUBLIC PRODUCT TOUR" : "LOCAL AUTHORING STUDIO"}
           </p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Content dashboard</h1>
+          <h1 className="mt-2 font-heading text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">{view === "board" ? "Content board" : "All posts"}</h1>
           <p className="mt-1 text-muted-foreground">
-            Every post at a glance, including status, freshness, and SEO health.
+            Manage your writing from draft to published.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/dashboard/fonts">
-              <IconTypography className="size-4" />
-              Typography
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/dashboard/settings">
-              <IconSettings className="size-4" />
-              Settings
-            </Link>
-          </Button>
           <Button asChild className="button-ink h-10 px-4">
             <Link href="/dashboard/editor">
               <IconPencilPlus className="size-4" />
@@ -157,13 +149,12 @@ export function DashboardClient({ rows, readOnly = false }: { rows: PostRow[]; r
         </div>
       </div>
 
-      {/* Stat tiles */}
-      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        <StatTile label="Total posts" value={stats.total} />
-        <StatTile label="Published" value={stats.published} tone="text-success" />
-        <StatTile label="Drafts" value={stats.drafts} tone="text-muted-foreground" />
-        <StatTile label="Scheduled" value={stats.scheduled} tone="text-warning" />
-        <StatTile label="Avg SEO score" value={stats.avgScore} tone={scoreTone(stats.avgScore)} />
+      <div className="mt-7 flex gap-5 overflow-x-auto border-b" aria-label="Filter by post status">
+        {([['all', 'All', stats.total], ['draft', 'Drafts', stats.drafts], ['scheduled', 'Scheduled', stats.scheduled], ['published', 'Published', stats.published]] as const).map(([status, label, count]) => (
+          <button key={status} type="button" aria-pressed={filters.status === status} onClick={() => setFilters(f => ({ ...f, status }))} className={cn("flex shrink-0 items-center gap-2 border-b-2 px-1 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", filters.status === status ? "border-primary font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>
+            {label}<span className="rounded bg-muted px-1.5 text-xs tabular-nums">{count}</span>
+          </button>
+        ))}
       </div>
 
       {/* Controls */}
@@ -173,6 +164,7 @@ export function DashboardClient({ rows, readOnly = false }: { rows: PostRow[]; r
           <Input
             value={rawQuery}
             onChange={(e) => setRawQuery(e.target.value)}
+            aria-label="Search posts"
             placeholder="Search posts…"
             className="pl-9"
           />
@@ -184,6 +176,10 @@ export function DashboardClient({ rows, readOnly = false }: { rows: PostRow[]; r
             <span className="ml-1 rounded-full bg-primary px-1.5 text-xs text-primary-foreground">{activeCount}</span>
           )}
         </Button>
+        <Select value={sort} onValueChange={setSort}>
+          <SelectTrigger aria-label="Sort posts"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="updated">Recently updated</SelectItem><SelectItem value="title">Title A–Z</SelectItem></SelectContent>
+        </Select>
         {activeCount > 0 && (
           <Button variant="ghost" size="sm" onClick={() => setFilters(EMPTY_FILTERS)}>
             <IconX className="size-4" />
@@ -192,83 +188,56 @@ export function DashboardClient({ rows, readOnly = false }: { rows: PostRow[]; r
         )}
       </div>
 
-      {/* Table */}
-      <div className="mt-4 overflow-x-auto rounded-2xl border bg-card shadow-sm">
-        <table className="w-full min-w-230 text-sm">
-          <thead className="border-b bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
-            <tr>
-              <th className="px-3 py-3 text-right font-medium">#</th>
-              <th className="px-4 py-3 font-medium">Title</th>
-              <th className="px-3 py-3 font-medium">Status</th>
-              <th className="px-3 py-3 font-medium">Category</th>
-              <th className="px-3 py-3 font-medium">Author</th>
-              <th className="px-3 py-3 font-medium">Updated</th>
-              <th className="px-3 py-3 text-right font-medium">Words</th>
-              <th className="px-3 py-3 text-center font-medium">SEO</th>
-              <th className="px-3 py-3 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pageRows.map((r, i) => (
-              <tr key={r.slug} className="border-b last:border-0 hover:bg-accent/30">
-                <td className="px-3 py-3 text-right tabular-nums text-muted-foreground">
-                  {(current - 1) * PER_PAGE + i + 1}
+      {view === "board" ? (
+        <div className="mt-5 grid gap-4 lg:grid-cols-3">
+          {(['draft', 'scheduled', 'published'] as const).map(status => {
+            const posts = filtered.filter(row => row.status === status);
+            return <section key={status} aria-label={`${status} posts`} className="min-w-0 rounded-lg border bg-muted/20 p-3">
+              <h2 className="mb-4 flex items-center gap-2 px-1 text-sm font-semibold capitalize">{status === 'draft' ? 'Drafts' : status}<span className="rounded bg-muted px-1.5 text-xs tabular-nums">{posts.length}</span></h2>
+              <div className="space-y-3">{posts.map(row => <article key={row.slug} className="rounded-md border bg-card p-4">
+                <Link href={`/dashboard/editor?slug=${row.slug}`} className="font-medium leading-6 hover:text-primary">{row.title}</Link>
+                <p className="mt-2 text-xs text-muted-foreground">{row.category}</p>
+                <p className="mt-3 text-xs text-muted-foreground">{status === 'scheduled' ? 'Publishes' : 'Updated'} {status === 'scheduled' ? row.publishedAt : row.updatedAt || row.publishedAt}</p>
+                <div className="mt-3 flex items-center justify-between gap-2"><span className={cn("text-xs", scoreTone(row.seoScore))}>SEO {row.seoScore}/100</span><Link href={`/dashboard/editor?slug=${row.slug}`} className="text-xs font-medium text-primary hover:underline">{readOnly ? 'Explore article' : 'Edit article'}</Link></div>
+              </article>)}</div>
+              {posts.length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">No {status} posts.</p>}
+              {status === 'draft' && <Link href="/dashboard/editor" className="mt-3 flex items-center justify-center gap-2 rounded-md border border-dashed py-4 text-sm text-muted-foreground hover:bg-muted"><IconPencilPlus className="size-4" />{readOnly ? 'Explore editor' : 'Add draft'}</Link>}
+            </section>;
+          })}
+        </div>
+      ) : (
+        <div className="mt-5 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="min-w-0 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b text-xs text-muted-foreground"><tr><th className="px-3 py-3 font-medium">Title</th><th className="px-3 py-3 font-medium">Status</th><th className="hidden px-3 py-3 font-medium sm:table-cell">Updated</th></tr></thead>
+              <tbody>{pageRows.map(row => <tr key={row.slug} className={cn("border-b transition-colors hover:bg-muted/40", selected?.slug === row.slug && "bg-primary/5")}>
+                <td className={cn("border-l-2 px-3 py-4", selected?.slug === row.slug ? "border-l-primary" : "border-l-transparent")}>
+                  <button type="button" onClick={() => setSelectedSlug(row.slug)} aria-pressed={selected?.slug === row.slug} className="block w-full text-left font-medium leading-6 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">{row.featured && <IconStarFilled className="mr-1 inline size-3 text-warning" aria-label="Featured" />}{row.title}</button>
+                  <p className="mt-1 text-xs text-muted-foreground">{row.category}</p>
                 </td>
-                <td className="max-w-xs px-4 py-3">
-                  <div className="flex items-start gap-1.5">
-                    {r.featured && <IconStarFilled className="size-3.5 shrink-0 text-warning" aria-label="Featured" />}
-                    <Link href={`/dashboard/editor?slug=${r.slug}`} className="font-medium leading-6 hover:text-primary">{r.title}</Link>
-                  </div>
-                  <div className="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                    <span className="truncate">/{r.slug}</span>
-                    {r.cornerstone && <Badge variant="outline" className="h-4 px-1 text-[10px]">cornerstone</Badge>}
-                    {r.noindex && <Badge variant="outline" className="h-4 px-1 text-[10px]">noindex</Badge>}
-                    {!r.hasKeyphrase && <span className="text-warning">no keyphrase</span>}
-                  </div>
-                </td>
-                <td className="px-3 py-3">
-                  <span className={cn("rounded-md border px-2 py-0.5 text-xs font-medium capitalize", STATUS_STYLE[r.status])}>
-                    {r.status}
-                  </span>
-                </td>
-                <td className="px-3 py-3 text-muted-foreground">{r.category}</td>
-                <td className="px-3 py-3 text-muted-foreground">{r.authorName}</td>
-                <td className="px-3 py-3 text-muted-foreground">{r.updatedAt || r.publishedAt}</td>
-                <td className="px-3 py-3 text-right tabular-nums">{r.words.toLocaleString()}</td>
-                <td className="px-3 py-3 text-center">
-                  <span className={cn("font-semibold tabular-nums", scoreTone(r.seoScore))}>{r.seoScore}</span>
-                </td>
-                <td className="px-3 py-3">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/dashboard/editor?slug=${r.slug}`}>
-                        <IconEdit className="size-4" />
-                        {readOnly ? "Explore" : "Edit"}
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/blog/post/${r.slug}`} target="_blank">
-                        <IconArrowUpRight className="size-4" />
-                        Preview
-                      </Link>
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {pageRows.length === 0 && (
-              <tr>
-                <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">
-                  No posts match your filters.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                <td className="px-3 py-4"><PostStatusBadge status={row.status} /></td>
+                <td className="hidden whitespace-nowrap px-3 py-4 text-xs text-muted-foreground sm:table-cell">{row.updatedAt || row.publishedAt}</td>
+              </tr>)}</tbody>
+            </table>
+            {!pageRows.length && <p className="py-16 text-center text-sm text-muted-foreground">No posts match your filters.</p>}
+          </div>
+          {selected && <aside aria-label="Selected post details" className="min-w-0 border-t pt-6 xl:sticky xl:top-24 xl:border-l xl:border-t-0 xl:pl-6 xl:pt-0">
+            <PostStatusBadge status={selected.status} />
+            <h2 className="mt-3 font-heading text-2xl font-semibold leading-tight tracking-tight">{selected.title}</h2>
+            <p className="mt-2 break-all text-xs text-muted-foreground">/blog/post/{selected.slug}</p>
+            <div className="mt-5 flex flex-wrap gap-2"><Button asChild><Link href={`/dashboard/editor?slug=${selected.slug}`}><IconEdit className="size-4" />{readOnly ? 'Explore article' : 'Edit article'}</Link></Button>{selected.status === 'published' && <Button variant="outline" asChild><Link href={`/blog/post/${selected.slug}`} target="_blank"><IconArrowUpRight className="size-4" />Preview</Link></Button>}</div>
+            <div className="mt-6 border-t pt-5"><h3 className="text-sm font-semibold">Publishing</h3><dl className="mt-4 space-y-3 text-sm">
+              {([['Author', selected.authorName], ['Category', selected.category], ['Last updated', selected.updatedAt || selected.publishedAt], [selected.status === 'scheduled' ? 'Scheduled for' : 'Post date', selected.publishedAt], ['Reading time', `${selected.readingMinutes} min · ${selected.words.toLocaleString()} words`]]).map(([label,value]) => <div key={label} className="grid grid-cols-[110px_1fr] gap-3"><dt className="text-muted-foreground">{label}</dt><dd>{value || 'Not set'}</dd></div>)}
+            </dl></div>
+            <div className="mt-6 border-t pt-5"><div className="flex justify-between text-sm"><h3 className="font-semibold">Content checks</h3><span className={scoreTone(selected.seoScore)}>SEO {selected.seoScore}/100</span></div><ul className="mt-4 space-y-3">
+              {([[Boolean(selected.title && selected.slug), 'Title and URL'], [selected.descriptionLength > 0, 'Meta description'], [selected.hasImage, 'Article image'], [selected.hasKeyphrase, 'Focus keyphrase']] as const).map(([ready,label]) => <li key={label} className="flex items-center gap-2 text-xs">{ready ? <IconCheck className="size-4 shrink-0 text-success" /> : <IconAlertCircle className="size-4 shrink-0 text-warning" />}<span className="flex-1">{label}<span className="sr-only">{ready ? ": present" : ": missing"}</span></span>{!ready && <Link href={`/dashboard/editor?slug=${selected.slug}`} className="text-primary hover:underline">Review</Link>}</li>)}
+            </ul></div>
+          </aside>}
+        </div>
+      )}
 
       {/* Pagination */}
-      {filtered.length > 0 && (
+      {view === "list" && filtered.length > 0 && (
         <div className="mt-4 flex items-center justify-between text-sm">
           <p className="text-muted-foreground">
             Showing {(current - 1) * PER_PAGE + 1}–{Math.min(current * PER_PAGE, filtered.length)} of{" "}
@@ -356,13 +325,8 @@ export function DashboardClient({ rows, readOnly = false }: { rows: PostRow[]; r
   );
 }
 
-function StatTile({ label, value, tone }: { label: string; value: number; tone?: string }) {
-  return (
-    <div className="rounded-xl border bg-card p-4">
-      <p className={cn("font-heading text-2xl font-bold tabular-nums", tone)}>{value}</p>
-      <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
-    </div>
-  );
+function PostStatusBadge({ status }: { status: PostStatus }) {
+  return <span className={cn("inline-block rounded px-2 py-1 text-xs font-medium capitalize", STATUS_STYLE[status])}>{status}</span>;
 }
 
 function FlagToggle({
