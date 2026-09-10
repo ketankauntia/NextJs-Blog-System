@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { AuthorCard } from "@/components/blog/author-card";
 import { PostBreadcrumbs } from "@/components/blog/post-breadcrumbs";
 import { PostGrid } from "@/components/blog/post-grid";
+import { JournalListing } from "@/components/blog/templates/journal-listing";
+import { getSettings } from "@/lib/settings";
 import { authors, getAuthor } from "@/lib/blog/authors";
 import { getPostsByAuthor } from "@/lib/blog/content";
 import { features } from "@/lib/features";
@@ -71,7 +73,11 @@ export default async function AuthorPage({
         <h2 className="mb-6 font-heading text-2xl font-semibold tracking-tight">
           Articles by {author.name} ({posts.length})
         </h2>
-        <PostGrid posts={posts} />
+        {getSettings().blogTemplate === "journal" ? (
+          <JournalListing posts={posts} isFirstPage={false} />
+        ) : (
+          <PostGrid posts={posts} />
+        )}
       </section>
     </main>
   );

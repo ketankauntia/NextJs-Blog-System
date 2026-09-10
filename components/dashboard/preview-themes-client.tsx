@@ -30,6 +30,7 @@ const LABELS: Record<string, string> = {
   classic: "Classic",
   magazine: "Magazine",
   minimal: "Minimal",
+  journal: "Journal",
   standard: "Standard",
   centered: "Centered",
   hero: "Hero",

@@ -16,13 +16,14 @@ import {
 } from "@/lib/blog/content";
 import { getSettings } from "@/lib/settings";
 import { siteConfig } from "@/lib/site";
+import { productConfig } from "@/lib/product";
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "The live blog",
   description:
-    "Explore the live reader experience produced by NextJs Blog System, including structured articles, topic archives, search, and static pagination.",
+    `Explore the live reader experience produced by ${productConfig.name}, including structured articles, topic archives, search, and static pagination.`,
   path: "/blog",
 });
 
@@ -77,7 +78,7 @@ export default function BlogIndexPage() {
             <span>{posts.length} articles</span>
             <span>{categories.length} topics</span>
             <Link href="/docs" className="ml-auto hover:text-primary">
-              Published with Next.js Blog System ↗
+              Published with {productConfig.name} ↗
             </Link>
           </div>
         </div>

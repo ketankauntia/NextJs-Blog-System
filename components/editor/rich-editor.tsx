@@ -40,6 +40,13 @@ import {
 import { markdownToTiptap, tiptapToMarkdown } from "@/lib/editor/markdown-tiptap";
 import { Callout, Stat, EditorImage } from "@/components/editor/tiptap-nodes";
 import { ImageDialog } from "@/components/editor/image-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/blog-ui/select";
 import { cn } from "@/lib/utils";
 
 /** WYSIWYG editor over our constrained markdown. Emits markdown so `content/posts/*.md` stays canonical. */
@@ -48,12 +55,15 @@ export function RichEditor({
   onChange,
   uploadSlug,
   canUpload = true,
+  children,
 }: {
   value: string;
   onChange: (markdown: string) => void;
   /** Current post slug. Uploads are stored under public/blog/<slug>/. */
   uploadSlug?: string;
   canUpload?: boolean;
+  /** Optional article fields rendered between the formatting bar and the body. */
+  children?: React.ReactNode;
 }) {
   // Tracks the markdown the editor itself last produced, so external updates
   // (mode switch, post load) re-sync without an infinite loop.
@@ -132,6 +142,7 @@ export function RichEditor({
   return (
     <div>
       <Toolbar editor={editor} onImage={() => setImageOpen(true)} />
+      {children}
       <EditorContent editor={editor} />
       <ImageDialog
         open={imageOpen}
@@ -164,40 +175,46 @@ function Toolbar({ editor, onImage }: { editor: Editor; onImage: () => void }) {
     (editor.getAttributes("textStyle").fontSize as string | undefined)?.replace("px", "") ?? "";
 
   return (
-    <div className="sticky top-0 z-20 overflow-x-auto rounded-t-xl border bg-card/95 shadow-sm backdrop-blur" role="toolbar" aria-label="Post formatting tools">
-      <div className="flex min-w-max items-center gap-1 border-b px-2 py-1.5">
-        <span className="mr-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Format</span>
-        <select
-          aria-label="Text style"
+    <div className="editor-formatting" role="toolbar" aria-label="Post formatting tools">
+      <div className="editor-formatting-primary">
+        <Select
           value={headingValue ? `h${headingValue}` : "p"}
-          onChange={(e) => {
-            const v = e.target.value;
-            if (v === "p") editor.chain().focus().setParagraph().run();
-            else editor.chain().focus().setHeading({ level: Number(v.slice(1)) as 1 | 2 | 3 | 4 | 5 | 6 }).run();
+          onValueChange={(value) => {
+            if (value === "p") editor.chain().focus().setParagraph().run();
+            else editor.chain().focus().setHeading({ level: Number(value.slice(1)) as 1 | 2 | 3 | 4 | 5 | 6 }).run();
           }}
-          className="h-8 w-28 rounded-md border bg-background px-2 text-xs outline-none"
         >
-          <option value="p">Paragraph</option>
-          <option value="h1">Heading 1</option>
-          <option value="h2">Heading 2</option>
-          <option value="h3">Heading 3</option>
-          <option value="h4">Heading 4</option>
-          <option value="h5">Heading 5</option>
-          <option value="h6">Heading 6</option>
-        </select>
-        <select
-          aria-label="Font size"
-          value={currentSize}
-          onChange={(e) => {
-            const v = e.target.value;
-            if (v === "") editor.chain().focus().unsetFontSize().run();
-            else editor.chain().focus().setFontSize(`${v}px`).run();
+          <SelectTrigger aria-label="Text style" size="sm" className="editor-format-select editor-format-select-style"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="p">Paragraph</SelectItem>
+            {[1, 2, 3, 4, 5, 6].map((level) => <SelectItem key={level} value={`h${level}`}>Heading {level}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <TB onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} label="Bold"><IconBold className="size-4" /></TB>
+        <TB onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} label="Italic"><IconItalic className="size-4" /></TB>
+        <TB onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} label="Underline"><IconUnderline className="size-4" /></TB>
+        <TB onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} label="Strikethrough"><IconStrikethrough className="size-4" /></TB>
+        <TB onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive("highlight")} label="Highlight"><IconHighlight className="size-4" /></TB>
+        <TB onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive("code")} label="Inline code"><IconCode className="size-4" /></TB>
+        <TB onClick={addLink} active={editor.isActive("link")} label="Link"><IconLink className="size-4" /></TB>
+        <TB onClick={() => editor.chain().focus().undo().run()} label="Undo"><IconArrowBackUp className="size-4" /></TB>
+        <TB onClick={() => editor.chain().focus().redo().run()} label="Redo"><IconArrowForwardUp className="size-4" /></TB>
+      </div>
+
+      <div className="editor-formatting-secondary">
+        <Select
+          value={currentSize || "auto"}
+          onValueChange={(value) => {
+            if (value === "auto") editor.chain().focus().unsetFontSize().run();
+            else editor.chain().focus().setFontSize(`${value}px`).run();
           }}
-          className="h-8 w-24 rounded-md border bg-background px-2 text-xs outline-none"
         >
-          <option value="">Auto size</option>
-          {[12, 14, 16, 18, 20, 24, 30, 36, 48].map((s) => <option key={s} value={s}>{s}px</option>)}
-        </select>
+          <SelectTrigger aria-label="Font size" size="sm" className="editor-format-select editor-format-select-size"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="auto">Auto size</SelectItem>
+            {[12, 14, 16, 18, 20, 24, 30, 36, 48].map((size) => <SelectItem key={size} value={String(size)}>{size}px</SelectItem>)}
+          </SelectContent>
+        </Select>
         <label className="flex size-8 cursor-pointer items-center justify-center rounded-md border bg-background" title="Text color">
           <span className="sr-only">Text color</span>
           <input
@@ -208,22 +225,11 @@ function Toolbar({ editor, onImage }: { editor: Editor; onImage: () => void }) {
           />
         </label>
         <Divider />
-        <TB onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} label="Bold"><IconBold className="size-4" /></TB>
-        <TB onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} label="Italic"><IconItalic className="size-4" /></TB>
-        <TB onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} label="Underline"><IconUnderline className="size-4" /></TB>
-        <TB onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} label="Strikethrough"><IconStrikethrough className="size-4" /></TB>
-        <TB onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive("highlight")} label="Highlight"><IconHighlight className="size-4" /></TB>
-        <TB onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive("code")} label="Inline code"><IconCode className="size-4" /></TB>
-        <TB onClick={addLink} active={editor.isActive("link")} label="Link"><IconLink className="size-4" /></TB>
         <TB onClick={() => editor.chain().focus().toggleSubscript().run()} active={editor.isActive("subscript")} label="Subscript"><IconSubscript className="size-4" /></TB>
         <TB onClick={() => editor.chain().focus().toggleSuperscript().run()} active={editor.isActive("superscript")} label="Superscript"><IconSuperscript className="size-4" /></TB>
         <Divider />
         <TB onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()} label="Clear formatting"><IconClearFormatting className="size-4" /></TB>
-        <TB onClick={() => editor.chain().focus().undo().run()} label="Undo"><IconArrowBackUp className="size-4" /></TB>
-        <TB onClick={() => editor.chain().focus().redo().run()} label="Redo"><IconArrowForwardUp className="size-4" /></TB>
-      </div>
 
-      <div className="flex min-w-max items-center gap-1 px-2 py-1.5">
         <span className="mr-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Blocks</span>
         <TB onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} label="Bullet list"><IconList className="size-4" /></TB>
         <TB onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} label="Numbered list"><IconListNumbers className="size-4" /></TB>

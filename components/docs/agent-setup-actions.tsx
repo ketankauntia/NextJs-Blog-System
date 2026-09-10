@@ -59,7 +59,7 @@ export function AgentSetupActions({ selection, compact = false, preview = false 
       </label>}
       <details className="mt-3 text-xs text-muted-foreground">
         <summary className="w-fit cursor-pointer rounded outline-none focus-visible:ring-2 focus-visible:ring-ring">Agent cannot open the link?</summary>
-        <p className="mt-3 max-w-xl leading-6">A localhost link is only reachable from your computer. Copy the full instructions if your agent cannot access the website, then paste them into the same conversation.</p>
+        <p className="mt-3 max-w-xl leading-6">A local preview link is only reachable from your computer. Copy the full instructions if your agent cannot access the deployment, then paste them into the same conversation.</p>
         <div className="mt-3 flex flex-wrap items-center gap-4">
           <Button type="button" size="sm" variant="outline" onClick={() => copyPrompt(true)}>Copy full instructions</Button>
           <a href={instructionsLink} target="_blank" rel="noreferrer" className="rounded underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring">Read these instructions</a>

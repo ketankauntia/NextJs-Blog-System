@@ -16,7 +16,7 @@ The parser lives in [`lib/blog/parse.ts`](../lib/blog/parse.ts) and is shared wi
 | `updatedAt` | no | Shown in the byline and used for `dateModified` and sitemap `lastmod`. |
 | `author` | no | Author slug from `lib/blog/authors.ts`. Defaults to the first author listed. |
 | `featured` | no | `true` puts the post in the hero slot on the home page and the archive. |
-| `draft` | no | Visible in development, excluded from production listings, sitemap, RSS and llms.txt. |
+| `draft` | no | Visible in local Studio only; excluded from public readers, hosted Studio, sitemap, RSS and llms.txt in every environment. |
 | `cornerstone` | no | Marks pillar content: higher sitemap priority and stricter editor scoring. |
 | `noindex` | no | Excluded from the sitemap and emits a robots noindex. |
 | `canonical` | no | Overrides the self-referencing canonical URL. |

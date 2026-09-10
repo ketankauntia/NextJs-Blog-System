@@ -11,22 +11,29 @@ import {
   IconTypography,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
+import styles from "./studio-shell.module.css";
 
 const links = [
   { href: "/dashboard", label: "Content", icon: IconFileText },
-  { href: "/dashboard/board", label: "Board", icon: IconLayoutKanban },
-  { href: "/dashboard/editor", label: "Editor", icon: IconPencil },
   { href: "/dashboard/preview", label: "Appearance", icon: IconLayout },
-  { href: "/dashboard/fonts", label: "Typography", icon: IconTypography },
   { href: "/dashboard/settings", label: "Settings", icon: IconSettings },
 ];
 
-export function StudioNavigation() {
+const tools = [
+  { href: "/dashboard/editor", label: "Editor", icon: IconPencil },
+  { href: "/dashboard/board", label: "Board", icon: IconLayoutKanban },
+  { href: "/dashboard/fonts", label: "Typography", icon: IconTypography },
+];
+
+export function StudioNavigation({ onNavigate, editor = false }: { onNavigate?: () => void; editor?: boolean }) {
   const pathname = usePathname();
+  const groups = editor ? [tools] : [links, tools];
   return (
-    <nav aria-label="Studio navigation" className="border-b bg-card">
-      <div className="mx-auto flex max-w-shell gap-6 overflow-x-auto px-5 sm:px-6">
-        {links.map(({ href, label, icon: Icon }) => {
+    <nav aria-label="Studio navigation" className={styles.navigation}>
+      {groups.map((group, index) => (
+      <div key={index} className={styles.navGroup}>
+        <p className={styles.navLabel}>{editor ? "Tools" : index === 0 ? "Workspace" : "Tools"}</p>
+        {group.map(({ href, label, icon: Icon }) => {
           const active =
             href === "/dashboard"
               ? pathname === href
@@ -35,12 +42,11 @@ export function StudioNavigation() {
             <Link
               key={href}
               href={href}
+              onClick={onNavigate}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex min-h-12 shrink-0 items-center gap-2 border-b-2 text-sm transition-colors",
-                active
-                  ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
+                styles.navLink,
+                active && styles.navActive,
               )}
             >
               <Icon className="size-4" aria-hidden />
@@ -49,6 +55,7 @@ export function StudioNavigation() {
           );
         })}
       </div>
+      ))}
     </nav>
   );
 }

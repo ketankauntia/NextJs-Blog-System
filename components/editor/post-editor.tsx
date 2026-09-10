@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, isValidElement, useEffect, useId, useMemo, useState, type ReactElement } from "react";
+import { cloneElement, isValidElement, useEffect, useId, useMemo, useRef, useState, type ReactElement } from "react";
 import Link from "next/link";
 import {
   IconAlertTriangle,
@@ -40,14 +40,11 @@ import { PostBody } from "@/components/blog/post-body";
 import { PostCover } from "@/components/blog/post-cover";
 import { TldrBlock } from "@/components/blog/tldr-block";
 import { parseSections, slugify } from "@/lib/blog/parse";
-import { runSeoChecks, seoScore, type SeoCheck } from "@/lib/editor/seo-checks";
+import { runSeoChecks, type SeoCheck } from "@/lib/editor/seo-checks";
 import { suggestInternalLinks, type LinkCandidate } from "@/lib/editor/link-suggestions";
 import { RichEditor } from "@/components/editor/rich-editor";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/blog-ui/resizable";
+import "./editor-workspace.css";
+import { buildTitle, buildDescription } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
 export type EditablePost = {
@@ -131,40 +128,28 @@ export function PostEditor({
   initialSlug?: string;
 }) {
   const [draft, setDraft] = useState<EditablePost>(
-    posts.find((p) => p.slug === initialSlug) ?? posts[0] ?? blankPost(),
+    initialSlug === "__new__" ? blankPost() : posts.find((p) => p.slug === initialSlug) ?? posts[0] ?? blankPost(),
   );
-  const [slugTouched, setSlugTouched] = useState(true);
+  const [slugTouched, setSlugTouched] = useState(initialSlug !== "__new__");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveMessage, setSaveMessage] = useState("");
   const [restorable, setRestorable] = useState<EditablePost | null>(null);
   const [editMode, setEditMode] = useState<"rich" | "markdown">("rich");
   const [postRailCollapsed, setPostRailCollapsed] = useState(false);
   const [postQuery, setPostQuery] = useState("");
-  const [isDesktop, setIsDesktop] = useState(true);
-
-  useEffect(() => {
-    const media = window.matchMedia("(min-width: 1024px)");
-    const update = () => setIsDesktop(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "b") {
-        event.preventDefault();
-        setPostRailCollapsed((value) => !value);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  const [mobilePane, setMobilePane] = useState("write");
+  const [inspectorTab, setInspectorTab] = useState("seo");
+  const [savedDraft, setSavedDraft] = useState(draft);
+  const latestDraft = useRef(draft);
+  useEffect(() => { latestDraft.current = draft; }, [draft]);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(savedDraft);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const autosaveKey = (slug: string) => `be-editor:autosave:${slug || "__new__"}`;
 
   // Autosave the working draft to localStorage (debounced) so a crash/refresh can't lose work.
   useEffect(() => {
+    if (!dirty || restorable) return;
     const t = setTimeout(() => {
       try {
         localStorage.setItem(autosaveKey(draft.slug), JSON.stringify(draft));
@@ -173,7 +158,7 @@ export function PostEditor({
       }
     }, 800);
     return () => clearTimeout(t);
-  }, [draft]);
+  }, [draft, dirty, restorable]);
 
   // On first mount, offer to restore an autosaved copy of the initially-loaded post if it differs.
   // This runs once and reads an external store. It cannot move into a state
@@ -211,7 +196,7 @@ export function PostEditor({
       }),
     [draft],
   );
-  const score = seoScore(checks);
+
   const filteredPosts = useMemo(() => {
     const query = postQuery.trim().toLowerCase();
     if (!query) return posts;
@@ -242,7 +227,14 @@ export function PostEditor({
   function loadPost(slug: string) {
     const next = slug === "__new__" ? blankPost() : posts.find((p) => p.slug === slug);
     if (!next) return;
+    if (dirty) {
+      try { localStorage.setItem(autosaveKey(draft.slug), JSON.stringify(draft)); }
+      catch { setSaveState("error"); setSaveMessage("Browser recovery is unavailable. Save before switching articles."); return; }
+    }
     setDraft(next);
+    setSavedDraft(next);
+    setReviewOpen(false);
+    setMobilePane("write");
     setSlugTouched(slug !== "__new__");
     setSaveState("idle");
     // Offer to restore an autosave for the post being opened, if it diverges from disk.
@@ -312,11 +304,13 @@ export function PostEditor({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Save failed");
+      setSavedDraft(draft);
       setSaveState("saved");
+      setReviewOpen(false);
       setSaveMessage(`Saved to ${data.path}`);
       // Disk is now the source of truth, so drop the autosave shadow copy.
       try {
-        localStorage.removeItem(autosaveKey(slug));
+        if (JSON.stringify(latestDraft.current) === JSON.stringify(draft)) localStorage.removeItem(autosaveKey(slug));
       } catch {
         /* ignore */
       }
@@ -327,11 +321,11 @@ export function PostEditor({
   }
 
   return (
-    <main id="main-content" className="flex min-h-0 w-full flex-1 overflow-hidden bg-muted/20">
-      <aside aria-label="Post library" className={cn("hidden shrink-0 border-r bg-card transition-[width] duration-200 lg:flex lg:flex-col", postRailCollapsed ? "w-14" : "w-72")}>
+    <main id="main-content" className="editor-workspace" data-pane={mobilePane}>
+      <aside aria-label="Post library" className={cn("editor-library hidden shrink-0 border-r lg:flex lg:flex-col", postRailCollapsed ? "w-14" : "w-72")}>
         <div className={cn("flex h-16 items-center border-b", postRailCollapsed ? "justify-center px-2" : "justify-between px-4")}>
           {!postRailCollapsed ? <div><p className="text-sm font-semibold">Post library</p><p className="text-xs text-muted-foreground">{posts.length} entries</p></div> : null}
-          <Button type="button" variant="ghost" size="icon" aria-label={postRailCollapsed ? "Expand post library" : "Collapse post library"} title={`${postRailCollapsed ? "Expand" : "Collapse"} post library (Ctrl+B)`} onClick={() => setPostRailCollapsed((value) => !value)}>
+          <Button type="button" variant="ghost" size="icon" aria-label={postRailCollapsed ? "Expand post library" : "Collapse post library"} title={`${postRailCollapsed ? "Expand" : "Collapse"} post library`} onClick={() => setPostRailCollapsed((value) => !value)}>
             {postRailCollapsed ? <IconLayoutSidebarLeftExpand className="size-4" /> : <IconLayoutSidebarLeftCollapse className="size-4" />}
           </Button>
         </div>
@@ -360,7 +354,7 @@ export function PostEditor({
                       <button type="button" onClick={() => loadPost(post.slug)} aria-current={active ? "page" : undefined} className={cn("group w-full rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring", active && "bg-primary/10 text-foreground ring-1 ring-primary/20")}>
                         <span className="flex items-start gap-2">
                           <IconArticle className={cn("mt-0.5 size-4 shrink-0 text-muted-foreground", active && "text-primary")} aria-hidden />
-                          <span className="min-w-0 flex-1"><span className="line-clamp-2 block text-sm font-medium leading-snug">{post.title || post.slug}</span><span className="mt-1 flex items-center gap-1.5 text-[0.68rem] text-muted-foreground"><span>{post.category || "Uncategorized"}</span><span aria-hidden>·</span><span>{post.draft ? "Draft" : "Published"}</span></span></span>
+                          <span className="min-w-0 flex-1"><span className="line-clamp-2 block text-sm font-medium leading-snug">{post.title || post.slug}</span><span className="mt-1 flex items-center gap-1.5 text-[0.68rem] text-muted-foreground"><span>{post.category || "Uncategorized"}</span><span aria-hidden>·</span><span>{post.draft ? "Draft" : post.publishedAt > new Date().toISOString().slice(0, 10) ? "Scheduled" : "Public"}</span></span></span>
                           <IconChevronRight className={cn("mt-0.5 size-3.5 shrink-0 opacity-0 group-hover:opacity-100", active && "text-primary opacity-100")} aria-hidden />
                         </span>
                       </button>
@@ -369,28 +363,16 @@ export function PostEditor({
                 })}
               </ul>
             </nav>
-            <div className="border-t p-3"><Button variant="ghost" size="sm" className="w-full justify-start" asChild><Link href="/dashboard"><IconArticle className="size-4" /> Manage all posts</Link></Button></div>
           </>
         )}
       </aside>
 
-      <div className="min-w-0 flex-1">
-        <header className="flex min-h-16 flex-wrap items-center gap-3 border-b bg-background px-3 py-2 sm:px-4">
-          <div className="min-w-48 flex-1 lg:hidden">
-            <Select value={posts.some((post) => post.slug === draft.slug) ? draft.slug : "__new__"} onValueChange={loadPost}>
-              <SelectTrigger className="w-full" aria-label="Post to explore"><SelectValue placeholder="Select a post" /></SelectTrigger>
-              <SelectContent><SelectItem value="__new__"><span className="inline-flex items-center gap-2"><IconFilePlus className="size-4" /> Blank draft</span></SelectItem>{posts.map((post) => <SelectItem key={post.slug} value={post.slug}>{post.draft ? "Draft: " : ""}{post.title || post.slug}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-          <div className="hidden min-w-0 flex-1 items-center gap-2 lg:flex">
-            <Link href="/dashboard" className="text-sm text-muted-foreground transition-colors hover:text-foreground">Studio</Link><IconChevronRight className="size-3.5 text-muted-foreground" aria-hidden /><span className="text-sm text-muted-foreground">Posts</span><IconChevronRight className="size-3.5 text-muted-foreground" aria-hidden /><span className="truncate text-sm font-medium">{draft.title || "Untitled post"}</span><Badge variant="secondary" className="ml-1">{draft.draft ? "Draft" : "Published"}</Badge>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <span className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">SEO <ScoreBadge score={score} /></span>
-            <Button variant="outline" size="sm" onClick={openPreview}><IconExternalLink className="size-4" /><span className="hidden sm:inline">Open preview</span></Button>
-            <Button size="sm" onClick={save} disabled={!canSave || saveState === "saving" || !draft.slug} title={!canSave ? "Saving is disabled in the hosted demo" : undefined}><IconDeviceFloppy className="size-4" /><span className="hidden sm:inline">{saveState === "saving" ? "Saving..." : "Save"}</span></Button>
-          </div>
-          <div className="w-full text-[0.68rem] text-muted-foreground sm:hidden">{draft.body.split(/\s+/).filter(Boolean).length.toLocaleString()} words · {canSave ? "Browser autosave on" : "Read-only demo"}</div>
+      <div className="editor-work-area">
+        <header className="editor-actionbar">
+          <span className="editor-save-status" role="status">{saveState === "saving" ? "Saving…" : dirty ? "Unsaved changes" : "Saved locally"}</span>
+          <Button variant="ghost" size="sm" onClick={() => setEditMode((mode) => mode === "rich" ? "markdown" : "rich")} aria-label="Toggle Markdown editor">{editMode === "rich" ? "Markdown" : "Rich text"}</Button>
+          <Button variant="ghost" size="sm" onClick={openPreview}><IconExternalLink className="size-4" />Preview</Button>
+          <Button size="sm" onClick={() => { setReviewOpen(true); setMobilePane("checks"); setInspectorTab("seo"); }}>Review & save</Button>
         </header>
 
         {(saveState === "saved" || saveState === "error" || restorable) ? (
@@ -401,49 +383,42 @@ export function PostEditor({
           </div>
         ) : null}
 
-        <div className="h-[calc(100svh-8.75rem)] min-h-[760px] p-3">
-          <ResizablePanelGroup id="post-editor-workspace" orientation={isDesktop ? "horizontal" : "vertical"} defaultLayout={{ editor: 50, inspector: 50 }} className="overflow-hidden rounded-xl border bg-card shadow-sm">
-            <ResizablePanel id="editor" defaultSize="50%" minSize={isDesktop ? "36%" : "32%"}>
-              <section aria-labelledby="editor-canvas-title" className="h-full min-w-0 overflow-y-auto bg-card">
-                <div className="border-b px-4 py-4 sm:px-5">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-primary">Writing canvas</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">{draft.body.split(/\s+/).filter(Boolean).length.toLocaleString()} words · {canSave ? "Browser autosave on" : "Read-only demo"}</p>
-                    </div>
-                    <div className="inline-flex rounded-lg border bg-muted/40 p-0.5 text-xs" aria-label="Editor mode">
-                      <button type="button" onClick={() => setEditMode("rich")} className={cn("rounded-md px-3 py-1.5", editMode === "rich" && "bg-background font-medium shadow-sm")}>Rich text</button>
-                      <button type="button" onClick={() => setEditMode("markdown")} className={cn("rounded-md px-3 py-1.5", editMode === "markdown" && "bg-background font-medium shadow-sm")}>Markdown</button>
-                    </div>
-                  </div>
-                  <Input id="editor-canvas-title" value={draft.title} onChange={(event) => set("title", event.target.value)} placeholder="Give the article a clear title" aria-label="Post title" className="h-auto border-0 px-0 font-heading text-2xl font-semibold tracking-tight shadow-none focus-visible:ring-0 sm:text-3xl" />
-                </div>
-                <div className="p-3 sm:p-4">
+        <div className="editor-panels">
+              <section aria-labelledby="editor-canvas-title" className="editor-manuscript">
+                <div className="editor-writing-content">
                   <Label className="sr-only">Article body</Label>
                   {editMode === "rich" ? (
-                    <RichEditor value={draft.body} onChange={(md) => set("body", md)} uploadSlug={draft.slug} canUpload={canSave} />
+                    <RichEditor value={draft.body} onChange={(md) => set("body", md)} uploadSlug={draft.slug} canUpload={canSave}>
+                      <div className="editor-writing-header">
+                        <Textarea id="editor-canvas-title" value={draft.title} onChange={(event) => set("title", event.target.value)} placeholder="Give your story a title" aria-label="Post title" className="editor-title" rows={2} />
+                      </div>
+                    </RichEditor>
                   ) : (
-                    <Textarea value={draft.body} onChange={(event) => set("body", event.target.value)} spellCheck={false} className="min-h-[calc(100svh-18rem)] resize-y font-mono text-sm leading-relaxed" placeholder={"## Section heading\n\nParagraph text...\n\n- list item\n\n:::callout Title\ntext\n:::\n\n:::stat 42% | label"} />
+                    <div className="editor-markdown-mode">
+                      <div className="editor-writing-header"><Textarea id="editor-canvas-title" value={draft.title} onChange={(event) => set("title", event.target.value)} placeholder="Give your story a title" aria-label="Post title" className="editor-title" rows={2} /></div>
+                      <Textarea value={draft.body} onChange={(event) => set("body", event.target.value)} spellCheck={false} className="min-h-[calc(100svh-18rem)] resize-y font-mono text-sm leading-relaxed" placeholder={"## Section heading\n\nParagraph text...\n\n- list item\n\n:::callout Title\ntext\n:::\n\n:::stat 42% | label"} />
+                    </div>
                   )}
                 </div>
               </section>
-            </ResizablePanel>
-
-            <ResizableHandle />
-
-            <ResizablePanel id="inspector" defaultSize="50%" minSize={isDesktop ? "36%" : "32%"}>
-              <aside aria-label="Post inspector" className="h-full min-w-0 overflow-hidden bg-background">
-                <Tabs defaultValue="preview" className="h-full gap-0">
-                  <div className="flex h-12 shrink-0 items-center justify-between gap-3 border-b px-3">
-                    <span className="hidden text-xs font-medium text-muted-foreground 2xl:inline">Live workspace</span>
-                    <TabsList className="grid h-8 w-full max-w-md grid-cols-4 p-1 2xl:ml-auto">
-                      <TabsTrigger value="preview" className="px-2 text-xs">Preview</TabsTrigger>
-                      <TabsTrigger value="details" className="px-2 text-xs">Details</TabsTrigger>
-                      <TabsTrigger value="blocks" className="px-2 text-xs">Blocks</TabsTrigger>
-                      <TabsTrigger value="seo" className="gap-1 px-2 text-xs">SEO <ScoreBadge score={score} compact /></TabsTrigger>
+              <aside aria-label="Post inspector" className="editor-inspector">
+                <Tabs value={inspectorTab} onValueChange={setInspectorTab} className="h-full gap-0">
+                  <div className="editor-inspector-tabs">
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="details">Article</TabsTrigger>
+                      <TabsTrigger value="blocks">Blocks</TabsTrigger>
+                      <TabsTrigger value="search">Search</TabsTrigger>
+                      <TabsTrigger value="seo">Review</TabsTrigger>
                     </TabsList>
                   </div>
-
+                  <TabsContent value="search" className="overflow-y-auto p-5 space-y-5">
+                    <div><h2 className="font-semibold">Search appearance</h2><p className="mt-1 text-xs text-muted-foreground">Generated metadata preview. Search engines may show a different title or snippet.</p></div>
+                    <Field label="Search description"><Textarea value={draft.description} onChange={(e) => set("description", e.target.value)} /></Field>
+                    <Field label="Focus topic (optional)"><Input value={draft.keyphrase} onChange={(e) => set("keyphrase", e.target.value)} /></Field>
+                    <SerpPreview title={draft.title} slug={draft.slug} description={draft.description} />
+                    <FlagToggle label="Hide from search indexes" checked={draft.noindex} onChange={(v) => set("noindex", v)} />
+                    <p className="text-xs text-muted-foreground">{draft.noindex ? "This article asks search engines not to index it." : "Indexing is allowed for public articles. Inclusion is decided by search engines."}</p>
+                  </TabsContent>
                   <TabsContent value="preview" className="min-h-0 overflow-y-auto p-5 sm:p-6">
                     <div className="mx-auto max-w-3xl space-y-5">
                 <div>
@@ -477,7 +452,7 @@ export function PostEditor({
                 <InspectorSection title="Discovery" description="URL, summary, and search signals">
                   <div className="space-y-3">
                     <Field label="Slug"><Input value={draft.slug} onChange={(e) => { setSlugTouched(true); set("slug", slugify(e.target.value)); }} placeholder="my-post-slug" /></Field>
-                    <Field label={`Meta description (${draft.description.length}/160)`}><Textarea value={draft.description} onChange={(e) => set("description", e.target.value)} className="min-h-24" /></Field>
+                    <Field label={`Meta description (${draft.description.length} characters)`}><Textarea value={draft.description} onChange={(e) => set("description", e.target.value)} className="min-h-24" /></Field>
                     <Field label="Focus keyphrase"><Input value={draft.keyphrase} onChange={(e) => set("keyphrase", e.target.value)} /></Field>
                     <Field label="Category"><Input value={draft.category} onChange={(e) => set("category", e.target.value)} /></Field>
                     <Field label="Tags, comma separated"><Input value={draft.tags.join(", ")} onChange={(e) => set("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))} /></Field>
@@ -499,34 +474,37 @@ export function PostEditor({
 
                   <TabsContent value="blocks" className="min-h-0 overflow-y-auto p-4 sm:p-5">
                     <div className="mx-auto max-w-3xl space-y-4">
-                <Field label={`TL;DR summary (${draft.tldr.length} characters)`}><Textarea value={draft.tldr} onChange={(e) => set("tldr", e.target.value)} className="min-h-28" /></Field>
-                <Field label="Key takeaways, one per line"><Textarea value={draft.keyTakeaways.join("\n")} onChange={(e) => set("keyTakeaways", e.target.value.split("\n").filter((line) => line.trim()))} className="min-h-28" /></Field>
-                <div className="space-y-3 border-t pt-4">
-                  <div className="flex items-center justify-between"><Label>FAQs ({draft.faqs.length})</Label><Button variant="outline" size="sm" onClick={() => set("faqs", [...draft.faqs, { q: "", a: "" }])}>Add FAQ</Button></div>
-                  {draft.faqs.map((faq, i) => (
-                    <div key={i} className="space-y-2 rounded-xl border p-3">
-                      <div className="flex gap-2">
-                        <div className="flex flex-col">
-                          <button type="button" aria-label="Move FAQ up" disabled={i === 0} onClick={() => set("faqs", moveItem(draft.faqs, i, i - 1))} className="text-muted-foreground hover:text-foreground disabled:opacity-30"><IconChevronUp className="size-4" /></button>
-                          <button type="button" aria-label="Move FAQ down" disabled={i === draft.faqs.length - 1} onClick={() => set("faqs", moveItem(draft.faqs, i, i + 1))} className="text-muted-foreground hover:text-foreground disabled:opacity-30"><IconChevronDown className="size-4" /></button>
+                <InspectorSection title={`TL;DR${draft.tldr ? ` · ${draft.tldr.length} characters` : ""}`} description="A concise answer for readers who are scanning" open>
+                  <Textarea aria-label="TL;DR summary" value={draft.tldr} onChange={(e) => set("tldr", e.target.value)} className="min-h-28" />
+                </InspectorSection>
+                <InspectorSection title={`Key takeaways${draft.keyTakeaways.length ? ` · ${draft.keyTakeaways.length}` : ""}`} description="The points a reader should remember">
+                  <Textarea aria-label="Key takeaways, one per line" value={draft.keyTakeaways.join("\n")} onChange={(e) => set("keyTakeaways", e.target.value.split("\n").filter((line) => line.trim()))} className="min-h-28" />
+                </InspectorSection>
+                <InspectorSection title={`FAQs${draft.faqs.length ? ` · ${draft.faqs.length}` : ""}`} description="Optional questions and complete answers">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3"><p className="text-xs text-muted-foreground">Collapse each question while you work through the list.</p><Button variant="outline" size="sm" onClick={() => set("faqs", [...draft.faqs, { q: "", a: "" }])}>Add FAQ</Button></div>
+                    {draft.faqs.map((faq, i) => (
+                      <details key={i} className="editor-faq-item rounded-xl border" open={i === 0}>
+                        <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-sm font-medium [&::-webkit-details-marker]:hidden"><IconChevronRight className="size-4 text-muted-foreground transition-transform" /><span className="min-w-0 flex-1 truncate">{faq.q || `FAQ ${i + 1}`}</span><button type="button" aria-label={`Remove FAQ ${i + 1}`} onClick={(event) => { event.preventDefault(); set("faqs", draft.faqs.filter((_, j) => j !== i)); }} className="text-muted-foreground hover:text-destructive"><IconTrash className="size-4" /></button></summary>
+                        <div className="space-y-2 border-t p-3">
+                          <div className="flex gap-2"><div className="flex flex-col"><button type="button" aria-label="Move FAQ up" disabled={i === 0} onClick={() => set("faqs", moveItem(draft.faqs, i, i - 1))} className="text-muted-foreground hover:text-foreground disabled:opacity-30"><IconChevronUp className="size-4" /></button><button type="button" aria-label="Move FAQ down" disabled={i === draft.faqs.length - 1} onClick={() => set("faqs", moveItem(draft.faqs, i, i + 1))} className="text-muted-foreground hover:text-foreground disabled:opacity-30"><IconChevronDown className="size-4" /></button></div><Input value={faq.q} aria-label={`FAQ ${i + 1} question`} placeholder="Reader question" onChange={(e) => set("faqs", draft.faqs.map((item, j) => j === i ? { ...item, q: e.target.value } : item))} /></div>
+                          <Textarea value={faq.a} aria-label={`FAQ ${i + 1} answer`} placeholder="A complete standalone answer" className="min-h-24" onChange={(e) => set("faqs", draft.faqs.map((item, j) => j === i ? { ...item, a: e.target.value } : item))} />
                         </div>
-                        <Input value={faq.q} placeholder="Reader question" onChange={(e) => set("faqs", draft.faqs.map((item, j) => j === i ? { ...item, q: e.target.value } : item))} />
-                        <Button variant="ghost" size="icon" aria-label="Remove FAQ" onClick={() => set("faqs", draft.faqs.filter((_, j) => j !== i))}><IconTrash className="size-4" /></Button>
-                      </div>
-                      <Textarea value={faq.a} placeholder="A complete standalone answer" className="min-h-24" onChange={(e) => set("faqs", draft.faqs.map((item, j) => j === i ? { ...item, a: e.target.value } : item))} />
-                    </div>
-                  ))}
-                </div>
+                      </details>
+                    ))}
+                  </div>
+                </InspectorSection>
               </div>
             </TabsContent>
 
                   <TabsContent value="seo" className="min-h-0 overflow-y-auto p-4 sm:p-5">
                     <div className="mx-auto max-w-3xl space-y-5">
-                <SeoScoreMeter checks={checks} score={score} />
+                <div><p className="text-xs text-muted-foreground">BEFORE YOU SAVE</p><h2 className="mt-2 text-xl font-semibold">{reviewOpen ? "Review your update" : "A little more clarity."}</h2><p className="mt-2 text-sm text-muted-foreground">Check the details that matter to your readers. These checks do not predict rankings.</p></div>
+                {reviewOpen && <div className="space-y-4 rounded-xl border p-4"><PostCover post={{title: draft.title || "Untitled", category: draft.category, coverTone: normalizeCoverTone(draft.coverTone), coverImage: draft.coverImage || undefined, coverAlt: draft.coverAlt || undefined}} className="aspect-video w-full" /><dl className="space-y-3 text-sm"><div className="flex justify-between"><dt>Destination</dt><dd>Local project</dd></div><div className="flex justify-between"><dt>Visibility</dt><dd>{draft.draft ? "Draft" : "Public after deployment"}</dd></div><div className="flex justify-between"><dt>Search indexing</dt><dd>{draft.noindex ? "Disabled" : "Allowed"}</dd></div></dl><Button className="w-full" onClick={save} disabled={!canSave || saveState === "saving" || !draft.slug || !draft.title.trim()}><IconDeviceFloppy className="size-4" />{saveState === "saving" ? "Saving…" : "Save changes"}</Button><p className="text-xs text-muted-foreground">{canSave ? "Writes Markdown to your local project. Commit and deploy to update your live site." : "This demo is read-only. Saving is available in your local project."}</p></div>}
                 <SerpPreview title={draft.title} slug={draft.slug} description={draft.description} />
-                {(["seo", "geo", "structure", "readability"] as const).map((group) => (
+                {(["seo", "structure"] as const).map((group) => (
                   <div key={group}>
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{group === "seo" ? "Search" : group === "geo" ? "AI and answer quality" : group === "structure" ? "Structure and blocks" : "Readability"}</p>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{group === "seo" ? "Search essentials" : "Reader experience"}</p>
                     <ul className="space-y-1.5">{checks.filter((check) => check.group === group).map((check) => <CheckRow key={check.id} check={check} />)}</ul>
                   </div>
                 ))}
@@ -535,10 +513,12 @@ export function PostEditor({
             </TabsContent>
                 </Tabs>
               </aside>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+
         </div>
       </div>
+      <nav className="editor-mobile-nav" aria-label="Editor views">
+        {[["write", "Write"], ["details", "Details"], ["checks", "Checks"], ["preview", "Preview"]].map(([value, label]) => <button key={value} type="button" aria-current={mobilePane === value ? "page" : undefined} onClick={() => { setMobilePane(value); if(value === "details") setInspectorTab("details"); if(value === "checks") setInspectorTab("seo"); if(value === "preview") setInspectorTab("preview"); }}>{label}</button>)}
+      </nav>
     </main>
   );
 }
@@ -613,41 +593,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function ScoreBadge({ score, compact }: { score: number; compact?: boolean }) {
-  // Traffic light: green ≥80, amber ≥55, red below.
-  const tone =
-    score >= 80 ? "bg-success text-white" : score >= 55 ? "bg-warning text-black" : "bg-destructive text-white";
-  return (
-    <span className={cn("rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums", tone, compact && "ml-1")}>
-      {score}
-    </span>
-  );
-}
-
-/** Traffic-light overview: a colored progress bar + pass/warn/fail counts. */
-function SeoScoreMeter({ checks, score }: { checks: SeoCheck[]; score: number }) {
-  const pass = checks.filter((c) => c.status === "pass").length;
-  const warn = checks.filter((c) => c.status === "warn").length;
-  const fail = checks.filter((c) => c.status === "fail").length;
-  const barColor = score >= 80 ? "bg-success" : score >= 55 ? "bg-warning" : "bg-destructive";
-  return (
-    <div className="rounded-lg border p-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold">SEO / GEO score</span>
-        <ScoreBadge score={score} />
-      </div>
-      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
-        <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${score}%` }} />
-      </div>
-      <div className="mt-2 flex gap-3 text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1"><span className="size-2 rounded-full bg-success" />{pass} good</span>
-        <span className="inline-flex items-center gap-1"><span className="size-2 rounded-full bg-warning" />{warn} improve</span>
-        <span className="inline-flex items-center gap-1"><span className="size-2 rounded-full bg-destructive" />{fail} problems</span>
-      </div>
-    </div>
-  );
-}
-
 function CheckRow({ check }: { check: SeoCheck }) {
   const style =
     check.status === "pass"
@@ -682,10 +627,10 @@ function SerpPreview({ title, slug, description }: { title: string; slug: string
         {serpHost} › blog › post › {slug || "slug"}
       </p>
       <p className="mt-1 truncate text-base font-medium text-primary">
-        {title ? `${title} | ${siteConfig.name}` : `Post title | ${siteConfig.name}`}
+        {title ? buildTitle([title]) : `Post title | ${siteConfig.name}`}
       </p>
       <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
-        {description || "The meta description will appear here."}
+        {description ? buildDescription(description) : "The meta description will appear here."}
       </p>
     </div>
   );

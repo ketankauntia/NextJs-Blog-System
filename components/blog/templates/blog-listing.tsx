@@ -4,6 +4,7 @@ import { Badge } from "@/components/blog-ui/badge";
 import { PostCard } from "@/components/blog/post-card";
 import { PostGrid } from "@/components/blog/post-grid";
 import { PostCover } from "@/components/blog/post-cover";
+import { JournalListing } from "@/components/blog/templates/journal-listing";
 import { getAuthor } from "@/lib/blog/authors";
 import { formatDate } from "@/lib/blog/format";
 import type { Post } from "@/lib/blog/types";
@@ -14,6 +15,7 @@ import type { BlogTemplate } from "@/lib/settings";
  * - classic: featured hero card + card grid (the original)
  * - magazine: full-width cover hero + editorial split of secondary/compact stories
  * - minimal: text-first list rows, no imagery
+ * - journal: serif split feature and compact, ruled story columns
  */
 export function BlogListing({
   template,
@@ -24,6 +26,7 @@ export function BlogListing({
   posts: Post[];
   isFirstPage: boolean;
 }) {
+  if (template === "journal") return <JournalListing posts={posts} isFirstPage={isFirstPage} />;
   if (template === "magazine") return <MagazineListing posts={posts} isFirstPage={isFirstPage} />;
   if (template === "minimal") return <MinimalListing posts={posts} />;
   return <ClassicListing posts={posts} isFirstPage={isFirstPage} />;

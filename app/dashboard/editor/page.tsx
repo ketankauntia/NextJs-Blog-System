@@ -48,15 +48,15 @@ function normalizeDate(value: unknown): string {
 export default async function EditorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ slug?: string }>;
+  searchParams: Promise<{ slug?: string; new?: string }>;
 }) {
-  const { slug } = await searchParams;
+  const { slug, new: newPost } = await searchParams;
   return (
     <PostEditor
       posts={loadEditablePosts()}
       authorSlugs={authors.map((a) => a.slug)}
       canSave={canMutateStudio()}
-      initialSlug={slug}
+      initialSlug={newPost === "1" ? "__new__" : slug}
     />
   );
 }

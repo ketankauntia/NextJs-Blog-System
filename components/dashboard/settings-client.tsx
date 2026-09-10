@@ -24,6 +24,7 @@ const BLOG_META: Record<BlogTemplate, { name: string; blurb: string }> = {
   classic: { name: "Classic", blurb: "Featured card on top, clean card grid below. The all-rounder." },
   magazine: { name: "Magazine", blurb: "Full-width cover hero, editorial secondary stories, compact list." },
   minimal: { name: "Minimal", blurb: "Text-first list. No imagery, so titles and ideas do the talking." },
+  journal: { name: "Journal", blurb: "Serif headlines, a split feature and compact story columns. Listing only." },
 };
 
 const POST_META: Record<PostTemplate, { name: string; blurb: string }> = {
@@ -100,7 +101,7 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
       <section className="mt-8">
         <h2 className="font-heading text-lg font-semibold">Blog listing template</h2>
         <p className="text-sm text-muted-foreground">Layout of /blog and its pagination pages.</p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {BLOG_TEMPLATES.map((t) => (
             <TemplateCard
               key={t}
@@ -176,6 +177,32 @@ function TemplateCard({
 /* ---------- CSS mockup thumbnails ---------- */
 
 function BlogThumb({ template }: { template: BlogTemplate }) {
+  if (template === "journal") {
+    return (
+      <div className="space-y-2 py-1">
+        <div className="grid grid-cols-2 gap-2 border-b pb-2">
+          <div className="h-14 bg-foreground/85" />
+          <div className="space-y-1.5 pt-1">
+            <div className="h-1 w-1/2 bg-muted-foreground/50" />
+            <div className="h-3 bg-foreground/70" />
+            <div className="h-3 w-4/5 bg-foreground/70" />
+            <div className="h-1 w-1/3 bg-primary" />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 divide-x">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex gap-1 px-1 first:pl-0 last:pr-0">
+              <div className="h-8 w-2/5 shrink-0 bg-muted" />
+              <div className="flex-1 space-y-1 pt-1">
+                <div className="h-1.5 bg-foreground/60" />
+                <div className="h-1.5 bg-foreground/60" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (template === "magazine") {
     return (
       <div className="space-y-1.5">

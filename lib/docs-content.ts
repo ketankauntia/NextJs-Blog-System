@@ -35,7 +35,7 @@ npm install
 npm run dev
 \`\`\`
 
-Open \`http://localhost:3000\` for the product site, \`/blog\` for the publication, and \`/dashboard\` for the Studio.
+Open the deployed product origin for the site, \`/blog\` for the publication, and \`/dashboard\` for the Studio.
 
 ## Configure the publication
 

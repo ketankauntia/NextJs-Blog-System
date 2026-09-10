@@ -1,6 +1,6 @@
 /** Client-safe settings constants/types. fs-backed reading lives in lib/settings.ts (server-only). */
 
-export const BLOG_TEMPLATES = ["classic", "magazine", "minimal"] as const;
+export const BLOG_TEMPLATES = ["classic", "magazine", "minimal", "journal"] as const;
 export const POST_TEMPLATES = ["standard", "centered", "hero"] as const;
 export const FONT_PAIRINGS = ["editorial", "classic", "modern", "technical", "literary"] as const;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type DragEvent, type KeyboardEvent } from "react";
 import { IconLoader2, IconUpload } from "@tabler/icons-react";
 import {
   Dialog,
@@ -37,6 +37,7 @@ export function ImageDialog({
   const [description, setDescription] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [dragActive, setDragActive] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   function reset() {
@@ -45,6 +46,7 @@ export function ImageDialog({
     setDescription("");
     setError("");
     setUploading(false);
+    setDragActive(false);
   }
 
   async function upload(file: File) {
@@ -62,6 +64,36 @@ export function ImageDialog({
       setError(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setUploading(false);
+    }
+  }
+
+  function chooseFile(file?: File) {
+    if (!file) return;
+    if (!canUpload) {
+      setError("Uploads are disabled in this read-only demo. Paste an image URL instead.");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setError("Choose an image file such as PNG, JPG, WebP, AVIF, GIF, or SVG.");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setError("Images must be 8 MB or smaller.");
+      return;
+    }
+    void upload(file);
+  }
+
+  function handleDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setDragActive(false);
+    chooseFile(event.dataTransfer.files?.[0]);
+  }
+
+  function handleDropzoneKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if ((event.key === "Enter" || event.key === " ") && canUpload) {
+      event.preventDefault();
+      fileRef.current?.click();
     }
   }
 
@@ -96,25 +128,41 @@ export function ImageDialog({
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="editor-image-file">Image file</Label>
-            <div className="flex items-center gap-2">
-              <input
-                ref={fileRef}
-                id="editor-image-file"
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/svg+xml"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) upload(f);
-                }}
-              />
-              <Button type="button" variant="outline" size="sm" disabled={uploading || !canUpload} onClick={() => fileRef.current?.click()}>
-                {uploading ? <IconLoader2 className="size-4 animate-spin" /> : <IconUpload className="size-4" />}
-                {uploading ? "Uploading..." : canUpload ? "Upload file" : "Upload disabled"}
-              </Button>
-              <span className="text-xs text-muted-foreground">
-                {canUpload ? "PNG, JPG, WebP, AVIF, GIF, SVG, up to 8 MB" : "Use an image URL in this read-only demo"}
-              </span>
+            <input
+              ref={fileRef}
+              id="editor-image-file"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/svg+xml"
+              className="hidden"
+              onChange={(event) => {
+                chooseFile(event.target.files?.[0]);
+                event.currentTarget.value = "";
+              }}
+            />
+            <div
+              role="button"
+              tabIndex={canUpload ? 0 : -1}
+              aria-disabled={!canUpload}
+              aria-label={canUpload ? "Drop an image here or browse files" : "Image upload disabled"}
+              onClick={() => canUpload && fileRef.current?.click()}
+              onKeyDown={handleDropzoneKeyDown}
+              onDragEnter={(event) => {
+                event.preventDefault();
+                if (canUpload) setDragActive(true);
+              }}
+              onDragOver={(event) => {
+                event.preventDefault();
+                if (canUpload) event.dataTransfer.dropEffect = "copy";
+              }}
+              onDragLeave={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragActive(false);
+              }}
+              onDrop={handleDrop}
+              className={`flex min-h-28 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed px-4 py-5 text-center transition-colors ${dragActive ? "border-primary bg-primary/10" : "border-border bg-muted/20 hover:border-primary/50 hover:bg-muted/40"} ${!canUpload ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
+            >
+              {uploading ? <IconLoader2 className="size-5 animate-spin text-primary" /> : <IconUpload className="size-5 text-muted-foreground" />}
+              <p className="text-sm font-medium">{uploading ? "Uploading image…" : canUpload ? "Drop an image here or browse files" : "Image upload disabled"}</p>
+              <p className="text-xs text-muted-foreground">{canUpload ? "PNG, JPG, WebP, AVIF, GIF, or SVG · 8 MB max" : "Paste an image URL below in this read-only demo"}</p>
             </div>
           </div>
 

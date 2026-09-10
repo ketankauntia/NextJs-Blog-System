@@ -4,6 +4,8 @@ import { siteConfig } from "@/lib/site";
 import { notFound } from "next/navigation";
 import { PostBreadcrumbs } from "@/components/blog/post-breadcrumbs";
 import { PostGrid } from "@/components/blog/post-grid";
+import { JournalListing } from "@/components/blog/templates/journal-listing";
+import { getSettings } from "@/lib/settings";
 import { ListingJsonLd } from "@/components/blog/listing-json-ld";
 import { getAllTags, getPostsByTag, getTagBySlug, tagToSlug } from "@/lib/blog/content";
 import { features } from "@/lib/features";
@@ -57,7 +59,11 @@ export default async function TagPage({
         </p>
       </header>
       <div className="mt-8">
-        <PostGrid posts={posts} />
+        {getSettings().blogTemplate === "journal" ? (
+          <JournalListing posts={posts} isFirstPage={false} />
+        ) : (
+          <PostGrid posts={posts} />
+        )}
       </div>
     </main>
   );

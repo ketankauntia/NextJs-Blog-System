@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { loadPostRows } from "@/lib/blog/dashboard";
 import { canMutateStudio } from "@/lib/studio-access";
+import { readContentReviews } from "@/lib/blog/reviews.mjs";
 
 export const metadata: Metadata = { title: "Content board", robots: { index: false, follow: false } };
 
 export default function BoardPage() {
-  return <DashboardClient rows={loadPostRows()} readOnly={!canMutateStudio()} view="board" />;
+  const local = canMutateStudio();
+  return <DashboardClient rows={loadPostRows()} readOnly={!local} view="board" initialReviews={local ? readContentReviews() : {}} today={new Date().toISOString().slice(0, 10)} />;
 }

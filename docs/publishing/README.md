@@ -20,7 +20,7 @@ Without publishing.json the app retains its current `content` directory. Configu
 
 ## Agent setup
 
-The user copies a short setup prompt containing the `/agent-setup.md` link. The setup page adds validated non-secret choices via `?setup=...`. On localhost an external agent may not be able to fetch the URL; a collapsed fallback supplies the full instructions. Once this website is deployed, links use its actual origin automatically.
+The user copies a short setup prompt containing the `/agent-setup.md` link. The setup page adds validated non-secret choices via `?setup=...`. If an external agent cannot fetch the deployment URL, a collapsed fallback supplies the full instructions. Once this website is deployed, links use its actual origin automatically.
 
 The agent first asks the user to sign in to their selected provider accounts and confirm it may proceed. It verifies the account/project, then performs authorized setup and validation autonomously. Local writing needs no provider. GitHub remote content requires GitHub plus Supabase Auth; Supabase Storage requires Supabase; R2 additionally requires Cloudflare. Credentials stay in secure environment/secret storage, never links or prompts.
 

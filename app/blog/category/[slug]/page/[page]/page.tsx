@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/lib/site";
 import { notFound, redirect } from "next/navigation";
 import { PostGrid } from "@/components/blog/post-grid";
+import { JournalListing } from "@/components/blog/templates/journal-listing";
+import { getSettings } from "@/lib/settings";
 import { Pagination } from "@/components/blog/pagination";
 import { CategoryChips } from "@/components/blog/category-chips";
 import { PostBreadcrumbs } from "@/components/blog/post-breadcrumbs";
@@ -81,7 +83,11 @@ export default async function CategoryPaginatedPage({
       <CategoryChips categories={categories} activeSlug={slug} />
 
       <div className="mt-8">
-        <PostGrid posts={items} />
+        {getSettings().blogTemplate === "journal" ? (
+          <JournalListing posts={items} isFirstPage={false} />
+        ) : (
+          <PostGrid posts={items} />
+        )}
       </div>
 
       <Pagination basePath={`/blog/category/${slug}`} page={pageNum} totalPages={totalPages} />

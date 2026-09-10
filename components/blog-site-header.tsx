@@ -6,6 +6,7 @@ import { BlogThemeToggle } from "@/components/blog-theme-toggle";
 import { HeaderSearch } from "@/components/blog/header-search";
 import { siteConfig } from "@/lib/site";
 import { isStudioVisible } from "@/lib/studio-access";
+import { productConfig } from "@/lib/product";
 
 const primaryLinks = [
   { label: "Product", href: "/#product" },
@@ -28,10 +29,10 @@ export function BlogSiteHeader() {
           aria-label={`${siteConfig.name} home`}
         >
           <span aria-hidden className="brand-glyph shrink-0">
-            N
+            {productConfig.glyph}
           </span>
           <span className="brand-name truncate">
-            Next.js Blog <small className="hidden sm:inline">/ System</small>
+            {siteConfig.shortName} <small className="hidden sm:inline">/ {productConfig.nameSuffix}</small>
           </span>
         </Link>
 
