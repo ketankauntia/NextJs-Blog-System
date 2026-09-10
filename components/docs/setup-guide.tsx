@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { IconArrowRight, IconCloud, IconDeviceLaptop, IconLock, IconServer, IconX } from "@tabler/icons-react";
 import { SiGithub, SiSupabase, SiCloudflare, SiVercel } from "@icons-pack/react-simple-icons";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/blog-ui/select";
+import { SetupCodeBlock } from "@/components/docs/setup-code-block";
 import { AgentSetupActions } from "@/components/docs/agent-setup-actions";
 import { createPublishingSetup, type ContentDestination, type PublishingMode, type HostingTarget, type PublishingSetup, type ExistingContent } from "@/lib/publishing/config";
 import { ProviderOption } from "@/components/publishing/provider-option";
@@ -98,20 +100,21 @@ export function SetupGuide() {
             <div>
               <label htmlFor="content-path" className="mb-2 block text-sm font-medium">Where is your blog data stored?</label>
               <div className="flex min-w-0 rounded-md border bg-background focus-within:ring-2 focus-within:ring-ring">
-                <select aria-label="Blog data parent folder" value={contentRoot} onChange={event => setContentRoot(event.target.value)} className="min-w-0 shrink-0 border-r bg-transparent px-2 py-2.5 text-sm outline-none">
-                  <option value="app">app/</option><option value="src/app">src/app/</option><option value="content">content/</option><option value="data">data/</option>
-                </select>
-                <input id="content-path" name="contentFolder" value={contentFolder} maxLength={180} spellCheck={false} onChange={event => setContentFolder(event.target.value)} aria-describedby="content-path-help" className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm outline-none" placeholder="blog" />
+                <Select value={contentRoot} onValueChange={setContentRoot}>
+                  <SelectTrigger aria-label="Blog data parent folder" className="w-28 shrink-0 self-stretch rounded-none rounded-l-md border-0 border-r px-3 data-[size=default]:h-auto dark:bg-transparent"><SelectValue /></SelectTrigger>
+                  <SelectContent position="popper" align="start">
+                    {['app', 'src/app', 'content', 'data'].map(folder => <SelectItem key={folder} value={folder}>{folder}/</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <input id="content-path" name="contentFolder" value={contentFolder} maxLength={180} spellCheck={false} onChange={event => setContentFolder(event.target.value)} className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm outline-none" placeholder="blog" />
               </div>
-              <p id="content-path-help" className="mt-2 text-xs leading-5 text-muted-foreground">{destination === "r2" ? "Bucket prefix" : "App-relative folder"}: <code>{contentPath}</code>. {destination !== "r2" && "Choose src/app/ if your site uses a src directory."}</p>
             </div>
             <div>
               <label htmlFor="blog-route" className="mb-2 block text-sm font-medium">Where can readers find your blog?</label>
               <div className="flex min-w-0 items-center rounded-md border bg-background focus-within:ring-2 focus-within:ring-ring">
                 <span className="shrink-0 border-r px-2 text-[11px] text-muted-foreground">www.xyzdomain.com/</span>
-                <input id="blog-route" name="blogRoute" value={blogRoute.replace(/^\//, "")} required maxLength={159} spellCheck={false} onChange={event => { setBlogRoute("/" + event.target.value.replace(/^\//, "")); }} aria-describedby="blog-route-help" className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm outline-none" placeholder="blog" />
+                <input id="blog-route" name="blogRoute" value={blogRoute.replace(/^\//, "")} required maxLength={159} spellCheck={false} onChange={event => { setBlogRoute("/" + event.target.value.replace(/^\//, "")); }} className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm outline-none" placeholder="blog" />
               </div>
-              <p id="blog-route-help" className="mt-2 text-xs leading-5 text-muted-foreground">Your domain + the blog route. The agent checks availability.</p>
             </div>
           </div>
 
@@ -121,7 +124,7 @@ export function SetupGuide() {
               {([
                 ["migrate", "Port my existing data", ["Import existing blog content into this system.", "Save anything that cannot be imported in a review folder, with details."]],
                 ["replace", "Start fresh", ["Remove all existing blog data after a backup and scope review."]],
-                ["keep", "Just add blogs", ["Keep my existing data untouched.", "I will port my old data myself."]],
+                ["keep", "Just integrate blogs", ["Keep my existing data untouched.", "I will port my old data myself."]],
               ] as const).map(([value, label, points]) => <label key={value} className="flex cursor-pointer items-start gap-3 rounded-md border px-4 py-3 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
                 <input type="radio" name="existingContent" value={value} checked={existingContent === value} onChange={() => setExistingContent(value)} className="mt-1 size-4 shrink-0 accent-primary" />
                 <div className="min-w-0"><span className="text-sm font-medium">{label}</span><ul className="mt-1 list-disc space-y-1 pl-4 text-xs leading-5 text-muted-foreground">{points.map(point => <li key={point}>{point}</li>)}</ul></div>
@@ -156,7 +159,7 @@ export function SetupGuide() {
               <p className="font-mono text-[0.68rem] tracking-[0.16em] text-primary">STEP {String(index + 1).padStart(2, "0")}</p>
               <h3 className="mt-2 font-heading text-xl font-semibold">{step.title}</h3>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-muted-foreground">{step.points.map(point => <li key={point}>{point}</li>)}</ul>
-              {step.command && <div className="mt-4 overflow-hidden rounded-md border"><p className="border-b bg-muted/40 px-4 py-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{step.language ?? "bash"}{step.filename ? ` · ${step.filename}` : ""}</p><pre className="overflow-x-auto bg-foreground p-5 text-xs leading-6 text-background"><code className={`language-${step.language ?? "bash"}`}>{step.command}</code></pre></div>}
+              {step.command && <SetupCodeBlock code={step.command} language={step.language ?? "bash"} filename={step.filename} />}
             </li>)}
           </ol>
           <div className="mt-8 flex justify-end"><Link href="/dashboard/editor" className="inline-flex min-h-11 items-center gap-2 rounded-md border border-neutral-200 bg-white px-5 text-sm font-medium text-neutral-950 shadow-sm outline-none hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-ring">Explore the editor<IconArrowRight className="size-4" aria-hidden /></Link></div>
