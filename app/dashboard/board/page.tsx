@@ -3,10 +3,11 @@ import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { loadPostRows } from "@/lib/blog/dashboard";
 import { canMutateStudio } from "@/lib/studio-access";
 import { readContentReviews } from "@/lib/blog/reviews.mjs";
+import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = { title: "Content board", robots: { index: false, follow: false } };
 
 export default function BoardPage() {
   const local = canMutateStudio();
-  return <DashboardClient rows={loadPostRows()} readOnly={!local} view="board" initialReviews={local ? readContentReviews() : {}} today={new Date().toISOString().slice(0, 10)} />;
+  return <DashboardClient rows={loadPostRows()} readOnly={!local} view="board" initialReviews={local ? readContentReviews() : {}} today={new Date().toISOString().slice(0, 10)} seoThresholds={getSettings().seoScoreThresholds} />;
 }

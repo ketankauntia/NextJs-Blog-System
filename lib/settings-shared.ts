@@ -8,6 +8,18 @@ export type BlogTemplate = (typeof BLOG_TEMPLATES)[number];
 export type PostTemplate = (typeof POST_TEMPLATES)[number];
 export type FontPairing = (typeof FONT_PAIRINGS)[number];
 
+export type SeoScoreThresholds = {
+  /** Scores from 0 through this value use the red treatment. */
+  redMax: number;
+  /** Scores above redMax through this value use the yellow treatment. */
+  yellowMax: number;
+};
+
+export const DEFAULT_SEO_SCORE_THRESHOLDS: SeoScoreThresholds = {
+  redMax: 60,
+  yellowMax: 80,
+};
+
 export type SiteSettings = {
   /** Layout of /blog (and its pagination pages). */
   blogTemplate: BlogTemplate;
@@ -15,12 +27,15 @@ export type SiteSettings = {
   postTemplate: PostTemplate;
   /** Heading + body typeface pairing, applied on <body> as data-font. */
   fontPairing: FontPairing;
+  /** User-defined presentation bands for the dashboard's factual SEO score. */
+  seoScoreThresholds: SeoScoreThresholds;
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
   blogTemplate: "classic",
   postTemplate: "standard",
   fontPairing: "modern",
+  seoScoreThresholds: DEFAULT_SEO_SCORE_THRESHOLDS,
 };
 
 /** Display copy for the font picker. Kept beside the ids so the two cannot drift. */

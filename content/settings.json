@@ -1,5 +1,9 @@
 {
   "blogTemplate": "classic",
   "postTemplate": "hero",
-  "fontPairing": "modern"
+  "fontPairing": "modern",
+  "seoScoreThresholds": {
+    "redMax": 60,
+    "yellowMax": 80
+  }
 }

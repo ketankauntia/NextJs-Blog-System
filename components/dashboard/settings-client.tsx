@@ -11,6 +11,7 @@ import {
   IconTypography,
 } from "@tabler/icons-react";
 import { Button } from "@/components/blog-ui/button";
+import { Input } from "@/components/blog-ui/input";
 import { cn } from "@/lib/utils";
 import {
   BLOG_TEMPLATES,
@@ -33,14 +34,20 @@ const POST_META: Record<PostTemplate, { name: string; blurb: string }> = {
   hero: { name: "Hero", blurb: "Full-width cover banner with overlaid title, then a centered column." },
 };
 
+type SettingsCategory = "templates" | "seo";
+
 export function SettingsClient({ initial, canSave }: { initial: SiteSettings; canSave: boolean }) {
   const router = useRouter();
   const [blogTemplate, setBlogTemplate] = useState<BlogTemplate>(initial.blogTemplate);
   const [postTemplate, setPostTemplate] = useState<PostTemplate>(initial.postTemplate);
+  const [seoRedMax, setSeoRedMax] = useState(initial.seoScoreThresholds.redMax);
+  const [seoYellowMax, setSeoYellowMax] = useState(initial.seoScoreThresholds.yellowMax);
+  const [category, setCategory] = useState<SettingsCategory>("templates");
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [message, setMessage] = useState("");
 
-  const dirty = blogTemplate !== initial.blogTemplate || postTemplate !== initial.postTemplate;
+  const thresholdsValid = Number.isInteger(seoRedMax) && Number.isInteger(seoYellowMax) && seoRedMax >= 0 && seoRedMax < seoYellowMax && seoYellowMax <= 100;
+  const dirty = blogTemplate !== initial.blogTemplate || postTemplate !== initial.postTemplate || seoRedMax !== initial.seoScoreThresholds.redMax || seoYellowMax !== initial.seoScoreThresholds.yellowMax;
 
   async function save() {
     setState("saving");
@@ -48,13 +55,13 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
       const res = await fetch("/api/editor/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Spread `initial` so saving templates cannot drop the font choice.
-        body: JSON.stringify({ ...initial, blogTemplate, postTemplate }),
+        // Spread `initial` so saving one category cannot drop another setting.
+        body: JSON.stringify({ ...initial, blogTemplate, postTemplate, seoScoreThresholds: { redMax: seoRedMax, yellowMax: seoYellowMax } }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Save failed");
       setState("saved");
-      setMessage("Saved. The blog now uses these templates.");
+      setMessage("Saved. Your settings are now active.");
       router.refresh();
     } catch (e) {
       setState("error");
@@ -70,7 +77,7 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
             <IconArrowLeft className="size-4" /> Dashboard
           </Link>
           <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="mt-1 text-muted-foreground">Choose how the blog and posts are laid out. Preview any post/page after saving.</p>
+          <p className="mt-1 text-muted-foreground">Configure layouts and the signals your content team uses to review articles.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
@@ -85,7 +92,7 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
               Preview themes
             </Link>
           </Button>
-          <Button onClick={save} disabled={!canSave || !dirty || state === "saving"}>
+          <Button onClick={save} disabled={!canSave || !dirty || !thresholdsValid || state === "saving"}>
             <IconDeviceFloppy className="size-4" />
             {state === "saving" ? "Saving…" : "Save"}
           </Button>
@@ -98,7 +105,22 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
       {state === "saved" && <p className="mt-2 text-sm text-success">{message}</p>}
       {state === "error" && <p className="mt-2 text-sm text-destructive">{message}</p>}
 
-      <section className="mt-8">
+      <div className="mt-8 grid gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <nav aria-label="Settings categories" className="h-fit rounded-xl border bg-card p-2 lg:sticky lg:top-6">
+          <p className="px-3 pb-2 pt-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Settings</p>
+          <button type="button" onClick={() => setCategory("templates")} aria-pressed={category === "templates"} className={cn("flex w-full flex-col rounded-lg px-3 py-2.5 text-left transition-colors", category === "templates" ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted")}>
+            <span className="text-sm font-medium">Templates</span>
+            <span className="mt-0.5 text-xs text-muted-foreground">Blog and article layouts</span>
+          </button>
+          <button type="button" onClick={() => setCategory("seo")} aria-pressed={category === "seo"} className={cn("mt-1 flex w-full flex-col rounded-lg px-3 py-2.5 text-left transition-colors", category === "seo" ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted")}>
+            <span className="text-sm font-medium">SEO score colors</span>
+            <span className="mt-0.5 text-xs text-muted-foreground">Dashboard score bands</span>
+          </button>
+        </nav>
+
+        <div className="min-w-0">
+        {category === "templates" ? <>
+      <section>
         <h2 className="font-heading text-lg font-semibold">Blog listing template</h2>
         <p className="text-sm text-muted-foreground">Layout of /blog and its pagination pages.</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -133,7 +155,63 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
           ))}
         </div>
       </section>
+        </> : <SeoScoreSettings
+          redMax={seoRedMax}
+          yellowMax={seoYellowMax}
+          onRedMaxChange={setSeoRedMax}
+          onYellowMaxChange={setSeoYellowMax}
+          valid={thresholdsValid}
+        />}
+        </div>
+      </div>
     </main>
+  );
+}
+
+function SeoScoreSettings({
+  redMax,
+  yellowMax,
+  onRedMaxChange,
+  onYellowMaxChange,
+  valid,
+}: {
+  redMax: number;
+  yellowMax: number;
+  onRedMaxChange: (value: number) => void;
+  onYellowMaxChange: (value: number) => void;
+  valid: boolean;
+}) {
+  return (
+    <section>
+      <h2 className="font-heading text-lg font-semibold">SEO score colors</h2>
+      <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+        Choose the score bands used in the Content dashboard. These colors describe local editorial checks; they do not predict search rankings.
+      </p>
+
+      <div className="mt-6 grid max-w-2xl gap-4 sm:grid-cols-2">
+        <label className="rounded-xl border bg-card p-4">
+          <span className="flex items-center gap-2 text-sm font-medium"><i className="size-2.5 rounded-full bg-destructive" />Red through</span>
+          <span className="mt-3 flex items-center gap-2">
+            <Input type="number" min={0} max={99} step={1} value={redMax} onChange={event => onRedMaxChange(Number(event.target.value))} aria-label="Red score upper bound" />
+            <span className="text-sm text-muted-foreground">/ 100</span>
+          </span>
+          <span className="mt-2 block text-xs text-muted-foreground">Scores from 0 to this value need attention.</span>
+        </label>
+
+        <label className="rounded-xl border bg-card p-4">
+          <span className="flex items-center gap-2 text-sm font-medium"><i className="size-2.5 rounded-full bg-warning" />Yellow through</span>
+          <span className="mt-3 flex items-center gap-2">
+            <Input type="number" min={1} max={100} step={1} value={yellowMax} onChange={event => onYellowMaxChange(Number(event.target.value))} aria-label="Yellow score upper bound" />
+            <span className="text-sm text-muted-foreground">/ 100</span>
+          </span>
+          <span className="mt-2 block text-xs text-muted-foreground">Scores above red through this value are on watch.</span>
+        </label>
+      </div>
+
+      <div className={cn("mt-5 rounded-xl border px-4 py-3 text-sm", valid ? "border-border bg-muted/30" : "border-destructive/40 bg-destructive/5 text-destructive")} role={valid ? "status" : "alert"}>
+        {valid ? <>Current bands: <strong className="text-destructive">0–{redMax} red</strong>, <strong className="text-warning">{redMax + 1}–{yellowMax} yellow</strong>, <strong className="text-success">{yellowMax + 1}–100 green</strong>.</> : "Choose whole numbers where red is lower than yellow, between 0 and 100."}
+      </div>
+    </section>
   );
 }
 
