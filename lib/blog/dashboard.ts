@@ -1,6 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
-import matter from "gray-matter";
+import "server-only";
+import { readPostSources } from "./source.mjs";
+import { canMutateStudio } from "@/lib/studio-access";
 import { estimateReadingMinutes, parseSections } from "@/lib/blog/parse";
 import { runSeoChecks, seoScore } from "@/lib/editor/seo-checks";
 import { DEFAULT_AUTHOR_SLUG, getAuthor } from "@/lib/blog/authors";
@@ -36,15 +36,10 @@ function toIso(v: unknown): string {
 
 /** Reads every post (drafts + scheduled included) with the metrics a writer / owner / SEO would want. */
 export function loadPostRows(): PostRow[] {
-  const dir = path.join(process.cwd(), "content", "posts");
   const today = new Date().toISOString().slice(0, 10);
 
-  return fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith(".md"))
-    .map((file): PostRow => {
-      const { data, content } = matter(fs.readFileSync(path.join(dir, file), "utf8"));
-      const slug = file.replace(/\.md$/, "");
+  return readPostSources({ localAuthoring: canMutateStudio() })
+    .map(({ slug, data, content }): PostRow => {
       const publishedAt = toIso(data.publishedAt);
       const updatedAt = data.updatedAt ? toIso(data.updatedAt) : "";
       const faqs = (data.faqs as { q: string; a: string }[]) ?? [];

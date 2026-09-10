@@ -1,8 +1,12 @@
 import type { NextConfig } from "next";
+import { localContentPath } from "./lib/publishing/local-content.mjs";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  outputFileTracingIncludes: {
+    "/*": ["./publishing.json", `./${localContentPath()}/posts/*.md`, `./${localContentPath()}/settings.json`],
+  },
   images: {
     // Local post covers are served from /public; add hosts here if you move assets to a CDN.
     formats: ["image/avif", "image/webp"],

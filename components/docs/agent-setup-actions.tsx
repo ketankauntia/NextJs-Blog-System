@@ -2,34 +2,74 @@
 
 import { useState } from "react";
 import { IconCheck, IconCopy, IconExternalLink } from "@tabler/icons-react";
-import { AiPageActions } from "@/components/blog/ai-page-actions";
 import { Button } from "@/components/blog-ui/button";
+import { buildAgentSetupPrompt } from "@/lib/agent-setup";
+import { createPublishingSetup, type SetupInput } from "@/lib/publishing/config";
+import { productConfig } from "@/lib/product";
 
-const prompt =
-  "Open and read the complete setup contract at the following URL. Then inspect my current repository, infer everything you can from the code, ask me only the unanswered setup questions that materially affect the integration, and implement the Next.js Blog System safely. Preserve my existing work, keep the hosted Studio read-only unless I explicitly approve a secured write architecture, run the full validation and acceptance checklist, review the final diff, and report any remaining risks:";
+type SetupChoice = SetupInput;
 
-export function AgentSetupActions() {
-  const [copied, setCopied] = useState(false);
+export function AgentSetupActions({ selection, compact = false }: { selection?: SetupChoice; compact?: boolean }) {
+  const [status, setStatus] = useState("");
+  const [visiblePrompt, setVisiblePrompt] = useState("");
+  const [setupLink, setSetupLink] = useState("");
+
+  async function copyLink() {
+    try {
+      const url = new URL(productConfig.routes.agentSetup, window.location.origin);
+      if (selection) url.searchParams.set("setup", JSON.stringify(createPublishingSetup(selection)));
+      setSetupLink(url.href);
+      try {
+        await navigator.clipboard.writeText(url.href);
+        setStatus("Setup link copied. Ask your agent to read it and follow the instructions. A localhost link works only for an agent with access to this computer; otherwise copy the full prompt.");
+      } catch {
+        setStatus("Clipboard unavailable. Select and copy the setup link below.");
+      }
+    } catch (error) { setStatus(error instanceof Error ? error.message : "Check your setup choices."); }
+  }
+
+  function getPrompt() {
+    return buildAgentSetupPrompt(selection ? createPublishingSetup(selection) : undefined);
+  }
 
   async function copyPrompt() {
-    const url = new URL("/agent-setup.md", window.location.origin).href;
+    let prompt: string;
+    try { prompt = getPrompt(); }
+    catch (error) { setStatus(error instanceof Error ? error.message : "Check your setup choices."); return; }
     try {
-      await navigator.clipboard.writeText(`${prompt} ${url}`);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2500);
+      await navigator.clipboard.writeText(prompt);
+      setStatus("Complete setup instructions copied. Paste them into your coding agent.");
     } catch {
-      window.open("/agent-setup.md", "_blank", "noopener,noreferrer");
+      setVisiblePrompt(prompt);
+      setStatus("Clipboard unavailable. Select and copy the complete instructions below.");
     }
   }
 
+  function showPrompt() {
+    try { setVisiblePrompt(getPrompt()); setStatus(""); }
+    catch (error) { setStatus(error instanceof Error ? error.message : "Check your setup choices."); }
+  }
+
   return (
-    <div>
+    <div className={compact ? "w-full" : undefined}>
       <div className="flex flex-wrap gap-2">
-        <Button onClick={copyPrompt}>{copied ? <IconCheck className="size-4" /> : <IconCopy className="size-4" />}{copied ? "Prompt copied" : "Copy setup prompt"}</Button>
-        <AiPageActions label="Open in AI" resourcePath="/agent-setup.md" prompt={prompt} />
-        <Button variant="outline" asChild><a href="/agent-setup.md" target="_blank" rel="noreferrer">Raw contract<IconExternalLink className="size-4" /></a></Button>
+        <Button type="button" variant={compact ? "outline" : "default"} onClick={copyLink}><IconCopy className="size-4" aria-hidden />Copy setup link</Button>
+        <Button type="button" variant={compact ? "outline" : "default"} onClick={copyPrompt}>
+          {status.startsWith("Complete") ? <IconCheck className="size-4" aria-hidden /> : <IconCopy className="size-4" aria-hidden />}
+          Copy full prompt
+        </Button>
+        <Button type="button" variant="ghost" onClick={showPrompt}>View instructions</Button>
+        {!compact && <Button variant="outline" asChild><a href={productConfig.routes.agentSetup} target="_blank" rel="noreferrer">Raw contract<IconExternalLink className="size-4" aria-hidden /></a></Button>}
       </div>
-      <p className="mt-3 text-xs text-muted-foreground" role="status" aria-live="polite">{copied ? "Paste the prompt into the coding agent that has access to your repository." : "The copied prompt uses this deployment's absolute URL."}</p>
+      <p className="mt-3 text-xs leading-relaxed text-muted-foreground" role="status" aria-live="polite">
+        {status || "The link includes your choices. Use the full prompt if your agent cannot open this website. Provider sign-in and your go-ahead come first."}
+      </p>
+      {setupLink && <label className="mt-4 block text-xs font-medium">Agent setup link<input readOnly value={setupLink} onFocus={event => event.currentTarget.select()} className="mt-2 w-full rounded-lg border bg-background p-3 text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring" /></label>}
+      {visiblePrompt && <label className="mt-4 block text-xs font-medium">
+        Complete agent instructions
+        <textarea readOnly value={visiblePrompt} rows={10} onFocus={(event) => event.currentTarget.select()}
+          className="mt-2 w-full rounded-lg border bg-background p-3 font-mono text-xs leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+      </label>}
     </div>
   );
 }

@@ -11,6 +11,8 @@
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
+    "test:publishing": "node --experimental-strip-types --test scripts/test-publishing.mjs",
+    "test:content": "node --test scripts/test-content-isolation.mjs",
     "validate": "npm run lint && npm run type-check && npm run audit:content && npm run build",
     "audit:content": "node scripts/audit-content.mjs"
   },

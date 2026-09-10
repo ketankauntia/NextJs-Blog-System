@@ -8,6 +8,7 @@ import {
   type SiteSettings,
 } from "@/lib/settings";
 import { rejectStudioMutation } from "@/lib/studio-access";
+import { resolveLocalContent } from "@/lib/publishing/local-content.mjs";
 
 export const dynamic = "force-dynamic";
 
@@ -34,8 +35,10 @@ export async function POST(req: Request) {
     postTemplate: body.postTemplate!,
     fontPairing: body.fontPairing ?? DEFAULT_SETTINGS.fontPairing,
   };
+  const target = resolveLocalContent("settings.json");
+  fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(
-    path.join(process.cwd(), "content", "settings.json"),
+    target,
     JSON.stringify(settings, null, 2) + "\n",
     "utf8",
   );

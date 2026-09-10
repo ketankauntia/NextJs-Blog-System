@@ -7,11 +7,14 @@ import {
   IconLayout,
   IconPencil,
   IconSettings,
+  IconAdjustments,
   IconTypography,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
+import { productConfig } from "@/lib/product";
 
 const links = [
+  { href: productConfig.routes.setup, label: "Setup", icon: IconAdjustments },
   { href: "/dashboard", label: "Content", icon: IconFileText },
   { href: "/dashboard/editor", label: "Editor", icon: IconPencil },
   { href: "/dashboard/preview", label: "Appearance", icon: IconLayout },

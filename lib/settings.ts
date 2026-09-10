@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import path from "node:path";
+import { resolveLocalContent } from "./publishing/local-content.mjs";
 import { cache } from "react";
 import {
   BLOG_TEMPLATES,
@@ -20,16 +20,15 @@ import {
 
 export * from "./settings-shared";
 
-const SETTINGS_FILE = path.join(process.cwd(), "content", "settings.json");
-
 /** Falls back to the default whenever the stored value is missing or unrecognised. */
 function pick<T extends string>(value: unknown, allowed: readonly T[], fallback: T): T {
   return allowed.includes(value as T) ? (value as T) : fallback;
 }
 
 export const getSettings = cache((): SiteSettings => {
+  const settingsFile = resolveLocalContent("settings.json");
   try {
-    const raw = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8")) as Partial<SiteSettings>;
+    const raw = JSON.parse(fs.readFileSync(settingsFile, "utf8")) as Partial<SiteSettings>;
     return {
       blogTemplate: pick<BlogTemplate>(raw.blogTemplate, BLOG_TEMPLATES, DEFAULT_SETTINGS.blogTemplate),
       postTemplate: pick<PostTemplate>(raw.postTemplate, POST_TEMPLATES, DEFAULT_SETTINGS.postTemplate),

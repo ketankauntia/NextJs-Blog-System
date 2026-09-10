@@ -7,10 +7,11 @@ import { Badge } from "@/components/blog-ui/badge";
 import { Button } from "@/components/blog-ui/button";
 import { AgentSetupActions } from "@/components/docs/agent-setup-actions";
 import { buildPageMetadata } from "@/lib/seo";
+import { productConfig } from "@/lib/product";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Install with an AI coding agent",
-  description: "A safe, auditable setup contract for integrating the Next.js Blog System into an existing repository.",
+  description: `A safe, auditable setup contract for integrating ${productConfig.name} into an existing repository.`,
   path: "/docs/agent-setup",
 });
 
@@ -32,7 +33,7 @@ const questions = [
 const acceptance = [
   "All selected public and machine-readable routes work",
   "Keyboard navigation, labels, focus states, themes, and responsive layouts pass review",
-  "Production editor mutations return HTTP 403 without changing files",
+  "Local production writes are blocked; login-based installs verify sessions and provider persistence",
   "Lint, types, content audit, tests, and production build pass",
   "The final diff contains no unrelated changes and has clear rollback steps",
 ];
@@ -47,7 +48,7 @@ export default function AgentSetupPage() {
             <Button variant="ghost" size="sm" asChild className="-ml-3 mb-6"><Link href="/docs"><IconArrowLeft className="size-4" />Documentation</Link></Button>
             <Badge variant="outline" className="bg-background">AGENT-READY SETUP</Badge>
             <h1 className="text-balance mt-5 max-w-4xl font-heading text-4xl font-semibold tracking-[-0.045em] sm:text-6xl">One prompt. A repository-aware integration.</h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">Give your coding agent a contract that makes it inspect first, ask only relevant questions, preserve existing work, cover edge cases, and prove the result before it stops.</p>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">Give your coding agent the setup link or full prompt. It asks you to sign in to the required accounts and confirm it can proceed, then inspects your project, configures your choices and verifies the result. No installed skill required.</p>
             <div className="mt-8"><AgentSetupActions /></div>
           </div>
         </header>
@@ -64,6 +65,11 @@ export default function AgentSetupPage() {
             })}
           </section>
 
+          <section className="mt-12 rounded-2xl border bg-muted/25 p-6 sm:p-8">
+            <h2 className="font-heading text-2xl font-semibold">The basics, on your infrastructure.</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">Local keeps blog data in your chosen repository folder. Login-based self-hosting uses email and password at /login or your chosen route, with GitHub or Supabase Storage for content and optional R2 uploads. Managed, OAuth, audit logs and advanced team features are deferred. The local runtime works today; remote authentication and storage adapters require implementation and verification during integration.</p>
+            <Link href={productConfig.routes.setup} className="mt-4 inline-block text-sm font-medium text-primary underline underline-offset-4">Choose your setup and copy personalized instructions</Link>
+          </section>
           <div className="mt-16 grid gap-12 lg:grid-cols-2">
             <Checklist eyebrow="THE AGENT INSPECTS" title="Evidence before questions" items={discovery} />
             <Checklist eyebrow="THE AGENT ASKS" title="Only decisions code cannot answer" items={questions} />

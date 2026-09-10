@@ -1,4 +1,7 @@
-export const docsMarkdown = `# Next.js Blog System
+import { productConfig } from "@/lib/product";
+import { agentCloudContract } from "@/lib/agent-cloud-contract";
+
+export const docsMarkdown = `# ${productConfig.name}
 
 A repository-native publishing system built for the Next.js App Router. Content remains portable Markdown in Git while the application generates a polished reader experience, metadata, discovery routes, feeds, social images, and a local authoring Studio.
 
@@ -22,7 +25,7 @@ A repository-native publishing system built for the Next.js App Router. Content 
 ## Quick start
 
 \`\`\`bash
-git clone https://github.com/ketankauntia/NextJs-Blog-System.git
+git clone ${productConfig.repositoryUrl}.git
 cd NextJs-Blog-System
 npm install
 npm run dev
@@ -70,7 +73,7 @@ Optional fields include \`updatedAt\`, \`featured\`, \`cornerstone\`, \`noindex\
 
 The deployed \`/dashboard\` is intentionally public and read-only so evaluators can explore the product. The UI permits temporary browser-only edits and previews. All filesystem write endpoints return HTTP 403 outside development before reading request bodies or writing files. Saving settings, uploading images, and saving posts work only under \`npm run dev\`.
 
-A public Studio can reveal draft content stored in the repository. If a downstream project contains private drafts, set \`STUDIO_DEMO_ENABLED=false\`. That removes Studio navigation and makes every Studio page return 404 in production while keeping local development authoring available.
+The public Studio and public content routes exclude drafts and future-dated posts. Local Studio retains authoring access to both. Set \`STUDIO_DEMO_ENABLED=false\` to remove Studio navigation and make every Studio page return 404 in production. Drafts committed to a public Git repository remain visible through Git, and files placed under public/ remain directly accessible; application filtering does not make those files private.
 
 For a private production CMS, replace the development-only policy with authentication, per-resource authorization, persistent storage, input validation, rate limiting, audit logging, and CSRF-aware mutation handling. Do not enable production writes by changing only the environment check.
 
@@ -117,15 +120,19 @@ Use the guided contract at \`/agent-setup.md\` when asking an AI coding agent to
 MIT.
 `;
 
-export const agentSetupMarkdown = `# AI Agent Setup Contract for Next.js Blog System
+export const agentSetupMarkdown = `# AI Agent Setup Contract for ${productConfig.name}
 
 ## Objective
 
-Integrate the Next.js Blog System into the user's repository safely, preserve existing work, and deliver a validated publishing experience that matches the target product. Do not overwrite the target application wholesale.
+Integrate ${productConfig.name} into the user's repository safely, preserve existing work, and deliver a validated publishing experience that matches the target product. Do not overwrite the target application wholesale.
 
-Source repository: https://github.com/ketankauntia/NextJs-Blog-System
+Source repository: ${productConfig.repositoryUrl}
 Human documentation: /docs
 Machine-readable documentation: /docs.md
+
+## First: account access and confirmation
+
+Ask the user to sign in to the provider accounts their selection needs and explicitly confirm that you may proceed. Local writing requires no provider. Login-based GitHub needs GitHub and Supabase Auth; Supabase Storage needs Supabase; optional R2 uploads also need Cloudflare. Do not access private provider resources or provision anything before the go-ahead. Inspect local files while waiting. After confirmation, complete authorized work autonomously and only ask about genuine blockers or new decisions. Never ask for secrets in chat.
 
 ## Operating rules
 
@@ -134,7 +141,7 @@ Machine-readable documentation: /docs.md
 3. Treat existing UI, content, routes, analytics, authentication, and deployment configuration as user-owned.
 4. Ask only questions that cannot be answered from the repository. Group the remaining questions into one short checkpoint.
 5. Present the inferred integration plan and route map before implementation when any route, CMS, or data migration decision could be destructive.
-6. Keep the production Studio read-only unless the user explicitly requests a secured production CMS and approves its storage and authentication architecture.
+6. Local mode keeps production Studio read-only. A confirmed login-based selection authorizes implementing its basic secured CMS; keep hosted mutations disabled until verified authentication, authorization and durable storage exist.
 7. Run the target repository's own validation commands plus focused route and accessibility checks. Report any pre-existing failures separately.
 
 ## Discovery checklist
@@ -196,7 +203,7 @@ Install the parser, types, validation, and machine-readable outputs without repl
 4. Merge design tokens and shared UI primitives without replacing unrelated globals.
 5. Integrate typed content, authors, settings, parsing, and content validation.
 6. Add listing, article, category, tag, author, search, feed, sitemap, robots, social image, and machine-readable routes selected by the user.
-7. Add Studio pages. Keep hosted writes disabled by default. Verify POST endpoints reject production mutations at the server boundary.
+7. Add Studio pages. Local installs keep hosted writes disabled. Login-based installs must reject unauthorized reads/writes and verify authorized provider persistence before enabling hosted editing.
 8. Migrate content with a repeatable transform when migration is requested. Preserve source data until the user approves deletion.
 9. Configure metadata, canonical URLs, image behavior, and deployment variables.
 10. Update repository documentation with exact commands, content fields, routes, customization points, and rollback steps.
@@ -216,7 +223,7 @@ Install the parser, types, validation, and machine-readable outputs without repl
 - Duplicate slugs or invalid frontmatter: fail validation with an actionable file-level message.
 - No JavaScript: core navigation and article content must remain usable.
 - Clipboard or AI-provider failure: retain visible raw links and selectable prompt text.
-- Production mutation attempt: return 403 before parsing bodies or touching storage.
+- Unauthorized production mutation attempt: return 403 before parsing bodies or touching storage. Local mode rejects all production mutations.
 - Serverless filesystem: never represent ephemeral writes as durable publishing.
 - Secrets: never expose server-only variables through client props or \`NEXT_PUBLIC_\` names.
 
@@ -229,15 +236,12 @@ Install the parser, types, validation, and machine-readable outputs without repl
 - Headings, labels, landmarks, dialogs, menus, and status messages have accessible names.
 - Layout works at 320, 768, 1024, and 1440 pixel widths without horizontal page overflow.
 - Light and dark themes retain readable contrast.
-- A production POST to every editor mutation endpoint returns 403 and does not modify files.
+- Local mode: every production editor mutation returns 403. Login-based mode: anonymous/foreign-user mutations fail and authorized writes persist to the selected provider.
 - A development save writes the expected Markdown and passes the content audit.
 - Canonical, Open Graph, structured data, and feed URLs use the configured production origin.
 - No unrelated user files or dependencies changed.
 
 ## Final response format
 
-Report the integration mode, key decisions, changed routes, validation evidence, known limitations, environment variables, and exact next commands. Clearly separate completed work from optional follow-ups.
-`;
-
-export const agentInstallPrompt =
-  "Open and read the complete setup contract at the following URL. Then inspect my current repository, infer everything you can from the code, ask me only the unanswered setup questions that materially affect the integration, and implement the Next.js Blog System safely. Preserve my existing work, keep the hosted Studio read-only unless I explicitly approve a secured write architecture, run the full validation and acceptance checklist, review the final diff, and report any remaining risks:";
+Report the integration mode, key decisions, changed routes, validation evidence, known limitations, environment variable names (not values), and exact next commands. Clearly separate completed work from optional follow-ups.
+${agentCloudContract}`;

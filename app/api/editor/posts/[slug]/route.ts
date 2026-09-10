@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { rejectStudioMutation } from "@/lib/studio-access";
+import { localContentPath, resolveLocalContent } from "@/lib/publishing/local-content.mjs";
 
 export const dynamic = "force-dynamic";
 
@@ -34,8 +35,9 @@ export async function POST(
   );
 
   const file = matter.stringify("\n" + body.trim() + "\n", clean);
-  const target = path.join(process.cwd(), "content", "posts", `${slug}.md`);
+  const target = resolveLocalContent("posts", `${slug}.md`);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, file, "utf8");
 
-  return Response.json({ ok: true, path: `content/posts/${slug}.md` });
+  return Response.json({ ok: true, path: `${localContentPath()}/posts/${slug}.md` });
 }
