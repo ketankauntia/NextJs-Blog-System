@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { IconArrowDown, IconArrowRight, IconBrandGithub, IconCloud, IconDatabase, IconDeviceLaptop, IconLock, IconServer } from "@tabler/icons-react";
+import { IconArrowDown, IconArrowRight, IconCloud, IconFolder, IconTransfer, IconArchive, IconDeviceLaptop, IconLock, IconServer } from "@tabler/icons-react";
+import { SiGithub, SiSupabase, SiCloudflare, SiVercel } from "@icons-pack/react-simple-icons";
 import { AgentSetupActions } from "@/components/docs/agent-setup-actions";
-import { createPublishingSetup, defaultPublishingSetup, serializePublishingSetup, type ContentDestination, type PublishingMode, type HostingTarget, type PublishingSetup, type InstallationTarget } from "@/lib/publishing/config";
+import { createPublishingSetup, defaultPublishingSetup, serializePublishingSetup, type ContentDestination, type PublishingMode, type HostingTarget, type PublishingSetup, type InstallationTarget, type ExistingContent } from "@/lib/publishing/config";
 import { ProviderOption } from "@/components/publishing/provider-option";
 import { getSetupGuide } from "@/lib/publishing/guide";
-import { productConfig } from "@/lib/product";
 
-const inputClass = "w-full rounded-lg border bg-background px-3.5 py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+const inputClass = "w-full rounded-md border bg-background px-3 py-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function SetupGuide() {
   const [installation, setInstallation] = useState<InstallationTarget>("fresh");
@@ -18,15 +19,17 @@ export function SetupGuide() {
   const [hosting, setHosting] = useState<HostingTarget>("vercel");
   const [name, setName] = useState(defaultPublishingSetup.projectName ?? "");
   const [contentPath, setContentPath] = useState("content");
+  const [blogRoute, setBlogRoute] = useState("/blog");
+  const [existingContent, setExistingContent] = useState<ExistingContent>("keep");
   const [loginRoute, setLoginRoute] = useState("/login");
   const [useR2, setUseR2] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const local = mode === "local";
   const destination = local ? "github" : remoteDestination;
-  const assets = local ? "repository" : useR2 ? "r2" : destination === "github" ? "repository" : "supabase";
+  const assets = local ? "repository" : destination === "r2" || useR2 ? "r2" : "repository";
   const existing = installation === "existing";
-  const selection = { installation, projectName: existing ? null : name, mode, destination, hosting, contentPath, loginRoute, assets } as const;
+  const selection = { installation, projectName: existing ? null : name, mode, destination, hosting, contentPath, blogRoute, existingContent: existing ? existingContent : null, loginRoute, assets } as const;
 
   function clearFeedback() { setNotice(""); setError(""); }
 
@@ -60,98 +63,116 @@ export function SetupGuide() {
         <h2 id="setup-title" className="mt-3 font-heading text-3xl font-semibold tracking-tight">Choose how your blog runs</h2>
         <p className="mt-3 leading-7 text-muted-foreground">Choose once. Your AI instructions and manual guide below update together.</p>
       </div>
-      <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
-        <div className="space-y-8 p-6 sm:p-8">
+      <div className="overflow-hidden rounded-lg border bg-card">
+        <div className="space-y-6 p-5 sm:p-7">
           <fieldset>
             <legend className="mb-3 text-sm font-semibold">Where are you adding your blog?</legend>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <ProviderOption name="installation" value="fresh" label="Fresh project" description="Start a new website from the starter." selected={!existing} icon={<IconDeviceLaptop className="size-5" />} onSelect={() => { setInstallation("fresh"); setHosting("vercel"); clearFeedback(); }} />
-              <ProviderOption name="installation" value="existing" label="Existing website" description="Add a blog to your app. Keep its identity and setup." selected={existing} icon={<IconServer className="size-5" />} onSelect={() => { setInstallation("existing"); setHosting("existing"); clearFeedback(); }} />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <ProviderOption name="installation" value="fresh" label="Fresh project" description="Start a new website from the starter." selected={!existing} icon={<IconDeviceLaptop className="size-4" />} onSelect={() => { setInstallation("fresh"); if (existing) setHosting("vercel"); clearFeedback(); }} />
+              <ProviderOption name="installation" value="existing" label="Existing website" description="Add a blog to your app. Keep its identity and setup." selected={existing} icon={<IconServer className="size-4" />} onSelect={() => { setInstallation("existing"); if (!existing) setHosting("existing"); clearFeedback(); }} />
             </div>
           </fieldset>
           {!existing ? <div className="sm:max-w-sm">
             <label htmlFor="project-name" className="mb-2 block text-sm font-semibold">Project name</label>
             <input id="project-name" name="projectName" value={name} required maxLength={80} onChange={event => { setName(event.target.value); clearFeedback(); }} className={inputClass} />
-          </div> : <p className="text-sm leading-7 text-muted-foreground">No new project name needed. Your agent checks the target app, existing routes, content and login before merging the blog. Keep your current branding, domain and package manager.</p>}
+          </div> : <p className="text-sm leading-7 text-muted-foreground">Your site keeps its name, branding and current setup.</p>}
 
           <fieldset>
             <legend className="mb-3 text-sm font-semibold">How would you like to write?</legend>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <ProviderOption name="mode" value="local" label="Local" description="Write on your computer. Blog data stays in your repository." selected={local} icon={<IconDeviceLaptop className="size-5" />} onSelect={() => { setMode("local"); clearFeedback(); }} />
-              <ProviderOption name="mode" value="self-hosted" label="Login-based" description="Self-hosted on your domain, with email and password." selected={!local} icon={<IconLock className="size-5" />} onSelect={() => { setMode("self-hosted"); clearFeedback(); }} />
-              <ProviderOption name="mode" value="managed" label="Managed" description="A hosted service, managed for you." selected={false} disabled disabledReason="Coming soon" icon={<IconCloud className="size-5" />} onSelect={() => {}} />
+            <div className="grid gap-2 sm:grid-cols-3">
+              <ProviderOption name="mode" value="local" label="Local" description="Write locally. Keep data in Git." selected={local} icon={<IconDeviceLaptop className="size-4" />} onSelect={() => { setMode("local"); clearFeedback(); }} />
+              <ProviderOption name="mode" value="self-hosted" label="Login-based" description="Write from your website." selected={!local} icon={<IconLock className="size-4" />} onSelect={() => { setMode("self-hosted"); clearFeedback(); }} />
+              <ProviderOption name="mode" value="managed" label="Managed" description="We handle the hosting." selected={false} disabled disabledReason="Coming soon" icon={<IconCloud className="size-4" />} onSelect={() => {}} />
             </div>
           </fieldset>
 
-          {local ? (
-            <div className="rounded-xl bg-muted/40 p-5">
-              <p className="text-sm font-medium">Everything in your repository</p>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Posts and settings live in the folder you choose below. No login or database is needed. Commit and push using your existing Git workflow.</p>
-            </div>
-          ) : (
+          {!local && (
             <>
               <fieldset>
                 <legend className="mb-3 text-sm font-semibold">Login</legend>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <ProviderOption name="authentication" value="email-password" label="Email and password" description="Individual accounts with Supabase Auth, whichever content store you choose." selected icon={<IconLock className="size-5" />} onSelect={() => {}} />
-                  <ProviderOption name="authentication" value="oauth" label="OAuth" description="Sign in with Google, GitHub and more." selected={false} disabled disabledReason="Coming soon" icon={<IconBrandGithub className="size-5" />} onSelect={() => {}} />
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <ProviderOption name="authentication" value="email-password" label="Email and password" description="Powered by Supabase Auth." selected icon={<IconLock className="size-4" />} onSelect={() => {}} />
+                  <ProviderOption name="authentication" value="oauth" label="OAuth" description="Google, GitHub and more." selected={false} disabled disabledReason="Coming soon" icon={<SiGithub className="size-4" />} onSelect={() => {}} />
                 </div>
                 <label htmlFor="login-route" className="mb-2 mt-5 block text-sm font-semibold">Login route</label>
-                <input id="login-route" name="loginRoute" value={loginRoute} required maxLength={160} spellCheck={false} onChange={event => { setLoginRoute(event.target.value); clearFeedback(); }} aria-describedby="login-route-help" className={inputClass} placeholder="/login" />
-                <p id="login-route-help" className="mt-2 break-all text-xs leading-relaxed text-muted-foreground">Your domain + {loginRoute || "/login"}. Use /login or an available path such as /team/sign-in. Your agent checks for route conflicts.</p>
+                <div className="flex min-w-0 items-center rounded-md border bg-background focus-within:ring-2 focus-within:ring-ring">
+                  <span className="shrink-0 border-r px-3 text-xs text-muted-foreground">www.xyzdomain.com/</span>
+                  <input id="login-route" name="loginRoute" value={loginRoute.replace(/^\//, "")} required maxLength={159} spellCheck={false} onChange={event => { setLoginRoute("/" + event.target.value.replace(/^\//, "")); clearFeedback(); }} aria-describedby="login-route-help" className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm outline-none" placeholder="login" />
+                </div>
+                <p id="login-route-help" className="mt-2 text-xs text-muted-foreground">Your domain is detected during setup. Existing login routes are checked first.</p>
               </fieldset>
               <fieldset>
                 <legend className="mb-3 text-sm font-semibold">Where should your content live?</legend>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <ProviderOption name="destination" value="github" label="GitHub repository" description="Keep Markdown content in your own GitHub repository." selected={destination === "github"} icon={<IconBrandGithub className="size-5" />} onSelect={() => { setRemoteDestination("github"); clearFeedback(); }} />
-                  <ProviderOption name="destination" value="supabase" label="Supabase Storage" description="Keep content and uploads in your own Supabase project." selected={destination === "supabase"} icon={<IconDatabase className="size-5" />} onSelect={() => { setRemoteDestination("supabase"); clearFeedback(); }} />
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <ProviderOption name="destination" value="github" label="GitHub" description="Content in your repository." selected={destination === "github"} icon={<SiGithub className="size-4" />} onSelect={() => { setRemoteDestination("github"); clearFeedback(); }} />
+                  <ProviderOption name="destination" value="supabase" label="Supabase" description="Content in Supabase Storage." selected={false} disabled disabledReason="Coming soon" icon={<SiSupabase className="size-4" />} onSelect={() => {}} />
+                  <ProviderOption name="destination" value="r2" label="Cloudflare R2" description="Content and uploads together." selected={destination === "r2"} icon={<SiCloudflare className="size-4" />} onSelect={() => { setRemoteDestination("r2"); clearFeedback(); }} />
                 </div>
-                <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-lg border p-4">
-                  <input type="checkbox" name="r2" checked={useR2} onChange={event => { setUseR2(event.target.checked); clearFeedback(); }} className="mt-1 size-4 accent-primary" />
-                  <span><span className="block text-sm font-medium">Use Cloudflare R2 for images and uploads</span><span className="mt-1 block text-xs leading-relaxed text-muted-foreground">Optional. Your written content stays in {destination === "github" ? "GitHub" : "Supabase Storage"}.</span></span>
-                </label>
+                {destination !== "r2" ? <label className="mt-3 flex cursor-pointer items-center gap-2.5 text-xs text-muted-foreground">
+                  <input type="checkbox" name="r2" checked={useR2} onChange={event => { setUseR2(event.target.checked); clearFeedback(); }} className="size-4 accent-primary" />
+                  <SiCloudflare className="size-4 shrink-0" aria-hidden />
+                  Use R2 for images and uploads
+                </label> : <p className="mt-3 text-xs text-muted-foreground">Posts, settings, images and uploads all stay in R2.</p>}
               </fieldset>
             </>
           )}
 
-          <div>
-            <label htmlFor="content-path" className="mb-2 block text-sm font-semibold">{destination === "supabase" ? "Content folder / storage prefix" : "Blog data folder in your repository"}</label>
-            <input id="content-path" name="contentPath" value={contentPath} required maxLength={200} spellCheck={false} onChange={event => { setContentPath(event.target.value); clearFeedback(); }} aria-describedby="content-path-help" className={inputClass} placeholder="content" />
-            <p id="content-path-help" className="mt-2 text-xs leading-relaxed text-muted-foreground">For example, content or data/blog. Posts use &lt;folder&gt;/posts and settings use &lt;folder&gt;/settings.json. {destination === "supabase" ? "This is a prefix in your selected storage bucket." : "Paths are relative to the target app root, including in a monorepo."} Existing content must be checked before using this folder.</p>
+          <div className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="content-path" className="mb-2 block text-sm font-medium">Where is your blog data stored?</label>
+              <input id="content-path" name="contentPath" value={contentPath} required maxLength={200} spellCheck={false} onChange={event => { setContentPath(event.target.value); clearFeedback(); }} aria-describedby="content-path-help" className={inputClass} placeholder="content" />
+              <p id="content-path-help" className="mt-2 text-xs leading-5 text-muted-foreground">{destination === "r2" ? "Folder prefix in your R2 bucket." : "Folder inside your app, e.g. content or data/blog."} Not a public URL.</p>
+            </div>
+            <div>
+              <label htmlFor="blog-route" className="mb-2 block text-sm font-medium">Where can readers find your blog?</label>
+              <div className="flex min-w-0 items-center rounded-md border bg-background focus-within:ring-2 focus-within:ring-ring">
+                <span className="shrink-0 border-r px-2 text-[11px] text-muted-foreground">www.xyzdomain.com/</span>
+                <input id="blog-route" name="blogRoute" value={blogRoute.replace(/^\//, "")} required maxLength={159} spellCheck={false} onChange={event => { setBlogRoute("/" + event.target.value.replace(/^\//, "")); clearFeedback(); }} aria-describedby="blog-route-help" className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm outline-none" placeholder="blog" />
+              </div>
+              <p id="blog-route-help" className="mt-2 text-xs leading-5 text-muted-foreground">Your domain + the blog route. The agent checks availability.</p>
+            </div>
           </div>
 
+          {existing && <fieldset>
+            <legend className="mb-3 text-sm font-medium">What happens to your existing blog content?</legend>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <ProviderOption name="existingContent" value="keep" label="Keep as is" description="Leave current content untouched." selected={existingContent === "keep"} icon={<IconFolder className="size-4" />} onSelect={() => { setExistingContent("keep"); clearFeedback(); }} />
+              <ProviderOption name="existingContent" value="migrate" label="Port into this blog" description="Import posts and preserve URLs." selected={existingContent === "migrate"} icon={<IconTransfer className="size-4" />} onSelect={() => { setExistingContent("migrate"); clearFeedback(); }} />
+              <ProviderOption name="existingContent" value="replace" label="Start fresh" description="Back up, then remove old blog content." selected={existingContent === "replace"} icon={<IconArchive className="size-4" />} onSelect={() => { setExistingContent("replace"); clearFeedback(); }} />
+            </div>
+            {existingContent === "replace" && <p className="mt-2 text-xs text-muted-foreground">Your agent confirms the exact removal scope after preparing a backup. Other website content stays untouched.</p>}
+          </fieldset>}
+
           <fieldset>
-            <legend className="mb-3 text-sm font-semibold">Website hosting</legend>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {existing && <ProviderOption name="hosting" value="existing" label="Keep current hosting" description="Use your existing domain and deployment workflow." selected={hosting === "existing"} icon={<IconServer className="size-5" />} onSelect={() => { setHosting("existing"); clearFeedback(); }} />}
-              {productConfig.providers.hosting.map(option => <ProviderOption key={option.value} name="hosting" {...option} selected={hosting === option.value} icon={option.value === "vercel" ? <IconCloud className="size-5" /> : <IconServer className="size-5" />} onSelect={() => { setHosting(option.value); clearFeedback(); }} />)}
+            <legend className="mb-3 text-sm font-medium">{existing ? "Where is your website hosted?" : "Where will you host your website?"}</legend>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <ProviderOption name="hosting" value="vercel" label="Vercel" description={existing ? "Keep your Vercel deployment." : "Deploy with Vercel."} selected={hosting === "vercel"} icon={<SiVercel className="size-4" />} onSelect={() => { setHosting("vercel"); clearFeedback(); }} />
+              <ProviderOption name="hosting" value="self-hosted" label="Self-hosted" description={existing ? "Keep your own server." : "Use your own Node.js server."} selected={hosting === "self-hosted"} icon={<IconServer className="size-4" />} onSelect={() => { setHosting("self-hosted"); clearFeedback(); }} />
+              {existing && <ProviderOption name="hosting" value="existing" label="Other / not sure" description="Detect and keep current hosting." selected={hosting === "existing"} icon={<IconCloud className="size-4" />} onSelect={() => { setHosting("existing"); clearFeedback(); }} />}
             </div>
           </fieldset>
 
         </div>
+        {validationError && <p role="alert" className="border-t px-5 py-4 text-sm text-destructive sm:px-7">{validationError}</p>}
+        {setup && guide && <section id="agent-setup" className="scroll-mt-24 border-t bg-muted/20 p-5 sm:p-7" aria-labelledby="agent-setup-title">
+          <p className="font-mono text-[10px] tracking-[0.16em] text-primary">AUTOMATIC SETUP</p>
+          <h2 id="agent-setup-title" className="mt-2 font-heading text-xl font-semibold tracking-tight">Set up with your AI agent</h2>
+          <ul className="mt-3 list-disc space-y-1 pl-4 text-xs leading-6 text-muted-foreground">
+            <li>{guide.title} · {setup.blogRoute} · {setup.contentPath}/posts</li>
+            <li>Copy the prompt into your agent inside the target project.</li>
+            <li>{guide.accounts.length ? `Sign in to ${guide.accounts.join(" and ")}, then confirm access when asked.` : "No account needed for local writing."}</li>
+            {!local && <li>Hosted login and storage still need implementation; the agent guide includes this work.</li>}
+          </ul>
+          <div className="mt-4"><AgentSetupActions key={JSON.stringify(setup)} selection={setup} /></div>
+        </section>}
       </div>
-      {validationError && <p role="alert" className="mt-4 text-sm text-destructive">{validationError}</p>}
       {setup && guide && <>
-        <div className="mt-5 rounded-xl bg-muted/45 p-5" aria-live="polite">
-          <p className="text-sm font-semibold">{guide.title}</p>
-          <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">{existing ? "Existing website" : setup.projectName} · {setup.contentPath}/posts · {local ? "No blog login" : `Login at ${setup.loginRoute}`} · {hosting === "existing" ? "Current hosting" : hosting === "vercel" ? "Vercel website" : "Your own server"}</p>
-          {!local && <p className="mt-3 text-sm leading-6 text-muted-foreground">This path requires implementing and verifying authentication and storage adapters. The guide covers that work; selecting these options does not activate hosted editing.</p>}
-        </div>
-
-        <section id="agent-setup" className="mt-10 scroll-mt-24 rounded-2xl border border-primary/25 bg-primary/5 p-6 sm:p-8" aria-labelledby="agent-setup-title">
-          <p className="font-mono text-xs tracking-[0.16em] text-primary">AUTOMATIC SETUP</p>
-          <h2 id="agent-setup-title" className="mt-3 font-heading text-2xl font-semibold tracking-tight">Let your AI agent take it from here</h2>
-          <p className="mt-3 text-sm leading-7 text-muted-foreground">Copy the prompt into your agent in the target project. Its link opens the complete guide for your choices, including your folder, login route and hosting. The agent installs, checks its work, and asks when it needs access or a decision.</p>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">{guide.accounts.length ? `Have ${guide.accounts.join(" and ")} ready. The agent asks you to sign in and confirm before accessing your accounts.` : "No provider sign-in is needed for local writing. The agent asks for access only if you want it to connect a repository or deploy."}</p>
-          <div className="mt-5"><AgentSetupActions key={JSON.stringify(setup)} selection={setup} /></div>
-        </section>
-
-        <section id="manual-setup" className="mt-14 scroll-mt-24 border-t pt-10" aria-labelledby="manual-setup-title">
-          <p className="font-mono text-xs tracking-[0.16em] text-muted-foreground">MANUAL SETUP</p>
-          <h2 id="manual-setup-title" className="mt-3 font-heading text-2xl font-semibold tracking-tight">Prefer to do it yourself?</h2>
-          <p className="mt-3 text-sm leading-7 text-muted-foreground">Follow this guide for {guide.title}. Changing your choices above updates these steps too.</p>
+        <div className="my-9 flex items-center gap-4" aria-label="Or set up manually"><div className="h-px flex-1 bg-border" /><span className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground">OR</span><div className="h-px flex-1 bg-border" /></div>
+        <section id="manual-setup" className="scroll-mt-24" aria-labelledby="manual-setup-title">
+          <p className="font-mono text-[10px] tracking-[0.16em] text-muted-foreground">MANUAL SETUP</p>
+          <h2 id="manual-setup-title" className="mt-2 font-heading text-xl font-semibold tracking-tight">Set it up yourself</h2>
           <div className="mt-5">
-            <button type="button" onClick={downloadSetup} className="inline-flex min-h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium hover:bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring"><IconArrowDown className="size-4" aria-hidden />Download publishing.json</button>
+            <button type="button" onClick={downloadSetup} className="inline-flex min-h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium hover:bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring"><IconArrowDown className="size-4" aria-hidden />Download publishing.json</button>
             <p role="status" className="mt-2 text-xs leading-6 text-muted-foreground">{notice}</p>
             <p role="alert" className="text-xs text-destructive">{error}</p>
           </div>
@@ -160,7 +181,7 @@ export function SetupGuide() {
               <p className="font-mono text-[0.68rem] tracking-[0.16em] text-primary">STEP {String(index + 1).padStart(2, "0")}</p>
               <h3 className="mt-2 font-heading text-xl font-semibold">{step.title}</h3>
               <p className="mt-3 whitespace-pre-line text-sm leading-7 text-muted-foreground">{step.body}</p>
-              {step.command && <pre className="mt-4 overflow-x-auto rounded-xl border bg-foreground p-5 text-xs leading-6 text-background"><code>{step.command}</code></pre>}
+              {step.command && <pre className="mt-4 overflow-x-auto rounded-md border bg-foreground p-5 text-xs leading-6 text-background"><code>{step.command}</code></pre>}
             </li>)}
           </ol>
           <Link href="/dashboard/editor" className="mt-8 inline-flex min-h-11 items-center gap-2 rounded text-sm font-medium outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring">Explore the editor<IconArrowRight className="size-4" aria-hidden /></Link>

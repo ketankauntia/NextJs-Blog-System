@@ -28,8 +28,8 @@ test("existing integration guides never prescribe cloning, renaming or npm-only 
       ["local", "github", "repository"],
       ["self-hosted", "github", "repository"],
       ["self-hosted", "github", "r2"],
-      ["self-hosted", "supabase", "supabase"],
-      ["self-hosted", "supabase", "r2"],
+      ["self-hosted", "r2", "r2"],
+
     ]) {
       const setup = createPublishingSetup({ installation: "existing", mode, destination, assets, hosting, contentPath: "data/journal", loginRoute: "/staff/sign-in" });
       const guide = getSetupGuide(setup);
@@ -40,7 +40,7 @@ test("existing integration guides never prescribe cloning, renaming or npm-only 
       assert.match(markdown, /Preserve the website's authentication/);
       assert.match(markdown, /selected app root/);
       assert.match(markdown, /actual scripts/);
-      assert.equal(guide.steps.some(step => step.title === "Keep your current deployment"), hosting === "existing");
+      assert.equal(guide.steps.some(step => step.title === "Keep your current deployment"), true);
       for (const step of guide.steps) assert.ok(markdown.includes(step.body));
     }
   }
@@ -52,15 +52,15 @@ test("selected guides cover every supported content, asset and hosting combinati
       ["local", "github", "repository", []],
       ["self-hosted", "github", "repository", ["GitHub", "Supabase"]],
       ["self-hosted", "github", "r2", ["GitHub", "Supabase", "Cloudflare"]],
-      ["self-hosted", "supabase", "supabase", ["Supabase"]],
-      ["self-hosted", "supabase", "r2", ["Supabase", "Cloudflare"]],
+      ["self-hosted", "r2", "r2", ["Supabase", "Cloudflare"]],
+
     ]) {
       const setup = createPublishingSetup({ projectName: "Selected blog", mode, destination, assets, hosting, contentPath: "data/journal", loginRoute: "/staff/sign-in" });
       const guide = getSetupGuide(setup);
       assert.deepEqual(guide.accounts, accounts);
       const titles = guide.steps.map(step => step.title).join("\n");
       assert.equal(titles.includes("Implement GitHub content storage"), mode !== "local" && destination === "github");
-      assert.equal(titles.includes("Implement Supabase Storage content"), destination === "supabase");
+      assert.equal(titles.includes("Implement Cloudflare R2 content storage"), destination === "r2");
       assert.equal(titles.includes("Connect Cloudflare R2 uploads"), assets === "r2");
       assert.equal(titles.includes("Implement email login at /staff/sign-in"), mode !== "local");
       assert.equal(titles.includes("Deploy the website to Vercel"), hosting === "vercel");
@@ -94,8 +94,8 @@ test("OSS setups have one project and managed is unavailable", () => {
   assert.throws(() => createPublishingSetup({ projectName: "Project", mode: "managed", destination: "github" }), /coming soon/);
 });
 
-test("login-based content uses GitHub or Supabase and always needs authentication", () => {
-  for (const destination of ["github", "supabase"]) {
+test("login-based content uses GitHub or R2 and always needs authentication", () => {
+  for (const destination of ["github", "r2"]) {
     const setup = createPublishingSetup({ projectName: "Test", mode: "self-hosted", destination, loginRoute: "/team/sign-in", assets: "r2" });
     assert.equal(setup.database, "supabase");
     assert.equal(setup.authentication, "email-password");
@@ -114,9 +114,9 @@ test("paths and authentication cannot bypass setup restrictions", () => {
     assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, contentPath }));
   }
   assert.equal(createPublishingSetup({ ...defaultPublishingSetup, contentPath: "data\\blog/" }).contentPath, "data/blog");
-  const remote = { projectName: "Blog", mode: "self-hosted", destination: "supabase" };
+  const remote = { projectName: "Blog", mode: "self-hosted", destination: "r2" };
   assert.equal(createPublishingSetup(remote).loginRoute, "/login");
-  assert.equal(createPublishingSetup(remote).assets, "supabase");
+  assert.equal(createPublishingSetup(remote).assets, "r2");
   for (const loginRoute of ["/", "//evil.com", "https://example.com/login", "/api/login", "/dashboard", "/blog/login", "/docs", "/a?b=c", "/%2e%2e", "/a/../login"]) {
     assert.throws(() => createPublishingSetup({ ...remote, loginRoute }));
   }
@@ -136,4 +136,24 @@ test("setup rejects empty or unsafe names and excludes extra secret fields", () 
   const output = JSON.parse(serializePublishingSetup({ ...defaultPublishingSetup, projectName: "  Team  ", secret: "do-not-export" }));
   assert.equal(output.projectName, "Team");
   assert.equal(Object.hasOwn(output, "secret"), false);
+});
+
+
+test("content policy and public route choices survive serialization; disabled storage cannot bypass UI", () => {
+  for (const existingContent of ["keep", "migrate", "replace"]) {
+    const setup = createPublishingSetup({ installation: "existing", mode: "self-hosted", destination: "r2", blogRoute: "/journal", loginRoute: "/staff/login", existingContent });
+    const parsed = JSON.parse(serializePublishingSetup(setup));
+    assert.equal(parsed.blogRoute, "/journal");
+    assert.equal(parsed.existingContent, existingContent);
+    assert.equal(parsed.assets, "r2");
+    const guide = renderSetupGuideMarkdown(setup);
+    assert.match(guide, /Mount the blog at \/journal/);
+    if (existingContent === "replace") assert.match(guide, /confirm that exact scope before removing/);
+  }
+  assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, destination: "supabase", mode: "self-hosted" }), /coming soon/);
+  assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, mode: "self-hosted", destination: "r2", assets: "repository" }));
+  assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, installation: "existing", existingContent: "delete-all" }));
+  assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, existingContent: "replace" }));
+  for (const blogRoute of ["/", "/api/blog", "//evil.com", "/a?x=1", "/a/../b"]) assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, blogRoute }));
+  for (const [blogRoute, loginRoute] of [["/journal", "/journal"], ["/journal", "/journal/login"], ["/staff/blog", "/staff"]]) assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, mode: "self-hosted", authentication: "email-password", database: "supabase", blogRoute, loginRoute }), /overlap/);
 });

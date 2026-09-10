@@ -136,7 +136,7 @@ Machine-readable documentation: /docs.md
 
 ## First: account access and confirmation
 
-Ask the user to sign in to the provider accounts their selection needs and explicitly confirm that you may proceed. Local writing requires no provider. Login-based GitHub needs GitHub and Supabase Auth; Supabase Storage needs Supabase; optional R2 uploads also need Cloudflare. Do not access private provider resources or provision anything before the go-ahead. Inspect local files while waiting. After confirmation, complete authorized work autonomously and only ask about genuine blockers or new decisions. Never ask for secrets in chat.
+Ask the user to sign in to the provider accounts their selection needs and explicitly confirm that you may proceed. Local writing requires no provider. Login-based GitHub needs GitHub and Supabase Auth; R2 content needs Cloudflare and Supabase Auth; optional R2 uploads also need Cloudflare. Do not access private provider resources or provision anything before the go-ahead. Inspect local files while waiting. After confirmation, complete authorized work autonomously and only ask about genuine blockers or new decisions. Never ask for secrets in chat.
 
 ## Operating rules
 

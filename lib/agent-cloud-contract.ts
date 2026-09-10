@@ -9,19 +9,19 @@ Before private provider reads, account changes, resource creation or deployment,
 
 - Local: no provider is required to write files. GitHub sign-in is needed only if the user wants you to connect or push a repository.
 - Login-based + GitHub: GitHub for content and Supabase for email/password authentication.
-- Login-based + Supabase Storage: Supabase for authentication and content storage.
+- Login-based + R2: Cloudflare for all content/uploads and Supabase for authentication. Supabase Storage is disabled (Coming soon).
 - Optional R2 uploads: also Cloudflare, with the intended account and bucket.
 
 After the go-ahead, verify the observed account and resource identity using available tools. If they differ from the user's selection, stop provider access and report the mismatch. Confirmation is not proof that the tools have credentials. Complete all authorized steps autonomously; ask again only for a new material decision, unavailable access, destructive migration or spending outside the agreed scope. Do not substitute the platform maintainer's account for the customer's account.
 
 ## Basic open-source setup contract
 
-These rules describe the current product scope and supersede earlier R2-only, workspace, billing or RBAC plans.
+These rules describe the current product scope and supersede earlier storage, workspace, billing or RBAC plans.
 
 - Local is first and default. Posts and settings stay in the user's repository under the selected contentPath, default content. No database or remote login is required. Posts use contentPath/posts/*.md; settings use contentPath/settings.json. Public assets retain their existing public/blog paths and URLs.
 - Local and login-based self-hosting each serve one publication in one installation. Managed is Coming soon and must stay disabled. Audit logs, billing, workspace management and advanced roles are deferred. Do not make them prerequisites for basic setup.
 - Login-based installs use a page on the customer's own domain, default /login or their selected loginRoute. Use individual email/password accounts with Supabase Auth. OAuth controls remain disabled and labeled Coming soon.
-- Login authentication and content storage are separate. GitHub keeps Markdown in the customer's chosen repository and branch. Supabase Storage keeps content in the customer's bucket, with private drafts and authenticated writes. R2 is optional for images/uploads; selecting it must not silently move written content away from GitHub or Supabase Storage.
+- Login authentication and content storage are separate. GitHub keeps Markdown in the selected repository. R2 can store all posts, settings, images and uploads, or optionally uploads alongside GitHub. Supabase Storage is Coming soon and cannot be selected; Supabase Auth remains the email/password provider.
 - The current source implements local reading and editing, configuration export, and this runbook. It does not yet implement working Supabase sessions, GitHub remote writes, Supabase Storage or R2 adapters. A selection alone never activates them. If a login-based install is requested, implement the missing basic adapters and tests within the authorized repository task, or report the exact blocker. Never claim a working remote CMS just because a form or login page renders.
 
 ## Local installation runbook
@@ -38,7 +38,7 @@ Protect every Studio read and mutation on the server, not just with a redirect o
 
 GitHub content: use a server-only, repository-scoped token or GitHub App credential. Confirm owner/repository, branch, contentPath and deployment trigger. Preserve frontmatter and use file SHA checks to prevent overwriting concurrent edits. Public repositories expose drafts in Git history; use a private repository when draft privacy is required. Verify reading, saving, conflicts, publication and the deployed public result.
 
-Supabase Storage content: use a dedicated bucket/prefix, private drafts and restrictive policies bound to the installation. Authenticate server requests, use least privilege, and never ship a service-role key to the browser. Implement both the public published-content reader and authenticated draft/editor storage; selecting a bucket alone is insufficient. Test write/read, denied anonymous writes, denied foreign-user access, conflicts and publication.
+Cloudflare R2 content: use a dedicated private bucket/prefix, scoped server-only credentials, private drafts and installation-bound authorization. Keep authentication in Supabase Auth, and do not expose a draft bucket through a public domain. Implement both the public published-content reader and authenticated draft/editor storage; selecting a bucket alone is insufficient. Test write/read, denied anonymous writes, denied foreign-user access, conflicts and publication.
 
 Optional R2: use a scoped server-side credential, validate upload size/type/path and configure the intended public image delivery. Verify an upload/read and reject anonymous or foreign-user writes. Do not create an R2 bucket if R2 was not selected.
 

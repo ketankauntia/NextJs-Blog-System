@@ -8,7 +8,7 @@ Updated 2026-09-10. This describes the basic open-source setup and its current l
 | Login-based self-hosting | GitHub repository or Supabase Storage | Supabase email/password, `/login` or chosen route | Configuration and agent runbook; remote runtime still needs implementation |
 | Managed | Deferred | Deferred | Disabled, Coming soon |
 
-R2 is an optional image/upload store for login-based setups. OAuth is disabled. Audit logs, advanced roles, billing, workspaces and managed operations are outside the current basic scope.
+R2 stores all blog data when selected, or optionally images/uploads alongside GitHub. Supabase Storage is disabled; Supabase Auth remains available for email/password integration. OAuth is disabled. Audit logs, advanced roles, billing, workspaces and managed operations are outside the current basic scope.
 
 ## Local setup
 

@@ -1,6 +1,6 @@
 # Next steps
 
-The open-source scope is one publication per installation: local repository authoring first, then email/password self-hosting with GitHub or Supabase Storage content and optional R2 uploads.
+The open-source scope is one publication per installation: local repository authoring first, then email/password self-hosting with GitHub or Cloudflare R2 content and optional R2 uploads.
 
 Remote runtime work still needs owner-bound Supabase sessions, server-protected Studio reads/writes, durable storage adapters and public publication readers. Verify expired/foreign sessions, unauthorized reads/writes, draft privacy, concurrent edits and persisted provider writes before enabling hosted editing. Never use ephemeral production filesystem writes for durable content.
 

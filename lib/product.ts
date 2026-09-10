@@ -10,11 +10,9 @@ export const productConfig = {
   routes: { setup: "/docs#get-started", agentSetup: "/agent-setup.md", agentGuide: "/docs/agent-setup" },
   providers: {
     storage: [
-      { value: "github", label: "GitHub", description: "Markdown and images in your repository.", available: true },
-      { value: "supabase", label: "Supabase Storage", description: "Content and uploads in your own Supabase project.", available: true },
-      { value: "aws-s3", label: "AWS S3", description: "Amazon object storage.", available: false },
-      { value: "gcp-storage", label: "Google Cloud Storage", description: "Google Cloud object storage.", available: false },
-      { value: "azure-blob", label: "Azure Blob Storage", description: "Microsoft Azure object storage.", available: false },
+      { value: "github", label: "GitHub", description: "Content in your repository.", available: true },
+      { value: "supabase", label: "Supabase", description: "Content in Supabase Storage.", available: false },
+      { value: "r2", label: "Cloudflare R2", description: "Content, images and uploads.", available: true },
     ],
     database: [
       { value: "supabase", label: "Supabase", description: "PostgreSQL with integrated authentication.", available: true },
