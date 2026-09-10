@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { FontPickerClient } from "@/components/dashboard/font-picker-client";
 import { getAllPosts } from "@/lib/blog/content";
 import { getSettings } from "@/lib/settings";
+import { canMutateStudio } from "@/lib/studio-access";
 
 export const metadata: Metadata = {
   title: "Typography",
@@ -19,10 +19,6 @@ const PLACEHOLDER = {
 };
 
 export default function FontsPage() {
-  if (process.env.NODE_ENV === "production") {
-    notFound();
-  }
-
   // Preview against real writing — lorem ipsum hides the awkward letter pairs.
   const post = getAllPosts()[0];
   const firstParagraph = post?.sections
@@ -45,7 +41,7 @@ export default function FontsPage() {
     <FontPickerClient
       initial={getSettings()}
       sample={sample}
-      canSave={process.env.NODE_ENV === "development"}
+      canSave={canMutateStudio()}
     />
   );
 }

@@ -4,6 +4,7 @@ import { Badge } from "@/components/blog-ui/badge";
 import { PostCard } from "@/components/blog/post-card";
 import { PostGrid } from "@/components/blog/post-grid";
 import { PostCover } from "@/components/blog/post-cover";
+import { JournalListing } from "@/components/blog/templates/journal-listing";
 import { getAuthor } from "@/lib/blog/authors";
 import { formatDate } from "@/lib/blog/format";
 import type { Post } from "@/lib/blog/types";
@@ -14,6 +15,7 @@ import type { BlogTemplate } from "@/lib/settings";
  * - classic: featured hero card + card grid (the original)
  * - magazine: full-width cover hero + editorial split of secondary/compact stories
  * - minimal: text-first list rows, no imagery
+ * - journal: serif split feature and compact, ruled story columns
  */
 export function BlogListing({
   template,
@@ -24,6 +26,7 @@ export function BlogListing({
   posts: Post[];
   isFirstPage: boolean;
 }) {
+  if (template === "journal") return <JournalListing posts={posts} isFirstPage={isFirstPage} />;
   if (template === "magazine") return <MagazineListing posts={posts} isFirstPage={isFirstPage} />;
   if (template === "minimal") return <MinimalListing posts={posts} />;
   return <ClassicListing posts={posts} isFirstPage={isFirstPage} />;
@@ -35,7 +38,7 @@ function ClassicListing({ posts, isFirstPage }: { posts: Post[]; isFirstPage: bo
   const featured = isFirstPage ? posts.find((p) => p.featured) : undefined;
   const rest = featured ? posts.filter((p) => p.slug !== featured.slug) : posts;
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       {featured && <PostCard post={featured} featured />}
       {rest.length > 0 ? <PostGrid posts={rest} /> : null}
     </div>

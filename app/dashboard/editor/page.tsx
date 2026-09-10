@@ -1,10 +1,8 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import matter from "gray-matter";
+import { readPostSources } from "@/lib/blog/source.mjs";
 import { PostEditor, type EditablePost } from "@/components/editor/post-editor";
 import { authors, DEFAULT_AUTHOR_SLUG } from "@/lib/blog/authors";
+import { canMutateStudio } from "@/lib/studio-access";
 
 export const metadata: Metadata = {
   title: "Post editor",
@@ -12,14 +10,10 @@ export const metadata: Metadata = {
 };
 
 function loadEditablePosts(): EditablePost[] {
-  const dir = path.join(process.cwd(), "content", "posts");
-  return fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith(".md"))
-    .map((file) => {
-      const { data, content } = matter(fs.readFileSync(path.join(dir, file), "utf8"));
+  return readPostSources({ localAuthoring: canMutateStudio() })
+    .map(({ slug, data, content }) => {
       return {
-        slug: file.replace(/\.md$/, ""),
+        slug,
         title: (data.title as string) ?? "",
         description: (data.description as string) ?? "",
         category: (data.category as string) ?? "",
@@ -54,19 +48,15 @@ function normalizeDate(value: unknown): string {
 export default async function EditorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ slug?: string }>;
+  searchParams: Promise<{ slug?: string; new?: string }>;
 }) {
-  if (process.env.NODE_ENV === "production") {
-    notFound();
-  }
-
-  const { slug } = await searchParams;
+  const { slug, new: newPost } = await searchParams;
   return (
     <PostEditor
       posts={loadEditablePosts()}
       authorSlugs={authors.map((a) => a.slug)}
-      canSave={process.env.NODE_ENV === "development"}
-      initialSlug={slug}
+      canSave={canMutateStudio()}
+      initialSlug={newPost === "1" ? "__new__" : slug}
     />
   );
 }

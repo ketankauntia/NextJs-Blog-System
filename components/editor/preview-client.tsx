@@ -25,7 +25,7 @@ export function PreviewClient() {
 
   if (!draft) {
     return (
-      <main className="mx-auto w-full max-w-content flex-1 px-4 py-16 text-center text-muted-foreground">
+      <main id="main-content" className="mx-auto w-full max-w-content flex-1 px-4 py-16 text-center text-muted-foreground">
         No draft to preview. Open this from the editor&apos;s <strong>Preview</strong> button.
       </main>
     );
@@ -37,9 +37,9 @@ export function PreviewClient() {
   const readingMinutes = estimateReadingMinutes(draft.body);
 
   return (
-    <main className="mx-auto w-full max-w-shell flex-1 px-4 py-8 sm:px-6">
+    <main id="main-content" className="mx-auto w-full max-w-shell flex-1 px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-content rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2 text-center text-xs text-muted-foreground">
-        Preview mode — this is a live draft, not a published page.
+        Preview mode. This is a live draft, not a published page.
       </div>
 
       <PostBreadcrumbs

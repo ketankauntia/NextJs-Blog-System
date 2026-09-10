@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type DragEvent, type KeyboardEvent } from "react";
 import { IconLoader2, IconUpload } from "@tabler/icons-react";
 import {
   Dialog,
@@ -22,18 +22,22 @@ export function ImageDialog({
   onOpenChange,
   onInsert,
   uploadSlug,
+  canUpload = true,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onInsert: (data: ImageData) => void;
-  /** Current post slug — decides the upload folder (falls back to "misc"). */
+  /** Current post slug decides the upload folder and falls back to "misc". */
   uploadSlug?: string;
+  /** Hosted demos accept image URLs but cannot write uploaded files. */
+  canUpload?: boolean;
 }) {
   const [src, setSrc] = useState("");
   const [alt, setAlt] = useState("");
   const [description, setDescription] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [dragActive, setDragActive] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   function reset() {
@@ -42,6 +46,7 @@ export function ImageDialog({
     setDescription("");
     setError("");
     setUploading(false);
+    setDragActive(false);
   }
 
   async function upload(file: File) {
@@ -62,9 +67,39 @@ export function ImageDialog({
     }
   }
 
+  function chooseFile(file?: File) {
+    if (!file) return;
+    if (!canUpload) {
+      setError("Uploads are disabled in this read-only demo. Paste an image URL instead.");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setError("Choose an image file such as PNG, JPG, WebP, AVIF, GIF, or SVG.");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setError("Images must be 8 MB or smaller.");
+      return;
+    }
+    void upload(file);
+  }
+
+  function handleDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setDragActive(false);
+    chooseFile(event.dataTransfer.files?.[0]);
+  }
+
+  function handleDropzoneKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if ((event.key === "Enter" || event.key === " ") && canUpload) {
+      event.preventDefault();
+      fileRef.current?.click();
+    }
+  }
+
   function insert() {
     if (!src) {
-      setError("Add an image — upload a file or paste a URL.");
+      setError("Add an image by uploading a file or pasting a URL.");
       return;
     }
     if (!alt.trim()) {
@@ -92,29 +127,49 @@ export function ImageDialog({
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Image file</Label>
-            <div className="flex items-center gap-2">
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/svg+xml"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) upload(f);
-                }}
-              />
-              <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
-                {uploading ? <IconLoader2 className="size-4 animate-spin" /> : <IconUpload className="size-4" />}
-                {uploading ? "Uploading…" : "Upload file"}
-              </Button>
-              <span className="text-xs text-muted-foreground">PNG, JP, WebP, AVIF, GIF, SVG · ≤8 MB</span>
+            <Label htmlFor="editor-image-file">Image file</Label>
+            <input
+              ref={fileRef}
+              id="editor-image-file"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/svg+xml"
+              className="hidden"
+              onChange={(event) => {
+                chooseFile(event.target.files?.[0]);
+                event.currentTarget.value = "";
+              }}
+            />
+            <div
+              role="button"
+              tabIndex={canUpload ? 0 : -1}
+              aria-disabled={!canUpload}
+              aria-label={canUpload ? "Drop an image here or browse files" : "Image upload disabled"}
+              onClick={() => canUpload && fileRef.current?.click()}
+              onKeyDown={handleDropzoneKeyDown}
+              onDragEnter={(event) => {
+                event.preventDefault();
+                if (canUpload) setDragActive(true);
+              }}
+              onDragOver={(event) => {
+                event.preventDefault();
+                if (canUpload) event.dataTransfer.dropEffect = "copy";
+              }}
+              onDragLeave={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragActive(false);
+              }}
+              onDrop={handleDrop}
+              className={`flex min-h-28 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed px-4 py-5 text-center transition-colors ${dragActive ? "border-primary bg-primary/10" : "border-border bg-muted/20 hover:border-primary/50 hover:bg-muted/40"} ${!canUpload ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
+            >
+              {uploading ? <IconLoader2 className="size-5 animate-spin text-primary" /> : <IconUpload className="size-5 text-muted-foreground" />}
+              <p className="text-sm font-medium">{uploading ? "Uploading image…" : canUpload ? "Drop an image here or browse files" : "Image upload disabled"}</p>
+              <p className="text-xs text-muted-foreground">{canUpload ? "PNG, JPG, WebP, AVIF, GIF, or SVG · 8 MB max" : "Paste an image URL below in this read-only demo"}</p>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label>…or image URL</Label>
+            <Label htmlFor="editor-image-url">Or image URL</Label>
             <Input
+              id="editor-image-url"
               value={src}
               onChange={(e) => setSrc(e.target.value)}
               placeholder="/blog/diagram.svg or https://…"
@@ -127,13 +182,14 @@ export function ImageDialog({
           )}
 
           <div className="space-y-1.5">
-            <Label>Alt text (required — SEO &amp; screen readers)</Label>
-            <Input value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="Describe what the image shows" />
+            <Label htmlFor="editor-image-alt">Alt text (required for SEO and screen readers)</Label>
+            <Input id="editor-image-alt" value={alt} onChange={(e) => setAlt(e.target.value)} placeholder="Describe what the image shows" />
           </div>
 
           <div className="space-y-1.5">
-            <Label>Description / caption (shown below the image as “Fig: …”)</Label>
+            <Label htmlFor="editor-image-caption">Description or caption</Label>
             <Input
+              id="editor-image-caption"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional caption readers will see"

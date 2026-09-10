@@ -16,7 +16,7 @@ The parser lives in [`lib/blog/parse.ts`](../lib/blog/parse.ts) and is shared wi
 | `updatedAt` | no | Shown in the byline and used for `dateModified` and sitemap `lastmod`. |
 | `author` | no | Author slug from `lib/blog/authors.ts`. Defaults to the first author listed. |
 | `featured` | no | `true` puts the post in the hero slot on the home page and the archive. |
-| `draft` | no | Visible in development, excluded from production listings, sitemap, RSS and llms.txt. |
+| `draft` | no | Visible in local Studio only; excluded from public readers, hosted Studio, sitemap, RSS and llms.txt in every environment. |
 | `cornerstone` | no | Marks pillar content: higher sitemap priority and stricter editor scoring. |
 | `noindex` | no | Excluded from the sitemap and emits a robots noindex. |
 | `canonical` | no | Overrides the self-referencing canonical URL. |
@@ -47,7 +47,7 @@ The parser accepts a constrained subset of markdown plus two directives. Anythin
 | `- item` / `1. item` | Unordered / ordered list |
 | `- [ ] item` / `- [x] item` | Task list |
 | GFM pipe table | Table |
-| `> quote` | Blockquote. A final `> — Name` line becomes the attribution |
+| `> quote` | Blockquote. A final `> - Name` line becomes the attribution |
 | ` ```lang ` fenced block | Code block |
 | `![alt](/blog/slug/img.webp "Caption")` | Image with optional caption |
 | `---`, `***` or `___` alone on a line | Divider |
@@ -62,19 +62,19 @@ Only `##` creates a section. Content before the first `##` becomes a heading-les
 
 Keep each post's assets in `public/blog/<post-slug>/` with lowercase descriptive filenames.
 
-- **Cover** — `<slug>-cover.webp`, 1600×900. Keep the subject central; the same image is cropped for cards and for the wide article hero.
-- **Social** — `<slug>-og.jpg`, 1200×630. JPEG for maximum compatibility across social crawlers. Omit it and the site generates a card from the title instead.
-- **Body** — 1400×788 WebP is a good default. Always write real alt text, and add a caption when the image carries information the prose does not.
+- **Cover:** `<slug>-cover.webp`, 1600×900. Keep the subject central; the same image is cropped for cards and for the wide article hero.
+- **Social:** `<slug>-og.jpg`, 1200×630. JPEG for maximum compatibility across social crawlers. Omit it and the site generates a card from the title instead.
+- **Body:** 1400×788 WebP is a good default. Always write real alt text, and add a caption when the image carries information the prose does not.
 
 Do not bake the title, category or logo into cover art. The page renders that text in HTML, where it stays selectable, translatable and crisp at any density.
 
 ## The authoring studio
 
-`/dashboard` is available in development only — its layout returns a 404 when `NODE_ENV` is `production`, and its write endpoints touch the filesystem, which is not something a deployed site should do.
+`/dashboard` is available in development only. Its layout returns a 404 when `NODE_ENV` is `production`, and its write endpoints touch the filesystem, which is not something a deployed site should do.
 
-- `/dashboard` — every post with word count, SEO score, status and the metadata that drives it
-- `/dashboard/editor` — rich-text editor writing the same markdown format, with live SEO and readability checks
-- `/dashboard/preview` — try each listing and post template against real content
-- `/dashboard/settings` — pick the active templates, written to `content/settings.json`
+- `/dashboard`: every post with word count, SEO score, status and the metadata that drives it
+- `/dashboard/editor`: rich-text editor writing the same markdown format, with live SEO and readability checks
+- `/dashboard/preview`: try each listing and post template against real content
+- `/dashboard/settings`: pick the active templates, written to `content/settings.json`
 
 Everything it writes is a plain file in `content/`. The repository stays the source of truth, so posts are reviewable in a pull request like any other change.

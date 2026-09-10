@@ -157,7 +157,7 @@ export function markdownToTiptap(md: string): TiptapDoc {
           break;
         case "quote": {
           const paras: TNode[] = [{ type: "paragraph", content: inlineToNodes(b.text) }];
-          if (b.attribution) paras.push({ type: "paragraph", content: inlineToNodes(`— ${b.attribution}`) });
+          if (b.attribution) paras.push({ type: "paragraph", content: inlineToNodes(`- ${b.attribution}`) });
           content.push({ type: "blockquote", content: paras });
           break;
         }

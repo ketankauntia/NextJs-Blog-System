@@ -1,16 +1,19 @@
 {
   "name": "blog-system-next",
   "version": "0.1.0",
-  "private": false,
+  "private": true,
   "license": "MIT",
   "author": "Ketan",
-  "description": "A file-based, SEO-first blog system for Next.js. Markdown in, static pages out â€” with a local authoring studio.",
+  "description": "A repository-native, SEO-first publishing system for Next.js with a local authoring studio.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
+    "test:publishing": "node --experimental-strip-types --test scripts/test-publishing.mjs",
+    "test:content": "node --test scripts/test-content-isolation.mjs",
+    "test:reviews": "node --test scripts/test-reviews.mjs",
     "validate": "npm run lint && npm run type-check && npm run audit:content && npm run build",
     "audit:content": "node scripts/audit-content.mjs"
   },
@@ -44,6 +47,7 @@
     "radix-ui": "^1.6.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-resizable-panels": "^4.12.3",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

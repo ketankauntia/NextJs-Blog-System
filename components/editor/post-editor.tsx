@@ -1,16 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { cloneElement, isValidElement, useEffect, useId, useMemo, useRef, useState, type ReactElement } from "react";
 import Link from "next/link";
 import {
   IconAlertTriangle,
+  IconArticle,
   IconChevronDown,
+  IconChevronRight,
   IconChevronUp,
   IconCircleCheck,
   IconCircleX,
   IconDeviceFloppy,
   IconExternalLink,
   IconFilePlus,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
+  IconSearch,
   IconTrash,
 } from "@tabler/icons-react";
 import { Badge } from "@/components/blog-ui/badge";
@@ -35,9 +40,11 @@ import { PostBody } from "@/components/blog/post-body";
 import { PostCover } from "@/components/blog/post-cover";
 import { TldrBlock } from "@/components/blog/tldr-block";
 import { parseSections, slugify } from "@/lib/blog/parse";
-import { runSeoChecks, seoScore, type SeoCheck } from "@/lib/editor/seo-checks";
+import { runSeoChecks, type SeoCheck } from "@/lib/editor/seo-checks";
 import { suggestInternalLinks, type LinkCandidate } from "@/lib/editor/link-suggestions";
 import { RichEditor } from "@/components/editor/rich-editor";
+import "./editor-workspace.css";
+import { buildTitle, buildDescription } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
 export type EditablePost = {
@@ -121,27 +128,37 @@ export function PostEditor({
   initialSlug?: string;
 }) {
   const [draft, setDraft] = useState<EditablePost>(
-    posts.find((p) => p.slug === initialSlug) ?? posts[0] ?? blankPost(),
+    initialSlug === "__new__" ? blankPost() : posts.find((p) => p.slug === initialSlug) ?? posts[0] ?? blankPost(),
   );
-  const [slugTouched, setSlugTouched] = useState(true);
+  const [slugTouched, setSlugTouched] = useState(initialSlug !== "__new__");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveMessage, setSaveMessage] = useState("");
   const [restorable, setRestorable] = useState<EditablePost | null>(null);
   const [editMode, setEditMode] = useState<"rich" | "markdown">("rich");
+  const [postRailCollapsed, setPostRailCollapsed] = useState(false);
+  const [postQuery, setPostQuery] = useState("");
+  const [mobilePane, setMobilePane] = useState("write");
+  const [inspectorTab, setInspectorTab] = useState("seo");
+  const [savedDraft, setSavedDraft] = useState(draft);
+  const latestDraft = useRef(draft);
+  useEffect(() => { latestDraft.current = draft; }, [draft]);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(savedDraft);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const autosaveKey = (slug: string) => `be-editor:autosave:${slug || "__new__"}`;
 
   // Autosave the working draft to localStorage (debounced) so a crash/refresh can't lose work.
   useEffect(() => {
+    if (!dirty || restorable) return;
     const t = setTimeout(() => {
       try {
         localStorage.setItem(autosaveKey(draft.slug), JSON.stringify(draft));
       } catch {
-        /* quota/private-mode — ignore */
+        /* Ignore quota and private-mode failures. */
       }
     }, 800);
     return () => clearTimeout(t);
-  }, [draft]);
+  }, [draft, dirty, restorable]);
 
   // On first mount, offer to restore an autosaved copy of the initially-loaded post if it differs.
   // This runs once and reads an external store. It cannot move into a state
@@ -179,7 +196,14 @@ export function PostEditor({
       }),
     [draft],
   );
-  const score = seoScore(checks);
+
+  const filteredPosts = useMemo(() => {
+    const query = postQuery.trim().toLowerCase();
+    if (!query) return posts;
+    return posts.filter((post) =>
+      [post.title, post.slug, post.category, ...post.tags].some((value) => value.toLowerCase().includes(query)),
+    );
+  }, [postQuery, posts]);
 
   const linkSuggestions = useMemo(
     () =>
@@ -203,7 +227,14 @@ export function PostEditor({
   function loadPost(slug: string) {
     const next = slug === "__new__" ? blankPost() : posts.find((p) => p.slug === slug);
     if (!next) return;
+    if (dirty) {
+      try { localStorage.setItem(autosaveKey(draft.slug), JSON.stringify(draft)); }
+      catch { setSaveState("error"); setSaveMessage("Browser recovery is unavailable. Save before switching articles."); return; }
+    }
     setDraft(next);
+    setSavedDraft(next);
+    setReviewOpen(false);
+    setMobilePane("write");
     setSlugTouched(slug !== "__new__");
     setSaveState("idle");
     // Offer to restore an autosave for the post being opened, if it diverges from disk.
@@ -273,11 +304,13 @@ export function PostEditor({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Save failed");
+      setSavedDraft(draft);
       setSaveState("saved");
+      setReviewOpen(false);
       setSaveMessage(`Saved to ${data.path}`);
-      // Disk is now the source of truth — drop the autosave shadow copy.
+      // Disk is now the source of truth, so drop the autosave shadow copy.
       try {
-        localStorage.removeItem(autosaveKey(slug));
+        if (JSON.stringify(latestDraft.current) === JSON.stringify(draft)) localStorage.removeItem(autosaveKey(slug));
       } catch {
         /* ignore */
       }
@@ -288,365 +321,224 @@ export function PostEditor({
   }
 
   return (
-    <main className="mx-auto w-full max-w-shell flex-1 px-4 py-6 sm:px-6">
-      {/* Top bar */}
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3">
-        <Select value={posts.some((p) => p.slug === draft.slug) ? draft.slug : "__new__"} onValueChange={loadPost}>
-          <SelectTrigger className="w-72">
-            <SelectValue placeholder="Select a post" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__new__">
-              <span className="inline-flex items-center gap-2">
-                <IconFilePlus className="size-4" /> New post
-              </span>
-            </SelectItem>
-            {posts.map((p) => (
-              <SelectItem key={p.slug} value={p.slug}>
-                {p.draft ? "◌ " : ""}
-                {p.title || p.slug}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <label className="flex items-center gap-2 text-sm">
-          <Switch checked={draft.draft} onCheckedChange={(v) => set("draft", v)} />
-          Draft
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <Switch checked={draft.featured} onCheckedChange={(v) => set("featured", v)} />
-          Featured
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <Switch checked={draft.cornerstone} onCheckedChange={(v) => set("cornerstone", v)} />
-          Cornerstone
-        </label>
-
-        <div className="ml-auto flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/dashboard">Dashboard</Link>
-          </Button>
-          <ScoreBadge score={score} />
-          <Button variant="outline" onClick={openPreview}>
-            <IconExternalLink className="size-4" />
-            Preview
-          </Button>
-          <Button onClick={save} disabled={!canSave || saveState === "saving" || !draft.slug}>
-            <IconDeviceFloppy className="size-4" />
-            {saveState === "saving" ? "Saving…" : "Save"}
+    <main id="main-content" className="editor-workspace" data-pane={mobilePane}>
+      <aside aria-label="Post library" className={cn("editor-library hidden shrink-0 border-r lg:flex lg:flex-col", postRailCollapsed ? "w-14" : "w-72")}>
+        <div className={cn("flex h-16 items-center border-b", postRailCollapsed ? "justify-center px-2" : "justify-between px-4")}>
+          {!postRailCollapsed ? <div><p className="text-sm font-semibold">Post library</p><p className="text-xs text-muted-foreground">{posts.length} entries</p></div> : null}
+          <Button type="button" variant="ghost" size="icon" aria-label={postRailCollapsed ? "Expand post library" : "Collapse post library"} title={`${postRailCollapsed ? "Expand" : "Collapse"} post library`} onClick={() => setPostRailCollapsed((value) => !value)}>
+            {postRailCollapsed ? <IconLayoutSidebarLeftExpand className="size-4" /> : <IconLayoutSidebarLeftCollapse className="size-4" />}
           </Button>
         </div>
-      </div>
-
-      {!canSave && (
-        <p className="mt-2 text-sm text-muted-foreground">
-          Read-only: saving is available in development only (the production save target is decided later).
-        </p>
-      )}
-      {saveState === "saved" && <p className="mt-2 text-sm text-primary">{saveMessage}</p>}
-      {saveState === "error" && <p className="mt-2 text-sm text-destructive">{saveMessage}</p>}
-
-      {restorable && (
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm">
-          <span>Found an unsaved autosaved draft for this post. Restore it?</span>
-          <div className="flex gap-2">
-            <Button size="sm" onClick={restoreAutosave}>Restore</Button>
-            <Button size="sm" variant="ghost" onClick={discardAutosave}>Discard</Button>
+        {postRailCollapsed ? (
+          <div className="flex flex-col items-center gap-2 py-3">
+            <Button variant="ghost" size="icon" aria-label="Create blank draft" title="Blank draft" onClick={() => loadPost("__new__")}><IconFilePlus className="size-4" /></Button>
+            <Button variant="ghost" size="icon" asChild aria-label="View all posts" title="All posts"><Link href="/dashboard"><IconArticle className="size-4" /></Link></Button>
           </div>
-        </div>
-      )}
-
-      {/* Split pane: editor left, live preview right */}
-      <div className="mt-4 grid gap-6 lg:grid-cols-2">
-        {/* Left: editing */}
-        <Tabs defaultValue="content">
-          <TabsList className="w-full">
-            <TabsTrigger value="content" className="flex-1">Content</TabsTrigger>
-            <TabsTrigger value="meta" className="flex-1">Meta &amp; SEO</TabsTrigger>
-            <TabsTrigger value="blocks" className="flex-1">TL;DR / FAQs</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="content" className="space-y-4">
-            <Field label="Title (H1)">
-              <Input value={draft.title} onChange={(e) => set("title", e.target.value)} placeholder="Post title" />
-            </Field>
-
-            <div className="flex items-center justify-between">
-              <Label className="text-sm">
-                Body ({draft.body.split(/\s+/).filter(Boolean).length} words)
-              </Label>
-              {/* Rich (WYSIWYG) is the default; Markdown is the raw escape hatch. Both edit the same content. */}
-              <div className="inline-flex rounded-md border p-0.5 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setEditMode("rich")}
-                  className={cn("rounded px-2 py-1", editMode === "rich" && "bg-primary text-primary-foreground")}
-                >
-                  Rich
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditMode("markdown")}
-                  className={cn("rounded px-2 py-1", editMode === "markdown" && "bg-primary text-primary-foreground")}
-                >
-                  Markdown
-                </button>
-              </div>
+        ) : (
+          <>
+            <div className="space-y-3 border-b p-3">
+              <Button className="w-full justify-start" size="sm" onClick={() => loadPost("__new__")}><IconFilePlus className="size-4" /> New post</Button>
+              <label className="relative block">
+                <IconSearch className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+                <Input value={postQuery} onChange={(event) => setPostQuery(event.target.value)} placeholder="Search posts" className="h-9 pl-8" />
+                <span className="sr-only">Search posts</span>
+              </label>
             </div>
-
-            {editMode === "rich" ? (
-              <RichEditor value={draft.body} onChange={(md) => set("body", md)} uploadSlug={draft.slug} />
-            ) : (
-              <Textarea
-                value={draft.body}
-                onChange={(e) => set("body", e.target.value)}
-                spellCheck={false}
-                className="min-h-[55vh] font-mono text-sm leading-relaxed"
-                placeholder={"## Section heading\n\nParagraph text…\n\n- list item\n\n:::callout Title\ntext\n:::\n\n:::stat 42% | label"}
-              />
-            )}
-          </TabsContent>
-
-          <TabsContent value="meta" className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Slug">
-                <Input
-                  value={draft.slug}
-                  onChange={(e) => {
-                    setSlugTouched(true);
-                    set("slug", slugify(e.target.value));
-                  }}
-                  placeholder="my-post-slug"
-                />
-              </Field>
-              <Field label="Focus keyphrase">
-                <Input
-                  value={draft.keyphrase}
-                  onChange={(e) => set("keyphrase", e.target.value)}
-                  placeholder="e.g. site survey digitization"
-                />
-              </Field>
-            </div>
-            <Field label={`Meta description (${draft.description.length}/160)`}>
-              <Textarea
-                value={draft.description}
-                onChange={(e) => set("description", e.target.value)}
-                className="min-h-20"
-              />
-            </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Category">
-                <Input value={draft.category} onChange={(e) => set("category", e.target.value)} />
-              </Field>
-              <Field label="Tags (comma-separated)">
-                <Input
-                  value={draft.tags.join(", ")}
-                  onChange={(e) =>
-                    set("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))
-                  }
-                />
-              </Field>
-              <Field label="Author">
-                <Select value={draft.author} onValueChange={(v) => set("author", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {authorSlugs.map((slug) => (
-                      <SelectItem key={slug} value={slug}>{slug}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Cover tone">
-                <Select value={draft.coverTone} onValueChange={(v) => set("coverTone", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {COVER_TONES.map((tone) => (
-                      <SelectItem key={tone} value={tone}>{tone}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Visible cover image (1600×900)">
-                <Input
-                  value={draft.coverImage}
-                  onChange={(e) => set("coverImage", e.target.value)}
-                  placeholder="/blog/post-slug/post-slug-cover.webp"
-                />
-              </Field>
-              <Field label="Social image (1200×630)">
-                <Input
-                  value={draft.ogImage}
-                  onChange={(e) => set("ogImage", e.target.value)}
-                  placeholder="/blog/post-slug/post-slug-og.jpg"
-                />
-              </Field>
-              <Field label="Published (YYYY-MM-DD)">
-                <Input value={draft.publishedAt} onChange={(e) => set("publishedAt", e.target.value)} />
-              </Field>
-              <Field label="Updated (optional)">
-                <Input value={draft.updatedAt} onChange={(e) => set("updatedAt", e.target.value)} />
-              </Field>
-            </div>
-            <Field label="Cover alt text">
-              <Input
-                value={draft.coverAlt}
-                onChange={(e) => set("coverAlt", e.target.value)}
-                placeholder="Describe the visible cover image without keyword stuffing"
-              />
-            </Field>
-            <Field label="Canonical URL (optional — overrides the default self-canonical)">
-              <Input
-                value={draft.canonical}
-                onChange={(e) => set("canonical", e.target.value)}
-                placeholder="https://example.com/blog/post/original-slug"
-              />
-            </Field>
-            <label className="flex items-center gap-2 text-sm">
-              <Switch checked={draft.noindex} onCheckedChange={(v) => set("noindex", v)} />
-              No-index this post (emits robots noindex + kept out of the sitemap; still reachable by URL)
-            </label>
-          </TabsContent>
-
-          <TabsContent value="blocks" className="space-y-4">
-            <Field label={`TL;DR — answer-first summary (${draft.tldr.length} chars)`}>
-              <Textarea value={draft.tldr} onChange={(e) => set("tldr", e.target.value)} className="min-h-28" />
-            </Field>
-            <Field label="Key takeaways (one per line)">
-              <Textarea
-                value={draft.keyTakeaways.join("\n")}
-                onChange={(e) => set("keyTakeaways", e.target.value.split("\n").filter((l) => l.trim()))}
-                className="min-h-28"
-              />
-            </Field>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>FAQs ({draft.faqs.length})</Label>
-                <Button variant="outline" size="sm" onClick={() => set("faqs", [...draft.faqs, { q: "", a: "" }])}>
-                  Add FAQ
-                </Button>
-              </div>
-              {draft.faqs.map((faq, i) => (
-                <div key={i} className="space-y-2 rounded-lg border p-3">
-                  <div className="flex gap-2">
-                    <div className="flex flex-col">
-                      <button
-                        type="button"
-                        aria-label="Move FAQ up"
-                        disabled={i === 0}
-                        onClick={() => set("faqs", moveItem(draft.faqs, i, i - 1))}
-                        className="text-muted-foreground hover:text-foreground disabled:opacity-30"
-                      >
-                        <IconChevronUp className="size-4" />
+            <nav className="min-h-0 flex-1 overflow-y-auto p-2" aria-label="Posts">
+              <div className="px-2 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{postQuery ? `${filteredPosts.length} matches` : "Recent posts"}</div>
+              <ul className="space-y-1">
+                {filteredPosts.map((post) => {
+                  const active = post.slug === draft.slug;
+                  return (
+                    <li key={post.slug}>
+                      <button type="button" onClick={() => loadPost(post.slug)} aria-current={active ? "page" : undefined} className={cn("group w-full rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring", active && "bg-primary/10 text-foreground ring-1 ring-primary/20")}>
+                        <span className="flex items-start gap-2">
+                          <IconArticle className={cn("mt-0.5 size-4 shrink-0 text-muted-foreground", active && "text-primary")} aria-hidden />
+                          <span className="min-w-0 flex-1"><span className="line-clamp-2 block text-sm font-medium leading-snug">{post.title || post.slug}</span><span className="mt-1 flex items-center gap-1.5 text-[0.68rem] text-muted-foreground"><span>{post.category || "Uncategorized"}</span><span aria-hidden>·</span><span>{post.draft ? "Draft" : post.publishedAt > new Date().toISOString().slice(0, 10) ? "Scheduled" : "Public"}</span></span></span>
+                          <IconChevronRight className={cn("mt-0.5 size-3.5 shrink-0 opacity-0 group-hover:opacity-100", active && "text-primary opacity-100")} aria-hidden />
+                        </span>
                       </button>
-                      <button
-                        type="button"
-                        aria-label="Move FAQ down"
-                        disabled={i === draft.faqs.length - 1}
-                        onClick={() => set("faqs", moveItem(draft.faqs, i, i + 1))}
-                        className="text-muted-foreground hover:text-foreground disabled:opacity-30"
-                      >
-                        <IconChevronDown className="size-4" />
-                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          </>
+        )}
+      </aside>
+
+      <div className="editor-work-area">
+        <header className="editor-actionbar">
+          <span className="editor-save-status" role="status">{saveState === "saving" ? "Saving…" : dirty ? "Unsaved changes" : "Saved locally"}</span>
+          <Button variant="ghost" size="sm" onClick={() => setEditMode((mode) => mode === "rich" ? "markdown" : "rich")} aria-label="Toggle Markdown editor">{editMode === "rich" ? "Markdown" : "Rich text"}</Button>
+          <Button variant="ghost" size="sm" onClick={openPreview}><IconExternalLink className="size-4" />Preview</Button>
+          <Button size="sm" onClick={() => { setReviewOpen(true); setMobilePane("checks"); setInspectorTab("seo"); }}>Review & save</Button>
+        </header>
+
+        {(saveState === "saved" || saveState === "error" || restorable) ? (
+          <div className="space-y-2 border-b bg-background px-3 py-2 sm:px-4">
+            {saveState === "saved" && <p className="text-sm text-primary" role="status">{saveMessage}</p>}
+            {saveState === "error" && <p className="text-sm text-destructive" role="alert">{saveMessage}</p>}
+            {restorable && <div className="flex flex-wrap items-center justify-between gap-2 text-sm"><span>Found a browser draft for this post. Restore it?</span><div className="flex gap-2"><Button size="sm" onClick={restoreAutosave}>Restore</Button><Button size="sm" variant="ghost" onClick={discardAutosave}>Discard</Button></div></div>}
+          </div>
+        ) : null}
+
+        <div className="editor-panels">
+              <section aria-labelledby="editor-canvas-title" className="editor-manuscript">
+                <div className="editor-writing-content">
+                  <Label className="sr-only">Article body</Label>
+                  {editMode === "rich" ? (
+                    <RichEditor value={draft.body} onChange={(md) => set("body", md)} uploadSlug={draft.slug} canUpload={canSave}>
+                      <div className="editor-writing-header">
+                        <Textarea id="editor-canvas-title" value={draft.title} onChange={(event) => set("title", event.target.value)} placeholder="Give your story a title" aria-label="Post title" className="editor-title" rows={2} />
+                      </div>
+                    </RichEditor>
+                  ) : (
+                    <div className="editor-markdown-mode">
+                      <div className="editor-writing-header"><Textarea id="editor-canvas-title" value={draft.title} onChange={(event) => set("title", event.target.value)} placeholder="Give your story a title" aria-label="Post title" className="editor-title" rows={2} /></div>
+                      <Textarea value={draft.body} onChange={(event) => set("body", event.target.value)} spellCheck={false} className="min-h-[calc(100svh-18rem)] resize-y font-mono text-sm leading-relaxed" placeholder={"## Section heading\n\nParagraph text...\n\n- list item\n\n:::callout Title\ntext\n:::\n\n:::stat 42% | label"} />
                     </div>
-                    <Input
-                      value={faq.q}
-                      placeholder="Question — phrased the way people ask it"
-                      onChange={(e) =>
-                        set("faqs", draft.faqs.map((f, j) => (j === i ? { ...f, q: e.target.value } : f)))
-                      }
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Remove FAQ"
-                      onClick={() => set("faqs", draft.faqs.filter((_, j) => j !== i))}
-                    >
-                      <IconTrash className="size-4" />
-                    </Button>
+                  )}
+                </div>
+              </section>
+              <aside aria-label="Post inspector" className="editor-inspector">
+                <Tabs value={inspectorTab} onValueChange={setInspectorTab} className="h-full gap-0">
+                  <div className="editor-inspector-tabs">
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="details">Article</TabsTrigger>
+                      <TabsTrigger value="blocks">Blocks</TabsTrigger>
+                      <TabsTrigger value="search">Search</TabsTrigger>
+                      <TabsTrigger value="seo">Review</TabsTrigger>
+                    </TabsList>
                   </div>
-                  <Textarea
-                    value={faq.a}
-                    placeholder="Standalone answer (40–80 words)"
-                    className="min-h-20"
-                    onChange={(e) =>
-                      set("faqs", draft.faqs.map((f, j) => (j === i ? { ...f, a: e.target.value } : f)))
-                    }
-                  />
+                  <TabsContent value="search" className="overflow-y-auto p-5 space-y-5">
+                    <div><h2 className="font-semibold">Search appearance</h2><p className="mt-1 text-xs text-muted-foreground">Generated metadata preview. Search engines may show a different title or snippet.</p></div>
+                    <Field label="Search description"><Textarea value={draft.description} onChange={(e) => set("description", e.target.value)} /></Field>
+                    <Field label="Focus topic (optional)"><Input value={draft.keyphrase} onChange={(e) => set("keyphrase", e.target.value)} /></Field>
+                    <SerpPreview title={draft.title} slug={draft.slug} description={draft.description} />
+                    <FlagToggle label="Hide from search indexes" checked={draft.noindex} onChange={(v) => set("noindex", v)} />
+                    <p className="text-xs text-muted-foreground">{draft.noindex ? "This article asks search engines not to index it." : "Indexing is allowed for public articles. Inclusion is decided by search engines."}</p>
+                  </TabsContent>
+                  <TabsContent value="preview" className="min-h-0 overflow-y-auto p-5 sm:p-6">
+                    <div className="mx-auto max-w-3xl space-y-5">
+                <div>
+                  <Badge variant="secondary">{draft.category || "Category"}</Badge>
+                  <h2 className="mt-3 font-heading text-2xl font-bold leading-tight tracking-tight">{draft.title || "Untitled post"}</h2>
+                  <p className="mt-2 text-sm text-muted-foreground">{draft.description || "Add a description in Details to preview the article summary."}</p>
                 </div>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        {/* Right: live preview + SEO checks */}
-        <Tabs defaultValue="preview">
-          <TabsList className="w-full">
-            <TabsTrigger value="preview" className="flex-1">Preview</TabsTrigger>
-            <TabsTrigger value="seo" className="flex-1">
-              SEO checks
-              <ScoreBadge score={score} compact />
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="preview">
-            <div className="max-h-[75vh] space-y-6 overflow-y-auto rounded-xl border bg-background p-6">
-              <div>
-                <Badge variant="secondary">{draft.category || "Category"}</Badge>
-                <h1 className="mt-3 font-heading text-2xl font-bold leading-tight tracking-tight">
-                  {draft.title || "Untitled post"}
-                </h1>
-                <p className="mt-2 text-muted-foreground">{draft.description}</p>
+                <PostCover post={{ title: draft.title || "Untitled post", category: draft.category || "Category", coverTone: normalizeCoverTone(draft.coverTone), coverImage: draft.coverImage || undefined, coverAlt: draft.coverAlt || undefined, ogImage: draft.ogImage || undefined }} sizes="400px" className="aspect-video w-full" />
+                {draft.tldr && <TldrBlock text={draft.tldr} />}
+                <KeyTakeaways items={draft.keyTakeaways} />
+                <PostBody sections={sections} />
+                <FaqSection faqs={draft.faqs.filter((f) => f.q).map((f) => ({ question: f.q, answer: f.a }))} />
               </div>
-              <PostCover
-                post={{
-                  title: draft.title || "Untitled post",
-                  category: draft.category || "Category",
-                  coverTone: normalizeCoverTone(draft.coverTone),
-                  coverImage: draft.coverImage || undefined,
-                  coverAlt: draft.coverAlt || undefined,
-                  ogImage: draft.ogImage || undefined,
-                }}
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="aspect-video w-full"
-              />
-              {draft.tldr && <TldrBlock text={draft.tldr} />}
-              <KeyTakeaways items={draft.keyTakeaways} />
-              <PostBody sections={sections} />
-              <FaqSection faqs={draft.faqs.filter((f) => f.q).map((f) => ({ question: f.q, answer: f.a }))} />
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="seo">
-            <div className="max-h-[75vh] space-y-5 overflow-y-auto rounded-xl border bg-background p-4">
-              <SeoScoreMeter checks={checks} score={score} />
-              <SerpPreview title={draft.title} slug={draft.slug} description={draft.description} />
-              {(["seo", "geo", "structure", "readability"] as const).map((group) => (
-                <div key={group}>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {group === "seo"
-                      ? "Search"
-                      : group === "geo"
-                        ? "AI / GEO (answer-first + evidence)"
-                        : group === "structure"
-                          ? "Structure & AI blocks"
-                          : "Readability"}
-                  </p>
-                  <ul className="space-y-1.5">
-                    {checks.filter((c) => c.group === group).map((check) => (
-                      <CheckRow key={check.id} check={check} />
+                  <TabsContent value="details" className="min-h-0 overflow-y-auto p-4 sm:p-5">
+                    <div className="mx-auto max-w-3xl space-y-3">
+                <InspectorSection title="Publishing" description="Status, ownership, and dates" open>
+                  <div className="grid gap-3">
+                    <FlagToggle label="Draft" checked={draft.draft} onChange={(v) => set("draft", v)} />
+                    <FlagToggle label="Featured" checked={draft.featured} onChange={(v) => set("featured", v)} />
+                    <FlagToggle label="Cornerstone" checked={draft.cornerstone} onChange={(v) => set("cornerstone", v)} />
+                    <Field label="Author"><Select value={draft.author} onValueChange={(v) => set("author", v)}><SelectTrigger aria-label="Author"><SelectValue /></SelectTrigger><SelectContent>{authorSlugs.map((slug) => <SelectItem key={slug} value={slug}>{slug}</SelectItem>)}</SelectContent></Select></Field>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="Published"><Input type="date" value={draft.publishedAt} onChange={(e) => set("publishedAt", e.target.value)} /></Field>
+                      <Field label="Updated"><Input type="date" value={draft.updatedAt} onChange={(e) => set("updatedAt", e.target.value)} /></Field>
+                    </div>
+                  </div>
+                </InspectorSection>
+
+                <InspectorSection title="Discovery" description="URL, summary, and search signals">
+                  <div className="space-y-3">
+                    <Field label="Slug"><Input value={draft.slug} onChange={(e) => { setSlugTouched(true); set("slug", slugify(e.target.value)); }} placeholder="my-post-slug" /></Field>
+                    <Field label={`Meta description (${draft.description.length} characters)`}><Textarea value={draft.description} onChange={(e) => set("description", e.target.value)} className="min-h-24" /></Field>
+                    <Field label="Focus keyphrase"><Input value={draft.keyphrase} onChange={(e) => set("keyphrase", e.target.value)} /></Field>
+                    <Field label="Category"><Input value={draft.category} onChange={(e) => set("category", e.target.value)} /></Field>
+                    <Field label="Tags, comma separated"><Input value={draft.tags.join(", ")} onChange={(e) => set("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))} /></Field>
+                    <Field label="Canonical URL"><Input value={draft.canonical} onChange={(e) => set("canonical", e.target.value)} placeholder="Optional override" /></Field>
+                    <FlagToggle label="Hide from search indexes" checked={draft.noindex} onChange={(v) => set("noindex", v)} />
+                  </div>
+                </InspectorSection>
+
+                <InspectorSection title="Cover and social" description="Visual identity and accessibility">
+                  <div className="space-y-3">
+                    <Field label="Cover tone"><Select value={draft.coverTone} onValueChange={(v) => set("coverTone", v)}><SelectTrigger aria-label="Cover tone"><SelectValue /></SelectTrigger><SelectContent>{COVER_TONES.map((tone) => <SelectItem key={tone} value={tone}>{tone}</SelectItem>)}</SelectContent></Select></Field>
+                    <Field label="Cover image, 1600 by 900"><Input value={draft.coverImage} onChange={(e) => set("coverImage", e.target.value)} placeholder="/blog/post-slug/cover.webp" /></Field>
+                    <Field label="Cover alt text"><Input value={draft.coverAlt} onChange={(e) => set("coverAlt", e.target.value)} placeholder="Describe what the image shows" /></Field>
+                    <Field label="Social image, 1200 by 630"><Input value={draft.ogImage} onChange={(e) => set("ogImage", e.target.value)} placeholder="/blog/post-slug/social.jpg" /></Field>
+                  </div>
+                </InspectorSection>
+              </div>
+            </TabsContent>
+
+                  <TabsContent value="blocks" className="min-h-0 overflow-y-auto p-4 sm:p-5">
+                    <div className="mx-auto max-w-3xl space-y-4">
+                <InspectorSection title={`TL;DR${draft.tldr ? ` · ${draft.tldr.length} characters` : ""}`} description="A concise answer for readers who are scanning" open>
+                  <Textarea aria-label="TL;DR summary" value={draft.tldr} onChange={(e) => set("tldr", e.target.value)} className="min-h-28" />
+                </InspectorSection>
+                <InspectorSection title={`Key takeaways${draft.keyTakeaways.length ? ` · ${draft.keyTakeaways.length}` : ""}`} description="The points a reader should remember">
+                  <Textarea aria-label="Key takeaways, one per line" value={draft.keyTakeaways.join("\n")} onChange={(e) => set("keyTakeaways", e.target.value.split("\n").filter((line) => line.trim()))} className="min-h-28" />
+                </InspectorSection>
+                <InspectorSection title={`FAQs${draft.faqs.length ? ` · ${draft.faqs.length}` : ""}`} description="Optional questions and complete answers">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3"><p className="text-xs text-muted-foreground">Collapse each question while you work through the list.</p><Button variant="outline" size="sm" onClick={() => set("faqs", [...draft.faqs, { q: "", a: "" }])}>Add FAQ</Button></div>
+                    {draft.faqs.map((faq, i) => (
+                      <details key={i} className="editor-faq-item rounded-xl border" open={i === 0}>
+                        <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-sm font-medium [&::-webkit-details-marker]:hidden"><IconChevronRight className="size-4 text-muted-foreground transition-transform" /><span className="min-w-0 flex-1 truncate">{faq.q || `FAQ ${i + 1}`}</span><button type="button" aria-label={`Remove FAQ ${i + 1}`} onClick={(event) => { event.preventDefault(); set("faqs", draft.faqs.filter((_, j) => j !== i)); }} className="text-muted-foreground hover:text-destructive"><IconTrash className="size-4" /></button></summary>
+                        <div className="space-y-2 border-t p-3">
+                          <div className="flex gap-2"><div className="flex flex-col"><button type="button" aria-label="Move FAQ up" disabled={i === 0} onClick={() => set("faqs", moveItem(draft.faqs, i, i - 1))} className="text-muted-foreground hover:text-foreground disabled:opacity-30"><IconChevronUp className="size-4" /></button><button type="button" aria-label="Move FAQ down" disabled={i === draft.faqs.length - 1} onClick={() => set("faqs", moveItem(draft.faqs, i, i + 1))} className="text-muted-foreground hover:text-foreground disabled:opacity-30"><IconChevronDown className="size-4" /></button></div><Input value={faq.q} aria-label={`FAQ ${i + 1} question`} placeholder="Reader question" onChange={(e) => set("faqs", draft.faqs.map((item, j) => j === i ? { ...item, q: e.target.value } : item))} /></div>
+                          <Textarea value={faq.a} aria-label={`FAQ ${i + 1} answer`} placeholder="A complete standalone answer" className="min-h-24" onChange={(e) => set("faqs", draft.faqs.map((item, j) => j === i ? { ...item, a: e.target.value } : item))} />
+                        </div>
+                      </details>
                     ))}
-                  </ul>
-                </div>
-              ))}
+                  </div>
+                </InspectorSection>
+              </div>
+            </TabsContent>
 
-              <LinkSuggestions suggestions={linkSuggestions} />
-            </div>
-          </TabsContent>
-        </Tabs>
+                  <TabsContent value="seo" className="min-h-0 overflow-y-auto p-4 sm:p-5">
+                    <div className="mx-auto max-w-3xl space-y-5">
+                <div><p className="text-xs text-muted-foreground">BEFORE YOU SAVE</p><h2 className="mt-2 text-xl font-semibold">{reviewOpen ? "Review your update" : "A little more clarity."}</h2><p className="mt-2 text-sm text-muted-foreground">Check the details that matter to your readers. These checks do not predict rankings.</p></div>
+                {reviewOpen && <div className="space-y-4 rounded-xl border p-4"><PostCover post={{title: draft.title || "Untitled", category: draft.category, coverTone: normalizeCoverTone(draft.coverTone), coverImage: draft.coverImage || undefined, coverAlt: draft.coverAlt || undefined}} className="aspect-video w-full" /><dl className="space-y-3 text-sm"><div className="flex justify-between"><dt>Destination</dt><dd>Local project</dd></div><div className="flex justify-between"><dt>Visibility</dt><dd>{draft.draft ? "Draft" : "Public after deployment"}</dd></div><div className="flex justify-between"><dt>Search indexing</dt><dd>{draft.noindex ? "Disabled" : "Allowed"}</dd></div></dl><Button className="w-full" onClick={save} disabled={!canSave || saveState === "saving" || !draft.slug || !draft.title.trim()}><IconDeviceFloppy className="size-4" />{saveState === "saving" ? "Saving…" : "Save changes"}</Button><p className="text-xs text-muted-foreground">{canSave ? "Writes Markdown to your local project. Commit and deploy to update your live site." : "This demo is read-only. Saving is available in your local project."}</p></div>}
+                <SerpPreview title={draft.title} slug={draft.slug} description={draft.description} />
+                {(["seo", "structure"] as const).map((group) => (
+                  <div key={group}>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{group === "seo" ? "Search essentials" : "Reader experience"}</p>
+                    <ul className="space-y-1.5">{checks.filter((check) => check.group === group).map((check) => <CheckRow key={check.id} check={check} />)}</ul>
+                  </div>
+                ))}
+                <LinkSuggestions suggestions={linkSuggestions} />
+              </div>
+            </TabsContent>
+                </Tabs>
+              </aside>
+
+        </div>
       </div>
+      <nav className="editor-mobile-nav" aria-label="Editor views">
+        {[["write", "Write"], ["details", "Details"], ["checks", "Checks"], ["preview", "Preview"]].map(([value, label]) => <button key={value} type="button" aria-current={mobilePane === value ? "page" : undefined} onClick={() => { setMobilePane(value); if(value === "details") setInspectorTab("details"); if(value === "checks") setInspectorTab("seo"); if(value === "preview") setInspectorTab("preview"); }}>{label}</button>)}
+      </nav>
     </main>
   );
+}
+
+function InspectorSection({ title, description, open = false, children }: { title: string; description: string; open?: boolean; children: React.ReactNode }) {
+  return (
+    <details open={open} className="group rounded-xl border bg-background">
+      <summary className="cursor-pointer list-none px-4 py-3 focus-visible:outline-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
+        <span className="flex items-center justify-between gap-3">
+          <span><span className="block text-sm font-semibold">{title}</span><span className="block text-xs text-muted-foreground">{description}</span></span>
+          <IconChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden />
+        </span>
+      </summary>
+      <div className="border-t p-4">{children}</div>
+    </details>
+  );
+}
+
+function FlagToggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
+  return <label className="flex min-h-8 items-center justify-between gap-3 text-sm"><span>{label}</span><Switch checked={checked} onCheckedChange={onChange} /></label>;
 }
 
 function LinkSuggestions({ suggestions }: { suggestions: LinkCandidate[] }) {
@@ -658,7 +550,7 @@ function LinkSuggestions({ suggestions }: { suggestions: LinkCandidate[] }) {
       </p>
       {suggestions.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No suggestions — either everything relevant is already linked, or add more body text.
+          No suggestions. Everything relevant may already be linked, or the draft may need more body text.
         </p>
       ) : (
         <ul className="space-y-1.5">
@@ -689,45 +581,14 @@ function LinkSuggestions({ suggestions }: { suggestions: LinkCandidate[] }) {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  const id = useId();
+  const control = isValidElement(children)
+    ? cloneElement(children as ReactElement<{ id?: string }>, { id })
+    : children;
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm">{label}</Label>
-      {children}
-    </div>
-  );
-}
-
-function ScoreBadge({ score, compact }: { score: number; compact?: boolean }) {
-  // Traffic light: green ≥80, amber ≥55, red below.
-  const tone =
-    score >= 80 ? "bg-success text-white" : score >= 55 ? "bg-warning text-black" : "bg-destructive text-white";
-  return (
-    <span className={cn("rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums", tone, compact && "ml-1")}>
-      {score}
-    </span>
-  );
-}
-
-/** Traffic-light overview: a colored progress bar + pass/warn/fail counts. */
-function SeoScoreMeter({ checks, score }: { checks: SeoCheck[]; score: number }) {
-  const pass = checks.filter((c) => c.status === "pass").length;
-  const warn = checks.filter((c) => c.status === "warn").length;
-  const fail = checks.filter((c) => c.status === "fail").length;
-  const barColor = score >= 80 ? "bg-success" : score >= 55 ? "bg-warning" : "bg-destructive";
-  return (
-    <div className="rounded-lg border p-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold">SEO / GEO score</span>
-        <ScoreBadge score={score} />
-      </div>
-      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
-        <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${score}%` }} />
-      </div>
-      <div className="mt-2 flex gap-3 text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1"><span className="size-2 rounded-full bg-success" />{pass} good</span>
-        <span className="inline-flex items-center gap-1"><span className="size-2 rounded-full bg-warning" />{warn} improve</span>
-        <span className="inline-flex items-center gap-1"><span className="size-2 rounded-full bg-destructive" />{fail} problems</span>
-      </div>
+      <Label htmlFor={id} className="text-sm">{label}</Label>
+      {control}
     </div>
   );
 }
@@ -758,7 +619,7 @@ const serpHost = (() => {
   }
 })();
 
-/** Google result preview — how the title/slug/description truncate in a SERP. */
+/** Preview how the title, slug, and description truncate in a Google result. */
 function SerpPreview({ title, slug, description }: { title: string; slug: string; description: string }) {
   return (
     <div className="rounded-lg border bg-card p-4">
@@ -766,10 +627,10 @@ function SerpPreview({ title, slug, description }: { title: string; slug: string
         {serpHost} › blog › post › {slug || "slug"}
       </p>
       <p className="mt-1 truncate text-base font-medium text-primary">
-        {title ? `${title} | ${siteConfig.name}` : `Post title | ${siteConfig.name}`}
+        {title ? buildTitle([title]) : `Post title | ${siteConfig.name}`}
       </p>
       <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
-        {description || "The meta description will appear here."}
+        {description ? buildDescription(description) : "The meta description will appear here."}
       </p>
     </div>
   );

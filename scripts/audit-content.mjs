@@ -6,10 +6,10 @@
  * site does, so a clean run here means the build has nothing to truncate.
  */
 import fs from "node:fs";
-import path from "node:path";
 import matter from "gray-matter";
+import { resolveLocalContent } from "../lib/publishing/local-content.mjs";
 
-const POSTS_DIR = path.join(process.cwd(), "content", "posts");
+const POSTS_DIR = resolveLocalContent("posts");
 
 // Mirrors the limits enforced in lib/seo.ts.
 const TITLE_LIMIT = 60;
@@ -18,8 +18,8 @@ const DESCRIPTION_LIMIT = 158;
 
 const problems = [];
 
-for (const file of fs.readdirSync(POSTS_DIR).filter((f) => f.endsWith(".md")).sort()) {
-  const { data, content } = matter(fs.readFileSync(path.join(POSTS_DIR, file), "utf8"));
+for (const file of (fs.existsSync(POSTS_DIR) ? fs.readdirSync(POSTS_DIR) : []).filter((f) => f.endsWith(".md")).sort()) {
+  const { data, content } = matter(fs.readFileSync(resolveLocalContent("posts", file), "utf8"));
   const words = content.split(/\s+/).filter(Boolean).length;
   const flags = [];
 

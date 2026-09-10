@@ -1,39 +1,97 @@
 import Link from "next/link";
+import { IconArrowUpRight, IconBrandGithub } from "@tabler/icons-react";
+import { MobileNavigation } from "@/components/mobile-navigation";
 import { Button } from "@/components/blog-ui/button";
 import { BlogThemeToggle } from "@/components/blog-theme-toggle";
 import { HeaderSearch } from "@/components/blog/header-search";
 import { siteConfig } from "@/lib/site";
+import { isStudioVisible } from "@/lib/studio-access";
+import { productConfig } from "@/lib/product";
+
+const primaryLinks = [
+  { label: "Product", href: "/#product" },
+  { label: "Blog", href: "/blog" },
+  { label: "Docs", href: "/docs" },
+];
 
 export function BlogSiteHeader() {
-  // The authoring studio writes files on disk, so it exists only while developing.
-  const showDashboard = process.env.NODE_ENV !== "production";
+  const showStudio = isStudioVisible();
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-shell items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2" aria-label={`${siteConfig.name} home`}>
-          <span
-            aria-hidden
-            className="flex size-7 items-center justify-center rounded-md bg-primary font-heading text-sm font-bold text-primary-foreground"
-          >
-            {siteConfig.shortName.slice(0, 1)}
+    <header className="site-header sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
+      <div className="site-header-inner mx-auto flex max-w-shell items-center gap-3 px-5 sm:px-6">
+        <Link
+          href="/"
+          className="group flex min-w-0 items-center gap-2.5"
+          aria-label={`${siteConfig.name} home`}
+        >
+          <span aria-hidden className="brand-glyph shrink-0">
+            {productConfig.glyph}
           </span>
-          <span className="font-heading text-base font-semibold tracking-tight">
-            {siteConfig.shortName}
+          <span className="brand-name truncate">
+            {siteConfig.shortName} <small className="hidden sm:inline">/ {productConfig.nameSuffix}</small>
           </span>
         </Link>
-        <nav className="flex items-center gap-1" aria-label="Primary">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/blog">Articles</Link>
-          </Button>
-          {showDashboard ? (
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/dashboard">Studio</Link>
+
+        <nav
+          className="ml-auto hidden items-center gap-2 lg:flex"
+          aria-label="Primary navigation"
+        >
+          {primaryLinks.map((link) => (
+            <Button key={link.href} variant="ghost" size="lg" asChild>
+              <Link href={link.href}>{link.label}</Link>
+            </Button>
+          ))}
+          {showStudio ? (
+            <Button variant="ghost" size="lg" asChild>
+              <Link href="/dashboard">
+                Studio
+                <IconArrowUpRight
+                  className="size-3.5 text-muted-foreground"
+                  aria-hidden
+                />
+              </Link>
             </Button>
           ) : null}
+        </nav>
+
+        <div className="ml-auto flex items-center gap-1 lg:ml-5">
           <HeaderSearch />
           <BlogThemeToggle />
-        </nav>
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            asChild
+            className="hidden lg:inline-flex"
+          >
+            <a
+              href={siteConfig.social.github}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="View the GitHub repository"
+            >
+              <IconBrandGithub className="size-4.5" aria-hidden />
+            </a>
+          </Button>
+          <Button
+            size="lg"
+            asChild
+            className="button-ink ml-2 hidden h-10 px-4 sm:inline-flex"
+          >
+            <Link href="/docs#get-started">
+              Get started
+              <IconArrowUpRight className="size-4" aria-hidden />
+            </Link>
+          </Button>
+
+          <MobileNavigation
+            showStudio={showStudio}
+            github={siteConfig.social.github}
+          />
+        </div>
       </div>
     </header>
   );

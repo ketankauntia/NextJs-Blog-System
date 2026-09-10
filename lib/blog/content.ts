@@ -1,10 +1,8 @@
-import fs from "node:fs";
-import path from "node:path";
+import "server-only";
 import { cache } from "react";
-import matter from "gray-matter";
 import type { Faq, Post, PostBlock } from "./types";
 import { estimateReadingMinutes, parseSections, slugify } from "./parse";
-import { isoDay } from "./format";
+import { isContentSlug, readPostSources } from "./source.mjs";
 import { DEFAULT_AUTHOR_SLUG } from "./authors";
 
 /**
@@ -12,7 +10,6 @@ import { DEFAULT_AUTHOR_SLUG } from "./authors";
  * The authoring contract is documented in docs/content-format.md. Server-only: uses fs.
  */
 
-const POSTS_DIR = path.join(process.cwd(), "content", "posts");
 
 type Frontmatter = {
   title: string;
@@ -36,10 +33,7 @@ type Frontmatter = {
   faqs?: { q: string; a: string }[];
 };
 
-function loadPost(file: string): Post {
-  const slug = file.replace(/\.md$/, "");
-  const raw = fs.readFileSync(path.join(POSTS_DIR, file), "utf8");
-  const { data, content } = matter(raw);
+function loadPost({ slug, data, content }: ReturnType<typeof readPostSources>[number]): Post {
   const fm = data as Frontmatter;
   const faqs: Faq[] = (fm.faqs ?? []).map((f) => ({ question: f.q, answer: f.a }));
 
@@ -78,24 +72,14 @@ function toIsoDate(value: string | Date): string {
   return value instanceof Date ? value.toISOString() : value;
 }
 
-/** Today as YYYY-MM-DD (build date). String compare is safe for ISO dates. */
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 /**
  * All published posts, newest first.
- * In production: excludes drafts AND future-dated posts (scheduled publishing).
- * In dev: shows everything so authors can preview drafts and scheduled posts.
+ * Public readers always exclude drafts and future timestamps, including in dev.
+ * Local Studio uses a separate explicit authoring read.
  */
 export const getAllPosts = cache((): Post[] => {
-  const isProd = process.env.NODE_ENV === "production";
-  const now = today();
-  return fs
-    .readdirSync(POSTS_DIR)
-    .filter((f) => f.endsWith(".md"))
+  return readPostSources()
     .map(loadPost)
-    .filter((p) => !isProd || (!p.draft && isoDay(p.publishedAt) <= now))
     .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 });
 
@@ -110,14 +94,11 @@ export function getPost(slug: string): Post | undefined {
 
 /** Raw markdown (frontmatter stripped) for the .md routes and copy-as-markdown. */
 export function getRawMarkdown(slug: string): string | undefined {
-  const file = path.join(POSTS_DIR, `${slug}.md`);
-  if (!fs.existsSync(file)) return undefined;
-  const { data, content } = matter(fs.readFileSync(file, "utf8"));
+  if (!isContentSlug(slug)) return undefined;
+  const source = readPostSources().find(post => post.slug === slug);
+  if (!source) return undefined;
+  const { data, content } = source;
   const fm = data as Frontmatter;
-  // Don't expose drafts or not-yet-published posts in production.
-  if (process.env.NODE_ENV === "production" && (fm.draft || isoDay(toIsoDate(fm.publishedAt)) > today())) {
-    return undefined;
-  }
   const faqs = (fm.faqs ?? [])
     .map((f) => `### ${f.q}\n\n${f.a}`)
     .join("\n\n");

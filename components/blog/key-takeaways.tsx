@@ -3,7 +3,7 @@ import { IconListCheck } from "@tabler/icons-react";
 export function KeyTakeaways({ items }: { items: string[] }) {
   if (items.length === 0) return null;
   return (
-    <aside aria-label="Key takeaways" className="rounded-xl border bg-card p-5">
+    <aside aria-label="Key takeaways" className="rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
       <p className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold">
         <IconListCheck className="size-4 text-primary" />
         Key takeaways

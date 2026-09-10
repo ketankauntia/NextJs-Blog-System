@@ -49,7 +49,7 @@ export function FontPickerClient({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Save failed");
       setState("saved");
-      setMessage(`Saved — the whole site now uses ${FONT_PAIRING_META[selected].name}.`);
+      setMessage(`Saved. The whole site now uses ${FONT_PAIRING_META[selected].name}.`);
       router.refresh();
     } catch (e) {
       setState("error");
@@ -58,7 +58,7 @@ export function FontPickerClient({
   }
 
   return (
-    <main className="mx-auto w-full max-w-shell flex-1 px-4 py-10 sm:px-6">
+    <main id="main-content" className="mx-auto w-full max-w-shell flex-1 px-4 py-10 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Link
@@ -157,7 +157,7 @@ export function FontPickerClient({
                   <em>italic text</em> · <code className="font-mono text-[0.9em]">inline_code()</code>
                 </p>
                 <p className="mt-3 text-sm text-muted-foreground">
-                  Caption and metadata size — 8 min read · 26 August 2026
+                  Caption and metadata size, 8 min read · 26 August 2026
                 </p>
               </div>
             </button>

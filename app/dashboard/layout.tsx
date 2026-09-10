@@ -1,17 +1,10 @@
-import { BlogSiteFooter } from "@/components/blog-site-footer";
-import { BlogSiteHeader } from "@/components/blog-site-header";
+import { StudioShell } from "@/components/dashboard/studio-shell";
 import { notFound } from "next/navigation";
+import { canMutateStudio, isStudioVisible } from "@/lib/studio-access";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  if (process.env.NODE_ENV === "production") {
-    notFound();
-  }
+  if (!isStudioVisible()) notFound();
+  const readOnly = !canMutateStudio();
 
-  return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <BlogSiteHeader />
-      <div className="flex flex-1 flex-col">{children}</div>
-      <BlogSiteFooter />
-    </div>
-  );
+  return <StudioShell readOnly={readOnly}>{children}</StudioShell>;
 }

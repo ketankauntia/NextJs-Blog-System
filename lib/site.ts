@@ -5,6 +5,8 @@
  * by client components too — a server-only variable would be `undefined` in the
  * browser bundle and the two halves would disagree about the canonical host.
  */
+import { productConfig } from "@/lib/product";
+
 function resolveSiteUrl(): string {
   const candidates = [
     process.env.NEXT_PUBLIC_SITE_URL,
@@ -34,7 +36,7 @@ function resolveSiteUrl(): string {
     }
   }
 
-  return "http://localhost:3000";
+  return "https://get-nextjs-blogs.vercel.app";
 }
 
 const SITE_URL = resolveSiteUrl();
@@ -47,25 +49,25 @@ const SITE_URL = resolveSiteUrl();
  */
 export const siteConfig = {
   /** Used as the RSS channel title and the Open Graph `site_name`. */
-  name: "NextJs Blog System",
+  name: productConfig.name,
   /** Short brand shown in the header, where the full name does not fit. */
-  shortName: "Blog System",
+  shortName: productConfig.shortName,
   /** Feed description and the fallback meta description. */
   description:
-    "A file-based blog system for Next.js: write markdown, get fast, structured, search-ready pages.",
+    "A repository-native publishing system for Next.js with a complete reader, search, social, and AI experience.",
   /** Absolute origin, no trailing slash. See {@link resolveSiteUrl}. */
   url: SITE_URL,
   /** Default social card. Generated on demand by app/opengraph-image.tsx. */
   ogImage: "/opengraph-image",
   /** Publisher used in Article/Organization JSON-LD. */
   organization: {
-    name: "NextJs Blog System",
+    name: productConfig.name,
     url: SITE_URL,
     logo: "/icon.svg",
   },
   /** Optional profile links rendered in the footer. Empty entries are skipped. */
   social: {
-    github: "https://github.com/ketankauntia/NextJs-Blog-System",
+    github: productConfig.repositoryUrl,
     x: "https://x.com/kauntiaketan",
   },
 } as const;

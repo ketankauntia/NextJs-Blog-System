@@ -66,13 +66,13 @@ function block(b: PostBlock): string {
       return `<${tag}>${b.items.map((i) => `<li>${inline(i)}</li>`).join("")}</${tag}>`;
     }
     case "quote":
-      return `<blockquote><p>${inline(b.text)}</p>${b.attribution ? `<footer>— ${escapeHtml(b.attribution)}</footer>` : ""}</blockquote>`;
+      return `<blockquote><p>${inline(b.text)}</p>${b.attribution ? `<footer>${escapeHtml(b.attribution)}</footer>` : ""}</blockquote>`;
     case "callout":
       return `<aside><p><strong>${escapeHtml(b.title)}</strong></p><p>${inline(b.text)}</p></aside>`;
     case "code":
       return `<pre><code>${escapeHtml(b.code)}</code></pre>`;
     case "stat":
-      return `<p><strong>${escapeHtml(b.value)}</strong> — ${escapeHtml(b.label)}</p>`;
+      return `<p><strong>${escapeHtml(b.value)}</strong>: ${escapeHtml(b.label)}</p>`;
     case "image":
       return `<figure><img src="${absoluteUrl(b.src)}" alt="${escapeHtml(b.alt)}" />${b.caption ? `<figcaption>Fig: ${escapeHtml(b.caption)}</figcaption>` : ""}</figure>`;
   }

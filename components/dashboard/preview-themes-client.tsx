@@ -30,6 +30,7 @@ const LABELS: Record<string, string> = {
   classic: "Classic",
   magazine: "Magazine",
   minimal: "Minimal",
+  journal: "Journal",
   standard: "Standard",
   centered: "Centered",
   hero: "Hero",
@@ -98,7 +99,7 @@ export function PreviewThemesClient({
   }
 
   return (
-    <main className="flex w-full flex-1 flex-col">
+    <main id="main-content" className="flex w-full flex-1 flex-col">
       {/* Toolbar */}
       <div className="border-b bg-card">
         <div className="mx-auto flex max-w-shell flex-wrap items-center gap-2 px-4 py-2.5 sm:px-6">
@@ -152,7 +153,7 @@ export function PreviewThemesClient({
               <SelectTrigger size="sm" className="w-56"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="/blog">Blog home</SelectItem>
-                <SelectItem value="/blog/page/2">Blog — page 2</SelectItem>
+                <SelectItem value="/blog/page/2">Blog, page 2</SelectItem>
                 {posts.map((p) => (
                   <SelectItem key={p.slug} value={`/blog/post/${p.slug}`}>
                     Post: {p.title.length > 40 ? p.title.slice(0, 40) + "…" : p.title}
