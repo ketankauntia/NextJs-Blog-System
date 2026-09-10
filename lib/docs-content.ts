@@ -24,7 +24,7 @@ A repository-native publishing system built for the Next.js App Router. Content 
 
 ## Automatic setup with an AI agent
 
-Open /docs and copy the setup prompt. It includes this website's absolute /agent-setup.md URL. Paste it into your coding agent in the target project; the agent reads the full instructions, inspects the repository, asks for required access and confirmation, then installs and validates. It asks about blockers and decisions it cannot infer. If it cannot access the URL, use the collapsed full-instructions fallback on /docs.
+Open /docs#get-started, choose your writing mode, content store, paths and hosting, then copy the setup prompt. It includes this website's absolute /agent-setup.md URL. The link contains the selected configuration and returns its matching plan. The manual guide below uses the same choices. Paste it into your coding agent in the target project; the agent reads the full instructions, inspects the repository, asks for required access and confirmation, then installs and validates. It asks about blockers and decisions it cannot infer. If it cannot access the URL, use the collapsed full-instructions fallback on /docs.
 
 ## Manual quick start
 
@@ -124,7 +124,7 @@ Use the guided contract at \`/agent-setup.md\` when asking an AI coding agent to
 MIT.
 `;
 
-export const agentSetupMarkdown = `# AI Agent Setup Contract for ${productConfig.name}
+export const agentSetupCore = `# AI Agent Setup Contract for ${productConfig.name}
 
 ## Objective
 
@@ -248,4 +248,6 @@ Install the parser, types, validation, and machine-readable outputs without repl
 ## Final response format
 
 Report the integration mode, key decisions, changed routes, validation evidence, known limitations, environment variable names (not values), and exact next commands. Clearly separate completed work from optional follow-ups.
-${agentCloudContract}`;
+`;
+
+export const agentSetupMarkdown = `${agentSetupCore}${agentCloudContract}`;

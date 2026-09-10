@@ -4,6 +4,9 @@ import { localContentPath } from "./lib/publishing/local-content.mjs";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  async redirects() {
+    return [{ source: "/dashboard/setup", destination: "/docs#get-started", permanent: true }];
+  },
   outputFileTracingIncludes: {
     "/*": ["./publishing.json", `./${localContentPath()}/posts/*.md`, `./${localContentPath()}/settings.json`],
   },

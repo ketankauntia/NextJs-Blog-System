@@ -12,7 +12,7 @@ export function GET(request: Request) {
       if (selection.length > 4096) throw new Error("Setup link is too long.");
       markdown = buildAgentSetupPrompt(createPublishingSetup(JSON.parse(selection)));
     } catch {
-      return new Response("Invalid setup link. Generate a new link from /dashboard/setup.", { status: 400, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });
+      return new Response("Invalid setup link. Generate a new link from /docs#get-started.", { status: 400, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });
     }
   }
   return new Response(markdown, {

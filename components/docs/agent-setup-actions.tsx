@@ -11,6 +11,10 @@ export function AgentSetupActions({ selection, compact = false }: { selection?: 
   const [status, setStatus] = useState("");
   const [fallback, setFallback] = useState("");
   const [copied, setCopied] = useState(false);
+  let instructionsLink: string = productConfig.routes.agentSetup;
+  try {
+    if (selection) instructionsLink += `?setup=${encodeURIComponent(JSON.stringify(createPublishingSetup(selection)))}`;
+  } catch { /* The copy action reports invalid choices without crashing the page. */ }
 
   async function copyPrompt(full = false) {
     let prompt: string;
@@ -51,7 +55,7 @@ export function AgentSetupActions({ selection, compact = false }: { selection?: 
         <p className="mt-3 max-w-xl leading-6">A localhost link is only reachable from your computer. Copy the full instructions if your agent cannot access the website, then paste them into the same conversation.</p>
         <div className="mt-3 flex flex-wrap items-center gap-4">
           <Button type="button" size="sm" variant="outline" onClick={() => copyPrompt(true)}>Copy full instructions</Button>
-          <a href={productConfig.routes.agentGuide} className="rounded underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring">Read the setup guide</a>
+          <a href={instructionsLink} target="_blank" rel="noreferrer" className="rounded underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring">Read these instructions</a>
         </div>
       </details>
     </div>

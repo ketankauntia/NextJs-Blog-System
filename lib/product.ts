@@ -7,7 +7,7 @@ export const productConfig = {
   homepageUrl: "https://nextjsblogs.com",
   homepageIsPlaceholder: true,
   repositoryUrl: "https://github.com/ketankauntia/NextJs-Blog-System",
-  routes: { setup: "/dashboard/setup", agentSetup: "/agent-setup.md", agentGuide: "/docs/agent-setup" },
+  routes: { setup: "/docs#get-started", agentSetup: "/agent-setup.md", agentGuide: "/docs/agent-setup" },
   providers: {
     storage: [
       { value: "github", label: "GitHub", description: "Markdown and images in your repository.", available: true },

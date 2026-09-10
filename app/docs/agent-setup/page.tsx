@@ -5,7 +5,6 @@ import { BlogSiteFooter } from "@/components/blog-site-footer";
 import { BlogSiteHeader } from "@/components/blog-site-header";
 import { Badge } from "@/components/blog-ui/badge";
 import { Button } from "@/components/blog-ui/button";
-import { AgentSetupActions } from "@/components/docs/agent-setup-actions";
 import { buildPageMetadata } from "@/lib/seo";
 import { productConfig } from "@/lib/product";
 
@@ -48,8 +47,8 @@ export default function AgentSetupPage() {
             <Button variant="ghost" size="sm" asChild className="-ml-3 mb-6"><Link href="/docs"><IconArrowLeft className="size-4" />Documentation</Link></Button>
             <Badge variant="outline" className="bg-background">AGENT-READY SETUP</Badge>
             <h1 className="text-balance mt-5 max-w-4xl font-heading text-4xl font-semibold tracking-[-0.045em] sm:text-6xl">One prompt. A repository-aware integration.</h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">Give your coding agent the setup link or full prompt. It asks you to sign in to the required accounts and confirm it can proceed, then inspects your project, configures your choices and verifies the result. No installed skill required.</p>
-            <div className="mt-8"><AgentSetupActions /></div>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">Choose your setup in the installation guide, then copy the prompt generated for those choices. Your agent reads the matching instructions, asks for required access, and verifies its work. No installed skill required.</p>
+            <div className="mt-8"><Button asChild><Link href={productConfig.routes.setup}>Choose your setup</Link></Button></div>
           </div>
         </header>
 

@@ -12,7 +12,7 @@ R2 is an optional image/upload store for login-based setups. OAuth is disabled. 
 
 ## Local setup
 
-Use `/dashboard/setup`, select Local and enter a repository-relative content folder such as `content` or `data/blog`. Download `publishing.json` to the app root. Before selecting a new root for existing content, copy posts/settings into that folder without overwriting or deleting originals. The app reads posts at `<contentPath>/posts/*.md` and settings at `<contentPath>/settings.json`; public image paths remain unchanged. Restart the app and validate. Paths cannot escape the repository or traverse symlinks/public/code folders.
+Use `/docs#get-started`, select Local and enter a repository-relative content folder such as `content` or `data/blog`. Download `publishing.json` to the app root. Before selecting a new root for existing content, copy posts/settings into that folder without overwriting or deleting originals. The app reads posts at `<contentPath>/posts/*.md` and settings at `<contentPath>/settings.json`; public image paths remain unchanged. Restart the app and validate. Paths cannot escape the repository or traverse symlinks/public/code folders.
 
 Without publishing.json the app retains its current `content` directory. Configuration export does not modify or migrate files. Do not put a remote configuration in the app root until a working authenticated provider adapter has been implemented; it deliberately fails closed.
 

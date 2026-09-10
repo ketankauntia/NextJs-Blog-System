@@ -4,13 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { IconArrowDown, IconArrowRight, IconBrandGithub, IconCloud, IconDatabase, IconDeviceLaptop, IconLock, IconServer } from "@tabler/icons-react";
 import { AgentSetupActions } from "@/components/docs/agent-setup-actions";
-import { createPublishingSetup, defaultPublishingSetup, serializePublishingSetup, type ContentDestination, type PublishingMode, type HostingTarget } from "@/lib/publishing/config";
+import { createPublishingSetup, defaultPublishingSetup, serializePublishingSetup, type ContentDestination, type PublishingMode, type HostingTarget, type PublishingSetup } from "@/lib/publishing/config";
 import { ProviderOption } from "@/components/publishing/provider-option";
+import { getSetupGuide } from "@/lib/publishing/guide";
 import { productConfig } from "@/lib/product";
 
 const inputClass = "w-full rounded-lg border bg-background px-3.5 py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
-export function PublishingSetupPanel() {
+export function SetupGuide() {
   const [mode, setMode] = useState<PublishingMode>("local");
   const [remoteDestination, setRemoteDestination] = useState<ContentDestination>("github");
   const [hosting, setHosting] = useState<HostingTarget>("vercel");
@@ -27,8 +28,7 @@ export function PublishingSetupPanel() {
 
   function clearFeedback() { setNotice(""); setError(""); }
 
-  function downloadSetup(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function downloadSetup() {
     clearFeedback();
     try {
       const setup = createPublishingSetup(selection);
@@ -46,15 +46,19 @@ export function PublishingSetupPanel() {
     }
   }
 
+  let setup: PublishingSetup | null = null;
+  let validationError = "";
+  try { setup = createPublishingSetup(selection); }
+  catch (cause) { validationError = cause instanceof Error ? cause.message : "Check your setup choices."; }
+  const guide = setup ? getSetupGuide(setup) : null;
   return (
-    <main id="main-content" className="mx-auto w-full max-w-4xl px-5 py-12 sm:px-8 sm:py-16">
-      <div className="mb-9 max-w-2xl">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">Open-source publishing setup</p>
-        <h1 className="text-4xl font-medium tracking-tight sm:text-5xl">Your blog. Your content.</h1>
-        <p className="mt-4 text-base leading-relaxed text-muted-foreground">Write locally in your repository, or set up a login on your own domain. Start with the essentials.</p>
+    <section id="get-started" className="scroll-mt-24" aria-labelledby="setup-title">
+      <div id="configure" className="mb-7 scroll-mt-24">
+        <p className="font-mono text-xs tracking-[0.16em] text-primary">YOUR SETUP</p>
+        <h2 id="setup-title" className="mt-3 font-heading text-3xl font-semibold tracking-tight">Choose how your blog runs</h2>
+        <p className="mt-3 leading-7 text-muted-foreground">Choose once. Your AI instructions and manual guide below update together.</p>
       </div>
-
-      <form onSubmit={downloadSetup} className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+      <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
         <div className="space-y-8 p-6 sm:p-8">
           <div className="sm:max-w-sm">
             <label htmlFor="project-name" className="mb-2 block text-sm font-semibold">Project name</label>
@@ -114,38 +118,44 @@ export function PublishingSetupPanel() {
             </div>
           </fieldset>
 
-          <div aria-live="polite" aria-atomic="true" className="rounded-xl bg-muted/50 p-5">
-            <p className="mb-4 text-sm font-semibold">Your setup</p>
-            <dl className="grid gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
-              {[
-                ["Writing", local ? "Local, in your repository" : "Login-based, on your domain"],
-                ["Content", local ? `${contentPath || "content"}/posts` : destination === "github" ? "Your GitHub repository" : "Your Supabase Storage"],
-                ["Login", local ? "Not required" : `Email and password at ${loginRoute || "/login"}`],
-                ["Images and uploads", assets === "r2" ? "Your Cloudflare R2 bucket" : assets === "supabase" ? "Your Supabase Storage" : "Your repository"],
-              ].map(([term, detail]) => <div key={term}><dt className="text-xs text-muted-foreground">{term}</dt><dd className="mt-1 break-words font-medium">{detail}</dd></div>)}
-            </dl>
-          </div>
-
-          <div className="border-t pt-6">
-            <h2 className="text-sm font-semibold">Let your coding agent set it up</h2>
-            <p className="mb-4 mt-2 text-sm leading-relaxed text-muted-foreground">Copy the setup prompt and paste it into your coding agent. Your agent first asks you to sign in to the required provider accounts and confirm it can proceed, then handles the available setup steps. You never paste passwords or tokens here.</p>
-            <AgentSetupActions key={JSON.stringify(selection)} compact selection={selection} />
-          </div>
-          <p className="text-xs leading-relaxed text-muted-foreground">Local and login-based self-hosting are the open-source scope. Managed hosting, OAuth, audit logs and advanced team features are for later.</p>
         </div>
-        <div className="border-t bg-muted/20 px-6 py-5 sm:px-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div><p className="text-sm font-medium">{local ? "Local workflow available" : "Agent configuration required"}</p><p className="mt-1 max-w-md text-xs leading-relaxed text-muted-foreground">{local ? "Download your choices to configure this repository." : "This export describes your setup. Authentication and remote storage adapters still need implementation and verification before hosted editing works."}</p></div>
-            <button type="submit" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"><IconArrowDown className="size-4" aria-hidden />Download setup</button>
-          </div>
-          <p id="setup-error" role="alert" className="mt-3 text-sm text-destructive">{error}</p>
-          <p role="status" className="text-sm text-muted-foreground">{notice}</p>
-        </div>
-      </form>
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
-        <span>One project. Your infrastructure.</span>
-        <Link href="/dashboard/editor" className="inline-flex min-h-11 items-center gap-2 rounded text-foreground outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring">Open the editor<IconArrowRight className="size-4" aria-hidden /></Link>
       </div>
-    </main>
+      {validationError && <p role="alert" className="mt-4 text-sm text-destructive">{validationError}</p>}
+      {setup && guide && <>
+        <div className="mt-5 rounded-xl bg-muted/45 p-5" aria-live="polite">
+          <p className="text-sm font-semibold">{guide.title}</p>
+          <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">{setup.contentPath}/posts · {local ? "No login" : `Login at ${setup.loginRoute}`} · {hosting === "vercel" ? "Vercel website" : "Your own server"}</p>
+          {!local && <p className="mt-3 text-sm leading-6 text-muted-foreground">This path requires implementing and verifying authentication and storage adapters. The guide covers that work; selecting these options does not activate hosted editing.</p>}
+        </div>
+
+        <section id="agent-setup" className="mt-10 scroll-mt-24 rounded-2xl border border-primary/25 bg-primary/5 p-6 sm:p-8" aria-labelledby="agent-setup-title">
+          <p className="font-mono text-xs tracking-[0.16em] text-primary">AUTOMATIC SETUP</p>
+          <h2 id="agent-setup-title" className="mt-3 font-heading text-2xl font-semibold tracking-tight">Let your AI agent take it from here</h2>
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">Copy the prompt into your agent in the target project. Its link opens the complete guide for your choices, including your folder, login route and hosting. The agent installs, checks its work, and asks when it needs access or a decision.</p>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">{guide.accounts.length ? `Have ${guide.accounts.join(" and ")} ready. The agent asks you to sign in and confirm before accessing your accounts.` : "No provider sign-in is needed for local writing. The agent asks for access only if you want it to connect a repository or deploy."}</p>
+          <div className="mt-5"><AgentSetupActions key={JSON.stringify(setup)} selection={setup} /></div>
+        </section>
+
+        <section id="manual-setup" className="mt-14 scroll-mt-24 border-t pt-10" aria-labelledby="manual-setup-title">
+          <p className="font-mono text-xs tracking-[0.16em] text-muted-foreground">MANUAL SETUP</p>
+          <h2 id="manual-setup-title" className="mt-3 font-heading text-2xl font-semibold tracking-tight">Prefer to do it yourself?</h2>
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">Follow this guide for {guide.title}. Changing your choices above updates these steps too.</p>
+          <div className="mt-5">
+            <button type="button" onClick={downloadSetup} className="inline-flex min-h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium hover:bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring"><IconArrowDown className="size-4" aria-hidden />Download publishing.json</button>
+            <p role="status" className="mt-2 text-xs leading-6 text-muted-foreground">{notice}</p>
+            <p role="alert" className="text-xs text-destructive">{error}</p>
+          </div>
+          <ol className="mt-8 space-y-9">
+            {guide.steps.map((step, index) => <li key={step.id} className="border-t pt-6 first:border-0 first:pt-0">
+              <p className="font-mono text-[0.68rem] tracking-[0.16em] text-primary">STEP {String(index + 1).padStart(2, "0")}</p>
+              <h3 className="mt-2 font-heading text-xl font-semibold">{step.title}</h3>
+              <p className="mt-3 whitespace-pre-line text-sm leading-7 text-muted-foreground">{step.body}</p>
+              {step.command && <pre className="mt-4 overflow-x-auto rounded-xl border bg-foreground p-5 text-xs leading-6 text-background"><code>{step.command}</code></pre>}
+            </li>)}
+          </ol>
+          <Link href="/dashboard/editor" className="mt-8 inline-flex min-h-11 items-center gap-2 rounded text-sm font-medium outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring">Explore the editor<IconArrowRight className="size-4" aria-hidden /></Link>
+        </section>
+      </>}
+    </section>
   );
 }

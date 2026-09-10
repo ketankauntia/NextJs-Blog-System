@@ -7,7 +7,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000/docs`, `/dashboard/setup` or `/dashboard/editor`. Development Studio writes Markdown; production Studio is read-only. Without publishing.json, posts/settings use `content`. A Local configuration can choose another repository-relative contentPath. Copy existing data without overwriting before switching, and restart after configuration changes. Public image URLs remain unchanged.
+Open `http://localhost:3000/docs`, `/docs#get-started` or `/dashboard/editor`. Development Studio writes Markdown; production Studio is read-only. Without publishing.json, posts/settings use `content`. A Local configuration can choose another repository-relative contentPath. Copy existing data without overwriting before switching, and restart after configuration changes. Public image URLs remain unchanged.
 
 ```sh
 npm run test:publishing

@@ -1,9 +1,38 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createPublishingSetup, defaultPublishingSetup, serializePublishingSetup } from "../lib/publishing/config.ts";
+import { getSetupGuide, renderSetupGuideMarkdown } from "../lib/publishing/guide.ts";
 
 test("default setup is local GitHub without a database", () => {
   assert.deepEqual(createPublishingSetup(defaultPublishingSetup), defaultPublishingSetup);
+});
+
+test("selected guides cover every supported content, asset and hosting combination", () => {
+  for (const hosting of ["vercel", "self-hosted"]) {
+    for (const [mode, destination, assets, accounts] of [
+      ["local", "github", "repository", []],
+      ["self-hosted", "github", "repository", ["GitHub", "Supabase"]],
+      ["self-hosted", "github", "r2", ["GitHub", "Supabase", "Cloudflare"]],
+      ["self-hosted", "supabase", "supabase", ["Supabase"]],
+      ["self-hosted", "supabase", "r2", ["Supabase", "Cloudflare"]],
+    ]) {
+      const setup = createPublishingSetup({ projectName: "Selected blog", mode, destination, assets, hosting, contentPath: "data/journal", loginRoute: "/staff/sign-in" });
+      const guide = getSetupGuide(setup);
+      assert.deepEqual(guide.accounts, accounts);
+      const titles = guide.steps.map(step => step.title).join("\n");
+      assert.equal(titles.includes("Implement GitHub content storage"), mode !== "local" && destination === "github");
+      assert.equal(titles.includes("Implement Supabase Storage content"), destination === "supabase");
+      assert.equal(titles.includes("Connect Cloudflare R2 uploads"), assets === "r2");
+      assert.equal(titles.includes("Implement email login at /staff/sign-in"), mode !== "local");
+      assert.equal(titles.includes("Deploy the website to Vercel"), hosting === "vercel");
+      assert.equal(titles.includes("Host on your own Node.js server"), hosting === "self-hosted");
+      const markdown = renderSetupGuideMarkdown(setup);
+      assert.ok(markdown.includes("data/journal/posts"));
+      for (const step of guide.steps) assert.ok(markdown.includes(step.body));
+      assert.ok(markdown.includes("Recovery and completion"));
+      if (mode !== "local") assert.ok(markdown.includes("current local runtime deliberately rejects a remote configuration"));
+    }
+  }
 });
 
 test("hosting is independent of operating mode and unsupported databases fail closed", () => {
