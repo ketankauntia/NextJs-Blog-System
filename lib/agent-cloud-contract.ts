@@ -1,6 +1,6 @@
 import { productConfig } from "@/lib/product";
 
-/** Current OSS scope. This overrides older cloud architecture plans. */
+/** Current source-available scope. This overrides older cloud architecture plans. */
 export const agentCloudContract = `
 
 ## Required first checkpoint: provider sign-in and go-ahead
@@ -14,7 +14,7 @@ Before private provider reads, account changes, resource creation or deployment,
 
 After the go-ahead, verify the observed account and resource identity using available tools. If they differ from the user's selection, stop provider access and report the mismatch. Confirmation is not proof that the tools have credentials. Complete all authorized steps autonomously; ask again only for a new material decision, unavailable access, destructive migration or spending outside the agreed scope. Do not substitute the platform maintainer's account for the customer's account.
 
-## Basic open-source setup contract
+## Basic source-available setup contract
 
 These rules describe the current product scope and supersede earlier storage, workspace, billing or RBAC plans.
 
@@ -50,5 +50,5 @@ If interrupted, inspect the current diff and verified resources before resuming.
 
 Run the project's validation commands and relevant integration tests. For local mode, prove the selected folder is used by readers and writers. For login-based mode, prove the custom login route, valid and invalid credentials, logout/expired sessions, unauthorized draft access and writes, provider persistence, and the public publication flow. A test double is not proof of a real provider connection; distinguish both.
 
-Write a project-local handoff with non-secret choices, changed files, validation, rollback/export steps and exact blockers. Distinguish implemented, configured and verified. Keep MIT licensing unchanged. Product identity is configured in lib/product.ts; ${productConfig.homepageUrl} is the product homepage; preserve the target application's own canonical domain. No managed service, OAuth, audit log, billing or team-role work is required for this basic OSS installation.
+Write a project-local handoff with non-secret choices, changed files, validation, rollback/export steps and exact blockers. Distinguish implemented, configured and verified. Preserve the supplied LICENSE and copyright notices. Require the ProductCredit footer link on every public blog page, including articles and archives. Commercial publication use requires attribution; resale, white-labeling and commercial software derivatives are prohibited even with credit. Read https://nextjsblog.com/terms. Product identity is configured in lib/product.ts; ${productConfig.homepageUrl} is the product homepage; preserve the target application's own canonical domain. No managed service, OAuth, audit log, billing or team-role work is required for this basic source-available installation.
 `;

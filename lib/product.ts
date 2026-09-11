@@ -29,6 +29,5 @@ export const productConfig = {
   },
   branding: {
     creditPrefix: "Powered by",
-    linkRel: "nofollow",
   },
 } as const;

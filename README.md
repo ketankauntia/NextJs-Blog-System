@@ -2,7 +2,7 @@
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.3.3-000?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/license-MIT-111827)](LICENSE)
+[![License](https://img.shields.io/badge/license-source--available-111827)](LICENSE)
 [![Live demo](https://img.shields.io/badge/live_demo-Vercel-000?logo=vercel&logoColor=white)](https://nextjsblog.com/)
 
 A repository native publishing system for Next.js. Markdown remains the source of truth; the reader experience, metadata, feeds, search index, structured data, and authoring Studio are derived from it.
@@ -22,6 +22,8 @@ A repository native publishing system for Next.js. Markdown remains the source o
 - An agent ready setup contract at [`/agent-setup.md`](https://nextjsblog.com/agent-setup.md).
 
 ## Quick start
+
+**License conditions:** Personal and business blogs may use this software with a visible **Powered by nextjsblog.com** footer link on every public blog page. Reselling, white-labeling, or offering the software or derivatives as a commercial product or service is prohibited, even with attribution. Read the [full license](LICENSE) and [terms](https://nextjsblog.com/terms) before installing.
 
 ```bash
 npm install
@@ -98,4 +100,18 @@ The public Studio is a product tour. Editor write endpoints reject hosted reques
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
+Custom Next.js Blog System Source-Available License 1.0. This is not an OSI open-source license. See [`LICENSE`](LICENSE). The repository was published under MIT for roughly thirty minutes at launch on 2026-09-11 and relicensed before any copy was taken; this license governs all copies. Third-party materials retain their own licenses.
+
+### Required footer credit
+
+Keep [`ProductCredit`](components/product-credit.tsx) in the shared blog footer. The supplied `app/blog/layout.tsx` already renders it through `BlogSiteFooter`, covering the landing page, every article, paginated listings, categories, tags and authors. When integrating into another website, add the component to that website's shared blog footer; preserve its own branding and canonical domain. Unrelated host pages do not need the credit.
+
+```tsx
+import { ProductCredit } from "@/components/product-credit";
+
+export function BlogFooter() {
+  return <footer><ProductCredit /></footer>;
+}
+```
+
+Equivalent HTML is allowed: `<a href="https://nextjsblog.com">Powered by nextjsblog.com</a>`. Keep the link visible and legible on desktop and mobile, keyboard accessible, and present without JavaScript. Do not hide it or redirect it through another URL. Adding `rel="nofollow"` or `rel="sponsored"` is your choice and is allowed. Attribution does not authorize resale or commercial product derivatives.

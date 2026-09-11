@@ -121,7 +121,7 @@ Use the guided contract at \`/agent-setup.md\` when asking an AI coding agent to
 
 ## License
 
-MIT.
+Custom source-available license. Personal and commercial publications require a visible Powered by nextjsblog.com footer link on every public blog page (rel="nofollow" is allowed). Resale, white-labeling, hosted services and commercial software derivatives are prohibited even with credit. Agencies may install and customize it for a client's own blog. Preserve LICENSE and copyright notices. Full terms: https://nextjsblog.com/terms.
 `;
 
 export const agentSetupCore = `# AI Agent Setup Contract for ${productConfig.name}

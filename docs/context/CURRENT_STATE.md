@@ -2,6 +2,7 @@
 
 ## Available
 
+- Versions supplied with the custom Source-Available License 1.0 permit personal and commercial publication use with mandatory visible footer attribution. Resale, white-labeling and commercial software derivatives are prohibited even with attribution. The repo was MIT for about thirty minutes at launch on 2026-09-11 and relicensed before any copy was taken; the license records this history. Third-party licenses retain their permissions. `/terms` renders the repository LICENSE directly; installation guides and the README state the restrictions. ProductCredit is server-rendered in the shared blog footer for all blog routes, with a direct link to the product homepage; the license allows but does not require rel qualifiers, per Google's link-scheme policy. This is a license obligation, not a technical lock on downstream source edits.
 - The root layout loads Google Analytics through `next/script` after hydration, alongside Vercel Analytics, across all routes.
 - Public identity and attribution use `nextjsblog.com`; the header/footer wordmark remains Next.js Blog System. `NEXT_PUBLIC_SITE_URL` controls deployment canonicals, with Vercel hostname fallbacks before the product homepage. Forks retain their own configured origin.
 - The landing page includes SEO/traffic/revenue guidance, illustrative conversion examples and a single setup CTA. Its button words and conversion values cycle every two seconds, using plain text swaps for reduced motion. Search and GitHub are removed from the navbar; X and GitHub icon links live in the footer.
@@ -27,7 +28,7 @@ An installable npm package or automated migration tool. Existing websites curren
 
 Supabase sessions, a working custom login page, authenticated hosted editing, GitHub remote writes, Supabase Storage and R2 adapters. These are integration work, not active features. A remote publishing.json fails closed in the current local runtime. Local saves do not automatically commit, push or deploy.
 
-Managed hosting, OAuth, audit logs, billing, workspaces and advanced team roles are deferred. This repository contains the basic OSS engine and its setup documentation; unused managed scaffolding and internal planning are excluded.
+Managed hosting, OAuth, audit logs, billing, workspaces and advanced team roles are deferred. This repository contains the basic source-available engine and its setup documentation; unused managed scaffolding and internal planning are excluded.
 
 ## Validation
 
