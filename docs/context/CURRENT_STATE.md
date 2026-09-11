@@ -2,6 +2,7 @@
 
 ## Available
 
+- The root layout loads Google Analytics through `next/script` after hydration, alongside Vercel Analytics, across all routes.
 - Public identity and attribution use `nextjsblog.com`; the header/footer wordmark remains Next.js Blog System. `NEXT_PUBLIC_SITE_URL` controls deployment canonicals, with Vercel hostname fallbacks before the product homepage. Forks retain their own configured origin.
 - The landing page includes SEO/traffic/revenue guidance, illustrative conversion examples and a single setup CTA. Its button words and conversion values cycle every two seconds, using plain text swaps for reduced motion. Search and GitHub are removed from the navbar; X and GitHub icon links live in the footer.
 

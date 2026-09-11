@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { fontVariables } from "@/lib/fonts";
@@ -61,6 +62,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           {children}
         </ThemeProvider>
         <Analytics />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-84KKGPGBBF"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-84KKGPGBBF');
+          `}
+        </Script>
       </body>
     </html>
   );
