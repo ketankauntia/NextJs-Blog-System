@@ -85,10 +85,7 @@ export default function HomePage() {
                 </span>
               </h1>
               <p>
-                An open-source, {" "}
-                <strong className="font-semibold text-foreground">
-                  plug-and-play blog and CMS. Integrates in just 10 seconds.
-                </strong>
+                An open-source, plug-and-play blog and CMS. Integrates in just 10 seconds.
                 <br className="hidden sm:block" />
                 {" "}Editorial workflow, SEO guidance, and content ownership in one
                 system.
