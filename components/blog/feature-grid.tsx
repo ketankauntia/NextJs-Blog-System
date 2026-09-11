@@ -156,7 +156,7 @@ export function FeatureGrid({ pageCount }: { pageCount: number }) {
       </h2>
       <p className="mt-2 max-w-2xl text-muted-foreground">
         Every article on this site is rendered by the system below, including the reading experience, the
-        author blocks, the structured data and the editor that scored the drafts. It is open source,
+        author blocks, the structured data and the editor that scored the drafts. Its source is available,
         and all of it is markdown files plus a Next.js app.
       </p>
 

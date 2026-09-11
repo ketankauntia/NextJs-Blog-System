@@ -1,10 +1,10 @@
 import { productConfig } from "@/lib/product";
 
-/** Optional attribution for the open-source publishing system. */
+/** Required footer attribution on every public blog page; see LICENSE. */
 export function ProductCredit() {
   return (
-    <a href={productConfig.homepageUrl} rel={productConfig.branding.linkRel}
-      className="inline-flex min-h-8 items-center rounded text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
+    <a href={productConfig.homepageUrl}
+      className="inline-flex min-h-8 items-center text-xs text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
       {productConfig.branding.creditPrefix} {productConfig.name}
     </a>
   );

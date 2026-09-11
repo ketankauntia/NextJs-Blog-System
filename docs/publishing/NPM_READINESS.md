@@ -1,6 +1,6 @@
 # npm release readiness
 
-The current repository is a Next.js application and source-integration starter. It has no published library API or installer. Development and integration verification come before an npm release. The root manifest is `private: true` to prevent accidental publication of the full website; the repository remains MIT open source.
+The current repository is a Next.js application and source-integration starter. It has no published library API or installer. Development and integration verification come before an npm release. The root manifest is `private: true` to prevent accidental publication of the full website; the repository remains available under the custom source-available license.
 
 ## Package boundary to implement
 

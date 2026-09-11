@@ -1,6 +1,6 @@
-# Basic OSS setup and agent installation
+# Basic source-available setup and agent installation
 
-Updated 2026-09-10. This describes the basic open-source setup and its current limitations.
+Updated 2026-09-10. This describes the basic source-available setup and its current limitations.
 
 | Mode | Blog data | Authentication | Status |
 | --- | --- | --- | --- |

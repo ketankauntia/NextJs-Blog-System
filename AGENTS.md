@@ -10,4 +10,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Project handoff
 
-Read `docs/context/README.md` before continuing project work. It links the current implementation, decisions, local run instructions and next steps. Preserve uncommitted work and keep this OSS context current. Keep internal work logs, private planning and maintainer account details outside this repository.
+Read `docs/context/README.md` before continuing project work. It links the current implementation, decisions, local run instructions and next steps. Preserve uncommitted work and keep this source-available project context current. Keep internal work logs, private planning and maintainer account details outside this repository.

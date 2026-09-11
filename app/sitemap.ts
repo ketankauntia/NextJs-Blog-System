@@ -27,6 +27,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/"), lastModified: newest, changeFrequency: "daily", priority: 1 },
     { url: absoluteUrl("/blog"), lastModified: newest, changeFrequency: "daily", priority: 0.9 },
     { url: absoluteUrl("/docs"), lastModified: newest, changeFrequency: "monthly", priority: 0.8 },
+    { url: absoluteUrl("/terms"), changeFrequency: "yearly", priority: 0.3 },
     { url: absoluteUrl("/docs/agent-setup"), lastModified: newest, changeFrequency: "monthly", priority: 0.7 },
   ];
 

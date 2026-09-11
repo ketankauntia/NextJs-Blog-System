@@ -1,21 +1,141 @@
-MIT License
+Next.js Blog System Source-Available License 1.1
+Copyright (c) 2026 Ketan. All rights reserved except as expressly granted below.
+Version 1.1, September 11, 2026. Supersedes Version 1.0 of the same date.
 
-Copyright (c) 2026 Ketan
+1. Definitions
+"Software" means the Next.js Blog System source code, components, templates,
+design assets and documentation supplied with this license, to the extent owned
+by Ketan (the "Licensor"), and any part of it.
+"You" means the individual or legal entity exercising rights under this license,
+including anyone acting on that entity's behalf.
+"Publication" means a website, blog or similar content property that You own or
+control and that publishes Your own or Your organization's content.
+"Derivative" means any work that copies, adapts, extends, translates or
+incorporates any part of the Software, including works that reproduce its
+structure, components or templates in another codebase or framework.
+"Product Distribution" means selling, licensing, renting, leasing, hosting,
+white-labeling or otherwise providing the Software or a Derivative to third
+parties as a product or service in its own right, whether standalone, bundled,
+as a template, starter kit, theme, component library, CMS, blog builder,
+plugin, hosted or managed publishing service, or software-as-a-service.
+"Public Blog Page" means any publicly accessible HTML page of a Publication that
+is rendered using the Software, including the blog landing page, each article,
+paginated listings, category, tag and author archives, and search pages.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+2. Acceptance
+By copying, modifying, distributing or using the Software You accept this
+license. This is a source-available license, not an open-source license as
+defined by the Open Source Initiative. Rights not expressly granted are reserved.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+3. Permitted use
+Subject to every condition below, You may inspect, copy, run, modify and deploy
+the Software to operate Publications, whether personal, organizational or
+commercial. You may earn revenue from Your Publication's content, advertising,
+subscriptions, sponsorships, goods or services. You may engage, or act as, a
+developer, agency or contractor to install, customize, host or maintain the
+Software for a specific client's Publication, provided the client accepts this
+license, the required attribution is preserved, and the fee is for the service
+performed rather than for the Software itself. You retain ownership of Your
+content and of Your original additions; those additions do not remove the
+conditions on the Software or on any Derivative.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+4. Required attribution
+Every Public Blog Page must display a credit reading "Powered by nextjsblog.com"
+or "Built with Next.js Blog System" in its footer, hyperlinked directly to
+https://nextjsblog.com. The credit must be:
+  (a) rendered in the page's HTML and visible without JavaScript, hovering,
+      scrolling inside a nested container, opening a menu or signing in;
+  (b) legible on mobile and desktop with contrast and size comparable to other
+      footer text, and reachable by keyboard;
+  (c) not hidden, clipped, obscured, removed after load, or styled to blend
+      into the background.
+You may place the credit below the fold in the normal footer. You may choose to
+add rel="nofollow", rel="sponsored" or rel="ugc" to the link; the Licensor does
+not require or prohibit link qualifiers. The link must point to
+https://nextjsblog.com without passing through a redirect, interstitial or
+tracking service that alters the destination. The supplied ProductCredit
+component satisfies these requirements; an equivalent implementation is allowed.
+Attribution is not required for private development, non-public previews,
+non-HTML outputs such as feeds and APIs, or pages of a host website that are
+not rendered by the Software.
+
+5. No Product Distribution
+You may not engage in Product Distribution of the Software or any Derivative.
+In particular You may not sell it, offer it as a paid or free template, theme,
+starter kit or component library, provide it as a hosted or managed blogging or
+publishing service, embed it in a commercial product you distribute, or copy or
+adapt it into a competing product. Changing its name, adding features, or
+displaying attribution does not permit any of these. This section does not
+restrict the Publication use and service work permitted by section 3.
+
+6. Sharing copies and modifications
+You may share source copies and modifications free of charge for uses this
+license permits, provided You include this entire license and all copyright and
+attribution notices, clearly mark Your modifications, and impose no terms that
+remove or weaken these conditions. Each recipient receives their permissions
+directly from the Licensor under this license. You must not present the
+Software or the Licensor's work as Your own original creation or imply the
+Licensor's endorsement. You may accurately describe Your own additions and brand
+Your Publication while keeping the required attribution.
+
+7. Trademarks
+"nextjsblog.com", "Next.js Blog System" and associated logos are marks of the
+Licensor. This license grants no trademark rights except the right to display
+the attribution in section 4 and to make truthful references to the Software.
+"Next.js" is a trademark of Vercel, Inc.; nothing here grants rights in it.
+
+8. Contributions
+If You submit code, documentation or other material to the Licensor's
+repository for inclusion in the Software, You grant the Licensor a perpetual,
+worldwide, irrevocable, royalty-free license to use, modify, distribute and
+sublicense that contribution as part of the Software under this license and any
+future license the Licensor adopts. You confirm You have the right to grant it.
+
+9. License history
+The Software was first published under the MIT License on September 11, 2026.
+Within approximately thirty minutes of that publication, and before any copy
+was cloned, forked, downloaded or used by anyone other than the Licensor to the
+Licensor's knowledge, the Licensor replaced the MIT License with this license.
+Every version of the Software from that point is distributed only under this
+license, and this license governs all copies. The Licensor may publish revised
+versions of this license; each revision applies to copies distributed with it.
+
+10. Third-party materials
+Third-party dependencies and separately licensed materials retain their own
+licenses, which this license does not modify. Nothing here restricts
+independently created work that copies no protected material from the Software.
+
+11. Separate permission and termination
+Uses outside these permissions, including attribution removal or Product
+Distribution, require a separate written agreement from the Licensor. Contact
+the Licensor through https://nextjsblog.com. Silence, an attribution link, or
+the passage of time does not create an exception. Your rights under this
+license terminate automatically on breach. On termination You must stop using
+and distributing the Software and any Derivative, except that a breach limited
+to section 4 is cured, and rights are restored, if You bring every Public Blog
+Page into compliance within fourteen days of notice. Sections 7 to 14 survive
+termination.
+
+12. Disclaimer and limitation of liability
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED
+"AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. THE
+LICENSOR IS NOT LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL OR
+SPECIAL DAMAGES ARISING FROM THE SOFTWARE OR ITS USE, WHETHER IN CONTRACT, TORT
+OR OTHERWISE, EVEN IF ADVISED OF THEIR POSSIBILITY. Nothing in this license
+excludes rights or liability that cannot lawfully be excluded.
+
+13. Governing law and disputes
+This license is governed by the laws of India, without regard to conflict of
+law rules. The courts at Bhubaneswar, Odisha, India have exclusive jurisdiction
+over any dispute arising from it, without prejudice to the Licensor's right to
+seek injunctive relief or enforce intellectual property rights in any
+jurisdiction where the Software is used.
+
+14. General
+This license is the entire agreement about the Software and replaces any prior
+understanding. If a provision is unenforceable, it is limited to the minimum
+extent necessary and the remainder continues to apply. Failure to enforce a
+provision is not a waiver. You may not assign this license without the
+Licensor's written consent; the Licensor may assign it freely. Headings are for
+convenience only.

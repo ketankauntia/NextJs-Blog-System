@@ -23,6 +23,7 @@ const columns = [
     title: "Resources",
     links: [
       { label: "Documentation", href: "/docs" },
+      { label: "Terms & license", href: "/terms" },
       { label: "Install with AI", href: "/docs/agent-setup" },
       { label: "RSS feed", href: "/rss.xml" },
       { label: "llms.txt", href: "/llms.txt" },
@@ -48,7 +49,7 @@ export function BlogSiteFooter() {
               {productConfig.wordmark}
             </Link>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              The publishing layer Next.js projects are missing. An open-source
+              The publishing layer Next.js projects are missing. A source-available
               CMS built around content you own.
             </p>
             <div className="mt-5 flex items-center gap-1">
@@ -140,7 +141,8 @@ export function BlogSiteFooter() {
 
         <div className="mt-12 flex flex-col gap-3 border-t pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} {siteConfig.name}. MIT licensed.
+            © {new Date().getFullYear()} {siteConfig.name}.{" "}
+            <Link href="/terms" className="underline underline-offset-4 hover:text-foreground">Terms & license</Link>
           </p>
           <div className="flex flex-col gap-1 sm:items-end">
             <ProductCredit />

@@ -29,7 +29,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = buildPageMetadata({
   title: "The publishing layer Next.js projects are missing",
   description:
-    "An open-source CMS and publishing layer for Next.js with an editorial Studio, practical SEO guidance, and content your team owns.",
+    "A source-available CMS and publishing layer for Next.js with an editorial Studio, practical SEO guidance, and content your team owns.",
   path: "/",
 });
 
@@ -73,7 +73,7 @@ export default function HomePage() {
                 rel="noreferrer"
                 className="hero-announcement"
               >
-                <span className="status-dot" aria-hidden /> Open source. The
+                <span className="status-dot" aria-hidden /> Source available. The
                 Next.js publishing layer.
                 <IconArrowUpRight className="size-3.5" aria-hidden />
               </a>
@@ -85,7 +85,7 @@ export default function HomePage() {
                 </span>
               </h1>
               <p>
-                An open-source, plug-and-play blog and CMS. Integrates in just 10 seconds.
+                A source-available, plug-and-play blog and CMS. Integrates in just 10 seconds.
                 <br className="hidden sm:block" />
                 {" "}Editorial workflow, SEO guidance, and content ownership in one
                 system.
@@ -114,7 +114,7 @@ export default function HomePage() {
                 </Button>
               </div>
               <p className="hero-footnote">
-                Early-stage <span aria-hidden>·</span> MIT licensed{" "}
+                Early-stage <span aria-hidden>·</span> Attribution required{" "}
                 <span aria-hidden>·</span> Built for Next.js teams
               </p>
             </div>
@@ -445,7 +445,7 @@ export default function HomePage() {
             </Button>
           </div>
           <span className="final-note">
-            Free to use. Free to change. MIT licensed.
+            Use it for your blog. Keep the credit. No resale.
           </span>
         </section>
       </main>

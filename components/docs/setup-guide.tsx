@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LicenseNotice } from "@/components/license-notice";
 import Link from "next/link";
 import { IconArrowRight, IconCloud, IconDeviceLaptop, IconLock, IconServer, IconX } from "@tabler/icons-react";
 import { SiGithub, SiSupabase, SiCloudflare, SiVercel } from "@icons-pack/react-simple-icons";
@@ -40,6 +41,7 @@ export function SetupGuide() {
   const guide = setup ? getSetupGuide(setup) : null;
   return (
     <section id="get-started" className="scroll-mt-24" aria-labelledby="setup-title">
+      <LicenseNotice />
       <div id="configure" className="mb-7 scroll-mt-24">
         <p className="font-mono text-xs tracking-[0.16em] text-primary">YOUR SETUP</p>
         <h2 id="setup-title" className="mt-3 font-heading text-3xl font-semibold tracking-tight">Choose how your blog runs</h2>
