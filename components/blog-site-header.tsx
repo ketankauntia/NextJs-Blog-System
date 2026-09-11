@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { IconArrowUpRight, IconBrandGithub } from "@tabler/icons-react";
+import { IconArrowUpRight } from "@tabler/icons-react";
 import { MobileNavigation } from "@/components/mobile-navigation";
 import { Button } from "@/components/blog-ui/button";
 import { BlogThemeToggle } from "@/components/blog-theme-toggle";
-import { HeaderSearch } from "@/components/blog/header-search";
 import { siteConfig } from "@/lib/site";
 import { isStudioVisible } from "@/lib/studio-access";
 import { productConfig } from "@/lib/product";
@@ -32,7 +31,7 @@ export function BlogSiteHeader() {
             {productConfig.glyph}
           </span>
           <span className="brand-name truncate">
-            {siteConfig.shortName} <small className="hidden sm:inline">/ {productConfig.nameSuffix}</small>
+            {productConfig.shortWordmark} <small className="hidden sm:inline">/ {productConfig.nameSuffix}</small>
           </span>
         </Link>
 
@@ -59,23 +58,7 @@ export function BlogSiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1 lg:ml-5">
-          <HeaderSearch />
           <BlogThemeToggle />
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            asChild
-            className="hidden lg:inline-flex"
-          >
-            <a
-              href={siteConfig.social.github}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="View the GitHub repository"
-            >
-              <IconBrandGithub className="size-4.5" aria-hidden />
-            </a>
-          </Button>
           <Button
             size="lg"
             asChild
@@ -89,7 +72,6 @@ export function BlogSiteHeader() {
 
           <MobileNavigation
             showStudio={showStudio}
-            github={siteConfig.social.github}
           />
         </div>
       </div>

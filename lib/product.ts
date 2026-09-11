@@ -1,11 +1,12 @@
 /** Platform identity and public integration options. Never customer canonicals. */
 export const productConfig = {
-  name: "Next.js Blog System",
-  shortName: "Next.js Blog",
+  name: "nextjsblog.com",
+  shortName: "nextjsblog.com",
+  wordmark: "Next.js Blog System",
+  shortWordmark: "Next.js Blog",
   nameSuffix: "System",
   glyph: "N",
-  homepageUrl: "https://nextjsblogs.com",
-  homepageIsPlaceholder: true,
+  homepageUrl: "https://nextjsblog.com",
   repositoryUrl: "https://github.com/ketankauntia/NextJs-Blog-System",
   routes: { setup: "/docs#get-started", agentSetup: "/agent-setup.md", agentGuide: "/docs/agent-setup" },
   providers: {

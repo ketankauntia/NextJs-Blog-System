@@ -1,5 +1,7 @@
 import Link from "next/link";
 import {
+  IconBrandX,
+  IconBrandGithub,
   IconRss,
 } from "@tabler/icons-react";
 import { siteConfig } from "@/lib/site";
@@ -43,12 +45,32 @@ export function BlogSiteFooter() {
               <span className="brand-glyph" aria-hidden>
                 {productConfig.glyph}
               </span>
-              {productConfig.name}
+              {productConfig.wordmark}
             </Link>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              Great writing, native to Next.js. A complete publishing system,
-              built around content you own.
+              The publishing layer Next.js projects are missing. An open-source
+              CMS built around content you own.
             </p>
+            <div className="mt-5 flex items-center gap-1">
+              <a
+                href={siteConfig.social.x}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Follow Ketan on X"
+                className="inline-flex size-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <IconBrandX className="size-5" aria-hidden />
+              </a>
+              <a
+                href={siteConfig.social.github}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="View the GitHub repository"
+                className="inline-flex size-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <IconBrandGithub className="size-5" aria-hidden />
+              </a>
+            </div>
           </div>
 
           {columns.map((column) => (
@@ -79,16 +101,6 @@ export function BlogSiteFooter() {
                   className="hover:text-foreground"
                 >
                   GitHub repository
-                </a>
-              </li>
-              <li>
-                <a
-                  href={siteConfig.social.x}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-foreground"
-                >
-                  Maintainer on X
                 </a>
               </li>
               {showStudio ? (
@@ -132,7 +144,6 @@ export function BlogSiteFooter() {
           </p>
           <div className="flex flex-col gap-1 sm:items-end">
             <ProductCredit />
-            <p>Built with Next.js, React, Tailwind CSS, and shadcn/ui.</p>
           </div>
         </div>
       </div>
