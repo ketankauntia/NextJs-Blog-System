@@ -1,10 +1,11 @@
 import { agentSetupMarkdown, agentSetupCore } from "@/lib/docs-content";
 import { renderSetupGuideMarkdown } from "@/lib/publishing/guide";
 import { createPublishingSetup, type PublishingSetup } from "@/lib/publishing/config";
+import { productConfig } from "@/lib/product";
 
 /** Small entry prompt; the complete, versioned runbook is served at the URL. */
 export function buildAgentSetupLinkPrompt(url: string): string {
-  return `Set up the Next.js Blog System in my current project using the guide below. Inspect the repository, preserve existing work and follow my selected content migration choice. Ask me to sign in to required providers and confirm access, then complete setup and validation. Ask about blockers; never guess credentials or silently discard data. Read the full guide before making changes. If you cannot open it, ask me for the full instructions.\n\nSetup guide: ${url}`;
+  return `Set up ${productConfig.name} in my current project using the guide below. Inspect the repository, preserve existing work and follow my selected content migration choice. Ask me to sign in to required providers and confirm access, then complete setup and validation. Ask about blockers; never guess credentials or silently discard data. Read the full guide before making changes. If you cannot open it, ask me for the full instructions.\n\nSetup guide: ${url}`;
 }
 
 /** Complete portable instructions, usable without a reachable deployment or skill. */

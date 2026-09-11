@@ -3,7 +3,6 @@ import Link from "next/link";
 import {
   IconArrowRight,
   IconArrowUpRight,
-  IconBrandGithub,
   IconBrandNextjs,
   IconCheck,
   IconCode,
@@ -18,6 +17,8 @@ import { BlogSiteHeader } from "@/components/blog-site-header";
 import { Button } from "@/components/blog-ui/button";
 import { SiteJsonLd } from "@/components/blog/site-json-ld";
 import { ProductPreview } from "@/components/marketing/product-preview";
+import { GrowthButtonLabel } from "@/components/blog/growth-button-label";
+import { ConversionExample } from "@/components/blog/conversion-example";
 import { PostCard } from "@/components/blog/post-card";
 import { getAllPosts } from "@/lib/blog/content";
 import { buildPageMetadata } from "@/lib/seo";
@@ -26,29 +27,29 @@ import { isStudioVisible } from "@/lib/studio-access";
 
 export const revalidate = 3600;
 export const metadata: Metadata = buildPageMetadata({
-  title: "A publishing system, native to Next.js",
+  title: "The publishing layer Next.js projects are missing",
   description:
-    "Your content, in your codebase. A complete open-source Next.js publishing system with a visual Studio, thoughtful reader experience, and Markdown you own.",
+    "An open-source CMS and publishing layer for Next.js with an editorial Studio, practical SEO guidance, and content your team owns.",
   path: "/",
 });
 
 const workflow = [
   {
     icon: IconFileText,
-    title: "A place to do your best writing.",
-    body: "Start in the visual Studio or your favorite editor. Drafts, images, and structured content all come home to your repository.",
-    detail: "Rich text. Plain Markdown. Your choice.",
+    title: "A place to publish.",
+    body: "Draft, edit, review, schedule, and publish from a visual Studio or your favorite editor. The source stays portable.",
+    detail: "Familiar workflow. Developer-owned content.",
   },
   {
     icon: IconLayout,
-    title: "A publication with a point of view.",
-    body: "Thoughtful article layouts, clear summaries, and a reading experience that makes the long version worth staying for.",
-    detail: "Designed for the person on the other side.",
+    title: "SEO by default.",
+    body: "Consistent metadata, canonical URLs, social cards, structured data, feeds, and factual checks are part of the publishing path.",
+    detail: "Fewer omissions. No score theater.",
   },
   {
     icon: IconGitBranch,
-    title: "One file. Every publishing surface.",
-    body: "Your article, search index, social card, structured data, and RSS entry stay connected to the same source.",
+    title: "One source. Every surface.",
+    body: "Article pages, search, social cards, structured data, RSS, and AI-readable output stay connected to the same content model.",
     detail: "Write once. Let the system do the rest.",
   },
 ];
@@ -72,19 +73,22 @@ export default function HomePage() {
                 rel="noreferrer"
                 className="hero-announcement"
               >
-                <span className="status-dot" aria-hidden /> Open source. Yours
-                from the first commit.
+                <span className="status-dot" aria-hidden /> Open source. The
+                Next.js publishing layer.
                 <IconArrowUpRight className="size-3.5" aria-hidden />
               </a>
               <h1>
-                Great writing.
+                Next.js powers the product.
                 <br />
-                <span className="editorial-accent">Native to Next.js.</span>
+                <span className="editorial-accent">
+                  We’re building what it doesn’t ship.
+                </span>
               </h1>
               <p>
-                A complete publishing system for your Next.js app.
-                <br className="hidden sm:block" /> A visual Studio, a beautiful
-                blog, and Markdown you own.
+                An open-source, plug-and-play blog and CMS. Integrates in just 10 seconds.
+                <br className="hidden sm:block" />
+                {" "}Editorial workflow, SEO guidance, and content ownership in one
+                system.
               </p>
               <div className="hero-actions">
                 <Button
@@ -110,8 +114,8 @@ export default function HomePage() {
                 </Button>
               </div>
               <p className="hero-footnote">
-                MIT licensed <span aria-hidden>·</span> No content database{" "}
-                <span aria-hidden>·</span> Built for your codebase
+                Early-stage <span aria-hidden>·</span> MIT licensed{" "}
+                <span aria-hidden>·</span> Built for Next.js teams
               </p>
             </div>
             {lead ? (
@@ -128,7 +132,6 @@ export default function HomePage() {
                     .filter(Boolean)
                     .slice(0, 4),
                 }}
-                showStudio={showStudio}
               />
             ) : null}
             <div className="stack-strip">
@@ -157,19 +160,75 @@ export default function HomePage() {
         </section>
 
         <section
+          id="problem"
+          className="page-shell marketing-section problem-section scroll-mt-24"
+        >
+          <div className="section-split-heading">
+            <div>
+              <p className="eyebrow">THE GAP</p>
+              <h2>
+                Next.js gives you the app.
+                <br />
+                <span className="text-muted-foreground">
+                  Not the publishing system.
+                </span>
+              </h2>
+            </div>
+            <p>
+              Next.js gives teams powerful application and delivery primitives.
+              Content-driven products still have to assemble the layer that
+              turns ideas into durable, discoverable pages.
+            </p>
+          </div>
+          <div className="problem-grid">
+            <article>
+              <div className="problem-number">01</div>
+              <h3>The content layer is missing</h3>
+              <p>
+                Docs, changelogs, case studies, landing pages, newsletters, and
+                a blog need somewhere coherent to live. Many teams end up
+                building each surface separately.
+              </p>
+            </article>
+            <article>
+              <div className="problem-number">02</div>
+              <h3>SEO is a collection of primitives</h3>
+              <p>
+                Titles, descriptions, canonicals, social cards, structured
+                data, sitemaps, robots, feeds, and internal links need shared
+                defaults and checks. The framework does not provide that
+                editorial contract for you.
+              </p>
+            </article>
+            <article>
+              <div className="problem-number">03</div>
+              <h3>The stack drifts apart</h3>
+              <p>
+                WordPress offers a familiar publishing workflow. Yoast adds
+                inline guidance. Headless CMS tools add remote content. In a
+                Next.js app, those layers can become a second system to sync,
+                host, and maintain.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section
           id="product"
           className="page-shell marketing-section scroll-mt-24"
         >
           <div className="section-intro">
-            <p className="eyebrow">THE WHOLE WORKFLOW</p>
+            <p className="eyebrow">THE PRODUCT</p>
             <h2>
-              Less assembling.
+              WordPress-like publishing.
               <br />
-              <span className="text-muted-foreground">More publishing.</span>
+              <span className="text-muted-foreground">
+                Next.js-native delivery.
+              </span>
             </h2>
             <p>
-              You came to share an idea. The content infrastructure should
-              already be there.
+              A familiar place for writers and marketers to work, with content,
+              code, and generated output kept in sync.
             </p>
           </div>
           <div className="workflow-grid">
@@ -232,7 +291,7 @@ export default function HomePage() {
                 <span>
                   The journal<span className="text-primary">.</span>
                 </span>
-                <Link href="/blog">
+                <Link href="/blog" className="text-link">
                   Explore the live blog
                   <IconArrowUpRight className="size-4" aria-hidden />
                 </Link>
@@ -333,59 +392,57 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="ownership-section">
-          <div className="page-shell ownership-inner">
-            <div className="ownership-label">
-              <IconBrandGithub className="size-6" aria-hidden />
-              <span>OPEN SOURCE, BY DESIGN</span>
+        <section className="growth-section" aria-labelledby="growth-title">
+          <div className="page-shell growth-inner">
+            <div className="growth-heading">
+              <p className="eyebrow">CONTENT THAT WORKS FOR YOUR BUSINESS</p>
+              <h2 id="growth-title">
+                Turn &quot;FREE&quot; search traffic<br />
+                <span className="editorial-accent">into your next &quot;customer&quot;.</span>
+              </h2>
+              <ConversionExample />
             </div>
-            <h2>
-              Your content.
-              <br />
-              Your code. <span className="editorial-accent">Your call.</span>
-            </h2>
-            <div>
-              <p>
-                A complete starting point for developers who prefer content in
-                Git. Fork it, make it yours, and build on a system you can
-                inspect from end to end.
-              </p>
-              <p className="ownership-note">
-                Need a shared cloud newsroom or real-time collaboration? Those
-                workflows are outside this project’s scope.
-              </p>
-              <a
-                href={siteConfig.social.github}
-                target="_blank"
-                rel="noreferrer"
-                className="text-link"
-              >
-                Explore the source
-                <IconArrowUpRight className="size-4" aria-hidden />
-              </a>
-            </div>
+            <ol className="growth-path" aria-label="How your blog can grow your business">
+              {[
+                { label: "Get discovered", title: "SEO", body: "Search-ready pages. Built-in SEO guidance.", points: ["Target questions your buyers search for", "Fine-tune titles and descriptions", "Publish with structured data included"] },
+                { label: "Bring people in", title: "Traffic", body: "Useful answers attract interested visitors.", points: ["Bring readers in through helpful guides", "Link related posts to keep them exploring", "Refresh useful posts to stay relevant"] },
+                { label: "Grow your business", title: "Revenue", body: "Turn reader interest into signups and sales.", points: ["Connect each post to a relevant offer", "Give readers a clear next step", "Measure signups and sales from content"] },
+              ].map(({ label, title, body, points }, index) => (
+                <li key={title}>
+                  <span className="growth-step-label"><span>0{index + 1}</span>{label}</span>
+                  <h3>{title}<IconArrowRight className="growth-path-arrow" aria-hidden /></h3>
+                  <p>{body}</p>
+                  <ul className="growth-bullets">
+                    {points.map((point) => (
+                      <li key={point}><IconCheck aria-hidden /><span>{point}</span></li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ol>
+            <p className="growth-proof">
+              <IconCheck className="size-4" aria-hidden />
+              Metadata, sitemaps &amp; structured data included.
+            </p>
           </div>
         </section>
-
         <section className="page-shell final-cta">
-          <p className="eyebrow">YOUR NEXT CHAPTER</p>
+          <p className="eyebrow">START PUBLISHING</p>
           <h2>
-            Make room for
+            Build the publishing layer
             <br />
-            <span className="editorial-accent">something worth reading.</span>
+            <span className="editorial-accent">your Next.js project deserves.</span>
           </h2>
-          <p>The publishing system is ready. Bring your point of view.</p>
+          <p className="growth-cta-copy">
+            Your next post has the potential. Start with a blog. Build with SEO in place.
+          </p>
           <div className="hero-actions">
-            <Button size="lg" asChild className="button-ink h-11 gap-3 px-5">
+            <Button size="lg" asChild className="button-ink setup-cta h-auto min-h-11 gap-3 px-5 py-3 whitespace-normal">
               <Link href="/docs#get-started">
-                Build your publication
+                <GrowthButtonLabel />
                 <IconArrowRight className="size-4" aria-hidden />
               </Link>
             </Button>
-            <Link href="/docs/agent-setup" className="text-link">
-              Set up with your AI agent
-              <IconArrowUpRight className="size-4" aria-hidden />
-            </Link>
           </div>
           <span className="final-note">
             Free to use. Free to change. MIT licensed.

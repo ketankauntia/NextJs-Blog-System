@@ -4,17 +4,14 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   IconArrowUpRight,
-  IconBrandGithub,
   IconMenu2,
   IconX,
 } from "@tabler/icons-react";
 
 export function MobileNavigation({
   showStudio,
-  github,
 }: {
   showStudio: boolean;
-  github: string;
 }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -86,15 +83,6 @@ export function MobileNavigation({
                 {label}
               </Link>
             ))}
-            <a
-              href={github}
-              target="_blank"
-              rel="noreferrer"
-              className="flex min-h-11 items-center gap-2 rounded-md px-3 text-sm hover:bg-muted"
-            >
-              <IconBrandGithub className="size-4" aria-hidden />
-              GitHub
-            </a>
             <Link
               href="/docs#get-started"
               className="button-ink mt-2 flex min-h-11 items-center justify-between rounded-md px-3 text-sm font-medium"

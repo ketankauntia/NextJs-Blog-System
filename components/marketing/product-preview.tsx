@@ -38,10 +38,8 @@ type PreviewPost = {
 /** A labelled product illustration. Only tabs and destination links are interactive. */
 export function ProductPreview({
   post,
-  showStudio,
 }: {
   post: PreviewPost;
-  showStudio: boolean;
 }) {
   return (
     <figure className="product-preview">
@@ -279,16 +277,6 @@ export function ProductPreview({
           </TabsContent>
         </div>
       </Tabs>
-      <figcaption>
-        <span>
-          <span className="status-dot" aria-hidden />
-          Product walkthrough. Your content stays in Git.
-        </span>
-        <Link href={showStudio ? "/dashboard/editor" : "/docs#write"}>
-          {showStudio ? "Open the full Studio" : "Explore the writing workflow"}
-          <IconArrowUpRight className="size-3.5" aria-hidden />
-        </Link>
-      </figcaption>
     </figure>
   );
 }

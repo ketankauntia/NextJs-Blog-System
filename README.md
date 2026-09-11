@@ -1,15 +1,15 @@
-# Next.js Blog System
+# nextjsblog.com
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.3.3-000?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-111827)](LICENSE)
-[![Live demo](https://img.shields.io/badge/live_demo-Vercel-000?logo=vercel&logoColor=white)](https://get-nextjs-blogs.vercel.app/)
+[![Live demo](https://img.shields.io/badge/live_demo-Vercel-000?logo=vercel&logoColor=white)](https://nextjsblog.com/)
 
 A repository native publishing system for Next.js. Markdown remains the source of truth; the reader experience, metadata, feeds, search index, structured data, and authoring Studio are derived from it.
 
-**[Live publication](https://get-nextjs-blogs.vercel.app/)** · **[Studio](https://get-nextjs-blogs.vercel.app/dashboard)** · **[Documentation](https://get-nextjs-blogs.vercel.app/docs)**
+**[Live publication](https://nextjsblog.com/)** · **[Studio](https://nextjsblog.com/dashboard)** · **[Documentation](https://nextjsblog.com/docs)**
 
-<img width="1223" height="554" alt="Next.js Blog System preview" src="https://github.com/user-attachments/assets/8d278041-55a1-4446-8ba2-0680a8615086" />
+<img width="1223" height="554" alt="nextjsblog.com preview" src="https://github.com/user-attachments/assets/8d278041-55a1-4446-8ba2-0680a8615086" />
 
 ## What is included
 
@@ -19,7 +19,7 @@ A repository native publishing system for Next.js. Markdown remains the source o
 - Canonicals, Open Graph and Twitter cards, `BlogPosting`, `FAQPage`, `BreadcrumbList`, `WebSite`, and `Organization` JSON LD.
 - Sitemap and robots rules that respect `noindex`, RSS, `llms.txt`, a static search index, and raw Markdown endpoints.
 - A content first Studio with rich text and Markdown editing, structured blocks, image uploads, local review scheduling, factual SEO checks, and a read only production demo.
-- An agent ready setup contract at [`/agent-setup.md`](https://get-nextjs-blogs.vercel.app/agent-setup.md).
+- An agent ready setup contract at [`/agent-setup.md`](https://nextjsblog.com/agent-setup.md).
 
 ## Quick start
 
@@ -35,10 +35,10 @@ Open the origin printed by Next.js. Development mode enables local Studio writes
 Set the public origin in `.env.local` when deploying:
 
 ```bash
-NEXT_PUBLIC_SITE_URL=https://get-nextjs-blogs.vercel.app
+NEXT_PUBLIC_SITE_URL=https://nextjsblog.com
 ```
 
-All crawler visible absolute URLs derive from [`lib/site.ts`](lib/site.ts). The deployed Vercel domain is the fallback when no public origin is supplied.
+All crawler visible absolute URLs derive from [`lib/site.ts`](lib/site.ts). Set `NEXT_PUBLIC_SITE_URL` to your own domain when deploying a fork. If it is unset, the resolver uses Vercel's production/preview hostname when available, then `https://nextjsblog.com`. Product attribution links use the homepage in [`lib/product.ts`](lib/product.ts); the header and footer retain the Next.js Blog System wordmark.
 
 Authors live in [`lib/blog/authors.ts`](lib/blog/authors.ts). Optional reader surfaces are controlled by [`lib/features.ts`](lib/features.ts). To hide the Studio in a production build, set `STUDIO_DEMO_ENABLED=false`.
 

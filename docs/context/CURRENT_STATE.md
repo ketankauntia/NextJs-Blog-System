@@ -2,6 +2,9 @@
 
 ## Available
 
+- Public identity and attribution use `nextjsblog.com`; the header/footer wordmark remains Next.js Blog System. `NEXT_PUBLIC_SITE_URL` controls deployment canonicals, with Vercel hostname fallbacks before the product homepage. Forks retain their own configured origin.
+- The landing page includes SEO/traffic/revenue guidance, illustrative conversion examples and a single setup CTA. Its button words and conversion values cycle every two seconds, using plain text swaps for reduced motion. Search and GitHub are removed from the navbar; X and GitHub icon links live in the footer.
+
 - The folder picker defaults to app/ + a blog placeholder (effective app/blog), with src/app/, content/ and data/ alternatives. Local paths may colocate posts/*.md and settings.json beneath app/ or src/app/ without replacing route files. Existing installations without configuration still read content/; setup does not move data automatically.
 - The AI section centers its copy action above an exact prompt preview. Manual steps and agent instructions share bullet lists and labeled code examples. The required publishing.json appears inline instead of a download button. The documentation sidebar tracks nested sections and layout changes, with aria-current and a visible active marker.
 - Migration must preserve unsupported records in a private migration-review folder with source, URL, reason and follow-up details. Start fresh applies to old blog data after backup and exact scope confirmation; keep mode leaves migration to the user.

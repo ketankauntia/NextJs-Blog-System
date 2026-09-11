@@ -36,7 +36,7 @@ function resolveSiteUrl(): string {
     }
   }
 
-  return "https://get-nextjs-blogs.vercel.app";
+  return productConfig.homepageUrl;
 }
 
 const SITE_URL = resolveSiteUrl();
@@ -50,11 +50,11 @@ const SITE_URL = resolveSiteUrl();
 export const siteConfig = {
   /** Used as the RSS channel title and the Open Graph `site_name`. */
   name: productConfig.name,
-  /** Short brand shown in the header, where the full name does not fit. */
+  /** Compact identity used by the web manifest and generated social cards. */
   shortName: productConfig.shortName,
   /** Feed description and the fallback meta description. */
   description:
-    "A repository-native publishing system for Next.js with a complete reader, search, social, and AI experience.",
+    "An open-source CMS and publishing layer for Next.js with an editorial Studio, practical SEO guidance, and content your team owns.",
   /** Absolute origin, no trailing slash. See {@link resolveSiteUrl}. */
   url: SITE_URL,
   /** Default social card. Generated on demand by app/opengraph-image.tsx. */
