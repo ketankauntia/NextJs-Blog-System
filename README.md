@@ -9,7 +9,8 @@ A repository native publishing system for Next.js. Markdown remains the source o
 
 **[Live publication](https://nextjsblog.com/)** · **[Studio](https://nextjsblog.com/dashboard)** · **[Documentation](https://nextjsblog.com/docs)**
 
-<img width="1223" height="554" alt="nextjsblog.com preview" src="https://github.com/user-attachments/assets/8d278041-55a1-4446-8ba2-0680a8615086" />
+<img width="1919" height="997" alt="image" src="https://github.com/user-attachments/assets/a06d714c-22fc-4a64-9b49-be7c322ce004" />
+
 
 ## What is included
 
