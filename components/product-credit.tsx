@@ -4,9 +4,8 @@ import { productConfig } from "@/lib/product";
 export function ProductCredit() {
   return (
     <a href={productConfig.homepageUrl}
-      className="inline-flex min-h-10 w-fit items-center gap-2 rounded-lg border bg-background px-3 py-2 text-xs text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
-      <span aria-hidden="true" className="flex size-5 shrink-0 items-center justify-center rounded bg-foreground font-semibold text-background">{productConfig.glyph}</span>
-      <span>{productConfig.branding.creditPrefix} <span className="font-semibold">{productConfig.name}</span></span>
+      className="inline-flex min-h-8 items-center text-xs text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
+      {productConfig.branding.creditPrefix} {productConfig.name}
     </a>
   );
 }
