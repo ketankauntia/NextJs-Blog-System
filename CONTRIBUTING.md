@@ -2,6 +2,8 @@
 
 Thanks for looking. This is a small project, so the process is short.
 
+Please read the [Code of Conduct](CODE_OF_CONDUCT.md) before participating in project spaces. For security vulnerabilities, use the private security advisory process described below instead of opening a public issue.
+
 ## Before you open a pull request
 
 ```bash

@@ -7,7 +7,7 @@
 
 A repository native publishing system for Next.js. Markdown remains the source of truth; the reader experience, metadata, feeds, search index, structured data, and authoring Studio are derived from it.
 
-**[Live publication](https://nextjsblog.com/)** · **[Studio](https://nextjsblog.com/dashboard)** · **[Documentation](https://nextjsblog.com/docs)**
+**[Live publication](https://nextjsblog.com/)** · **[Studio](https://nextjsblog.com/dashboard)** · **[Documentation](https://nextjsblog.com/docs)** · **[Contributing](CONTRIBUTING.md)** · **[Code of Conduct](CODE_OF_CONDUCT.md)**
 
 <img width="1919" height="997" alt="image" src="https://github.com/user-attachments/assets/a06d714c-22fc-4a64-9b49-be7c322ce004" />
 
