@@ -49,7 +49,7 @@ export function BlogSiteFooter() {
               {productConfig.wordmark}
             </Link>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              The publishing layer Next.js projects are missing. A source-available
+              The publishing layer Next.js projects are missing. An open-source
               CMS built around content you own.
             </p>
             <div className="mt-5 flex items-center gap-1">

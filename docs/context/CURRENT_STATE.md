@@ -2,6 +2,9 @@
 
 ## Available
 
+- The site-wide Open Graph card uses `assets/social/opengraph-image.png`, an edited landing-page screenshot with the centered product headline, buttons and CMS editor. The metadata route renders it at 1200 × 630. Per-article social cards retain their existing design.
+- The landing hero keeps its descriptive paragraph and early-stage/attribution/team footnote in the live page. The site-wide OG image removes those supporting blocks for a cleaner social preview.
+
 - Versions supplied with the custom Source-Available License 1.0 permit personal and commercial publication use with mandatory visible footer attribution. Resale, white-labeling and commercial software derivatives are prohibited even with attribution. The repo was MIT for about thirty minutes at launch on 2026-09-11 and relicensed before any copy was taken; the license records this history. Third-party licenses retain their permissions. `/terms` renders the repository LICENSE directly; installation guides and the README state the restrictions. ProductCredit is server-rendered in the shared blog footer for all blog routes, with a direct link to the product homepage; the license allows but does not require rel qualifiers, per Google's link-scheme policy. This is a license obligation, not a technical lock on downstream source edits.
 - The root layout loads Google Analytics through `next/script` after hydration, alongside Vercel Analytics, across all routes.
 - Public identity and attribution use `nextjsblog.com`; the header/footer wordmark remains Next.js Blog System. `NEXT_PUBLIC_SITE_URL` controls deployment canonicals, with Vercel hostname fallbacks before the product homepage. Forks retain their own configured origin.

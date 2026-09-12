@@ -38,7 +38,7 @@ export const DEFAULT_OG_IMAGE = {
   url: getFullUrl(DEFAULT_OG_IMAGE_PATH),
   width: 1200,
   height: 630,
-  alt: SITE_NAME,
+  alt: "Next.js powers the product. We’re building what it doesn’t ship.",
 } as const;
 
 function normalize(value: string | null | undefined): string {

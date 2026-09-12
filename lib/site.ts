@@ -54,7 +54,7 @@ export const siteConfig = {
   shortName: productConfig.shortName,
   /** Feed description and the fallback meta description. */
   description:
-    "A source-available CMS and publishing layer for Next.js with an editorial Studio, practical SEO guidance, and content your team owns.",
+    "An open-source CMS and publishing layer for Next.js with an editorial Studio, practical SEO guidance, and content your team owns.",
   /** Absolute origin, no trailing slash. See {@link resolveSiteUrl}. */
   url: SITE_URL,
   /** Default social card. Generated on demand by app/opengraph-image.tsx. */
