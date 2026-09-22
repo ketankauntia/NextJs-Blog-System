@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { LicenseNotice } from "@/components/license-notice";
 import Link from "next/link";
-import { IconArrowRight, IconCloud, IconDeviceLaptop, IconLock, IconServer, IconX } from "@tabler/icons-react";
+import { IconArrowRight, IconCloud, IconDatabase, IconDeviceLaptop, IconLock, IconServer, IconX } from "@tabler/icons-react";
 import { SiGithub, SiSupabase, SiCloudflare, SiVercel } from "@icons-pack/react-simple-icons";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/blog-ui/select";
 import { SetupCodeBlock } from "@/components/docs/setup-code-block";
@@ -18,7 +18,7 @@ export function SetupGuide() {
   const installation = "existing";
   const [showFreshNotice, setShowFreshNotice] = useState(false);
   const [mode, setMode] = useState<PublishingMode>("local");
-  const [remoteDestination, setRemoteDestination] = useState<ContentDestination>("github");
+  const [remoteDestination] = useState<ContentDestination>("r2");
   const [hosting, setHosting] = useState<HostingTarget>("existing");
   const [contentRoot, setContentRoot] = useState("app");
   const [contentFolder, setContentFolder] = useState("");
@@ -26,13 +26,13 @@ export function SetupGuide() {
   const [blogRoute, setBlogRoute] = useState("/blog");
   const [existingContent, setExistingContent] = useState<ExistingContent>("keep");
   const [loginRoute, setLoginRoute] = useState("/login");
-  const [useR2, setUseR2] = useState(false);
 
   const local = mode === "local";
   const destination = local ? "github" : remoteDestination;
-  const assets = local ? "repository" : destination === "r2" || useR2 ? "r2" : "repository";
+  const selectedHosting = local ? hosting : "cloudflare";
+  const assets = local ? "repository" : "r2";
   const existing = installation === "existing";
-  const selection = { installation, projectName: null, mode, destination, hosting, contentPath, blogRoute, existingContent, loginRoute, assets } as const;
+  const selection = { installation, projectName: null, mode, destination, hosting: selectedHosting, contentPath, blogRoute, existingContent, loginRoute, assets } as const;
 
   let setup: PublishingSetup | null = null;
   let validationError = "";
@@ -70,9 +70,17 @@ export function SetupGuide() {
           {!local && (
             <>
               <fieldset>
+                <legend className="mb-3 text-sm font-semibold">Infrastructure stack</legend>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <ProviderOption name="stack" value="cloudflare" label="Cloudflare" description="Workers, D1 and R2 together." selected icon={<SiCloudflare className="size-4" />} onSelect={() => {}} />
+                  <ProviderOption name="stack" value="existing" label="Existing stack" description="Choose each provider yourself." selected={false} disabled disabledReason="Coming soon" icon={<IconServer className="size-4" />} onSelect={() => {}} />
+                  <ProviderOption name="stack" value="aws" label="AWS" description="AWS-native hosting and storage." selected={false} disabled disabledReason="Coming soon" icon={<IconCloud className="size-4" />} onSelect={() => {}} />
+                </div>
+              </fieldset>
+              <fieldset>
                 <legend className="mb-3 text-sm font-semibold">Login</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <ProviderOption name="authentication" value="email-password" label="Email and password" description="Powered by Supabase Auth." selected icon={<IconLock className="size-4" />} onSelect={() => {}} />
+                  <ProviderOption name="authentication" value="email-password" label="Email and password" description="Accounts and sessions in Cloudflare D1." selected icon={<IconLock className="size-4" />} onSelect={() => {}} />
                   <ProviderOption name="authentication" value="oauth" label="OAuth" description="Google, GitHub and more." selected={false} disabled disabledReason="Coming soon" icon={<SiGithub className="size-4" />} onSelect={() => {}} />
                 </div>
                 <label htmlFor="login-route" className="mb-2 mt-5 block text-sm font-semibold">Login route</label>
@@ -85,15 +93,13 @@ export function SetupGuide() {
               <fieldset>
                 <legend className="mb-3 text-sm font-semibold">Where should your content live?</legend>
                 <div className="grid gap-2 sm:grid-cols-3">
-                  <ProviderOption name="destination" value="github" label="GitHub" description="Content in your repository." selected={destination === "github"} icon={<SiGithub className="size-4" />} onSelect={() => { setRemoteDestination("github"); }} />
+                  <ProviderOption name="destination" value="r2" label="Cloudflare R2" description="Posts, settings and uploads." selected={destination === "r2"} icon={<SiCloudflare className="size-4" />} onSelect={() => {}} />
+                  <ProviderOption name="destination" value="github" label="GitHub" description="Content in your repository." selected={false} disabled disabledReason="Coming soon" icon={<SiGithub className="size-4" />} onSelect={() => {}} />
                   <ProviderOption name="destination" value="supabase" label="Supabase" description="Content in Supabase Storage." selected={false} disabled disabledReason="Coming soon" icon={<SiSupabase className="size-4" />} onSelect={() => {}} />
-                  <ProviderOption name="destination" value="r2" label="Cloudflare R2" description="Content and uploads together." selected={destination === "r2"} icon={<SiCloudflare className="size-4" />} onSelect={() => { setRemoteDestination("r2"); }} />
+                  <ProviderOption name="destination" value="neon" label="Neon" description="Postgres-backed content storage." selected={false} disabled disabledReason="Coming soon" icon={<IconDatabase className="size-4" />} onSelect={() => {}} />
+                  <ProviderOption name="destination" value="aws-s3" label="Amazon S3" description="AWS object storage." selected={false} disabled disabledReason="Coming soon" icon={<IconCloud className="size-4" />} onSelect={() => {}} />
                 </div>
-                {destination !== "r2" ? <label className="mt-3 flex cursor-pointer items-center gap-2.5 text-xs text-muted-foreground">
-                  <input type="checkbox" name="r2" checked={useR2} onChange={event => { setUseR2(event.target.checked); }} className="size-4 accent-primary" />
-                  <SiCloudflare className="size-4 shrink-0" aria-hidden />
-                  Use R2 for images and uploads
-                </label> : <p className="mt-3 text-xs text-muted-foreground">Posts, settings, images and uploads all stay in R2.</p>}
+                <p className="mt-3 text-xs text-muted-foreground">The bucket stays private. Public articles and approved assets are served through authenticated application routes.</p>
               </fieldset>
             </>
           )}
@@ -137,9 +143,10 @@ export function SetupGuide() {
           <fieldset>
             <legend className="mb-3 text-sm font-medium">{existing ? "Where is your website hosted?" : "Where will you host your website?"}</legend>
             <div className="grid gap-2 sm:grid-cols-3">
-              <ProviderOption name="hosting" value="vercel" label="Vercel" description={existing ? "Keep your Vercel deployment." : "Deploy with Vercel."} selected={hosting === "vercel"} icon={<SiVercel className="size-4" />} onSelect={() => { setHosting("vercel"); }} />
-              <ProviderOption name="hosting" value="self-hosted" label="Self-hosted" description={existing ? "Keep your own server." : "Use your own Node.js server."} selected={hosting === "self-hosted"} icon={<IconServer className="size-4" />} onSelect={() => { setHosting("self-hosted"); }} />
-              {existing && <ProviderOption name="hosting" value="existing" label="Other / not sure" description="Detect and keep current hosting." selected={hosting === "existing"} icon={<IconCloud className="size-4" />} onSelect={() => { setHosting("existing"); }} />}
+              {!local && <ProviderOption name="hosting" value="cloudflare" label="Cloudflare Workers" description="Required for the Cloudflare stack." selected icon={<SiCloudflare className="size-4" />} onSelect={() => {}} />}
+              <ProviderOption name="hosting" value="vercel" label="Vercel" description={local ? (existing ? "Keep your Vercel deployment." : "Deploy with Vercel.") : "Custom-provider setup is not available yet."} selected={local && hosting === "vercel"} disabled={!local} disabledReason={!local ? "Coming soon" : undefined} icon={<SiVercel className="size-4" />} onSelect={() => { setHosting("vercel"); }} />
+              <ProviderOption name="hosting" value="self-hosted" label="Self-hosted" description={local ? (existing ? "Keep your own server." : "Use your own Node.js server.") : "Custom-provider setup is not available yet."} selected={local && hosting === "self-hosted"} disabled={!local} disabledReason={!local ? "Coming soon" : undefined} icon={<IconServer className="size-4" />} onSelect={() => { setHosting("self-hosted"); }} />
+              {existing && local && <ProviderOption name="hosting" value="existing" label="Other / not sure" description="Detect and keep current hosting." selected={hosting === "existing"} icon={<IconCloud className="size-4" />} onSelect={() => { setHosting("existing"); }} />}
             </div>
           </fieldset>
 
