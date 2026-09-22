@@ -136,7 +136,7 @@ Machine-readable documentation: /docs.md
 
 ## First: account access and confirmation
 
-Ask the user to sign in to the provider accounts their selection needs and explicitly confirm that you may proceed. Local writing requires no provider. Login-based GitHub needs GitHub and Supabase Auth; R2 content needs Cloudflare and Supabase Auth; optional R2 uploads also need Cloudflare. Do not access private provider resources or provision anything before the go-ahead. Inspect local files while waiting. After confirmation, complete authorized work autonomously and only ask about genuine blockers or new decisions. Never ask for secrets in chat.
+Ask the user to sign in to the provider accounts their selection needs and explicitly confirm that you may proceed. Local writing requires no provider. Login-based hosting uses the user's Cloudflare account for Workers, D1, R2 and Turnstile. Do not access private provider resources or provision anything before the go-ahead. Inspect local files while waiting. After confirmation, complete authorized work autonomously and only ask about genuine blockers or new decisions. Never ask for secrets in chat.
 
 ## Operating rules
 
@@ -222,7 +222,7 @@ Install the parser, types, validation, and machine-readable outputs without repl
 - Multiple lockfiles: identify the actual workspace tool before installing.
 - Monorepo: locate the actual app root, resolve package-manager ownership from packageManager/lockfile/CI, and scope commands and content paths to that app. Ask which app if several qualify. Never create a second lockfile.
 - Existing installation: compare configuration and reuse compatible components; rerunning setup must not duplicate routes, resources, demo posts or users.
-- Existing auth: preserve sessions, cookies and middleware; Local mode adds no blog login and must not remove website authentication. A different auth provider requires a scoped integration decision before adding Supabase Auth.
+- Existing auth: preserve sessions, cookies and middleware; Local mode adds no blog login and must not remove website authentication. Login-based mode keeps the D1-backed CMS owner session isolated unless an explicit, tested auth migration is approved.
 - Publication routes: the starter hardcodes its mounts. A different blog/Studio mount requires consistent code changes across links, handlers, feeds, sitemap and metadata; selecting a login route does not relocate them.
 - Static export or edge-only hosting: inspect runtime requirements first and ask about incompatible features instead of silently switching hosts.
 - Existing Markdown/MDX: preserve the source and URL map, check supported syntax and duplicate slugs, and agree on a repeatable migration before changing formats.

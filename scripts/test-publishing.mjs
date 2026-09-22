@@ -23,54 +23,47 @@ test("existing sites need no identity and preserve hosting by default; older lin
 });
 
 test("existing integration guides never prescribe cloning, renaming or npm-only scripts", () => {
-  for (const hosting of ["existing", "vercel", "self-hosted"]) {
-    for (const [mode, destination, assets] of [
-      ["local", "github", "repository"],
-      ["self-hosted", "github", "repository"],
-      ["self-hosted", "github", "r2"],
-      ["self-hosted", "r2", "r2"],
-
-    ]) {
+  for (const [mode, destination, assets, hosting] of [
+    ["local", "github", "repository", "existing"],
+    ["local", "github", "repository", "vercel"],
+    ["local", "github", "repository", "self-hosted"],
+    ["self-hosted", "r2", "r2", "cloudflare"],
+  ]) {
       const setup = createPublishingSetup({ installation: "existing", mode, destination, assets, hosting, contentPath: "data/journal", loginRoute: "/staff/sign-in" });
       const guide = getSetupGuide(setup);
       const markdown = renderSetupGuideMarkdown(setup);
       assert.doesNotMatch(markdown, /git clone|npm (install|run)|Update lib\/site.ts/);
       assert.match(markdown, /duplicate slugs/);
       assert.match(markdown, /hardcoded routes/);
-      assert.match(markdown, /Preserve the website's authentication/);
+      assert.match(markdown, mode === "local" ? /Preserve the website's authentication/ : /Inspect existing sessions and \/staff\/sign-in/);
       assert.match(markdown, /selected app root/);
       assert.match(markdown, /actual scripts/);
-      assert.equal(guide.steps.some(step => step.title === "Keep your current deployment"), true);
+      assert.equal(guide.steps.some(step => step.title === (mode === "local" ? "Keep your current deployment" : "Deploy to Cloudflare Workers")), true);
       for (const step of guide.steps) for (const point of step.points) assert.ok(markdown.includes(`- ${point}`));
-    }
   }
 });
 
 test("selected guides cover every supported content, asset and hosting combination", () => {
-  for (const hosting of ["vercel", "self-hosted"]) {
-    for (const [mode, destination, assets, accounts] of [
-      ["local", "github", "repository", []],
-      ["self-hosted", "github", "repository", ["GitHub", "Supabase"]],
-      ["self-hosted", "github", "r2", ["GitHub", "Supabase", "Cloudflare"]],
-      ["self-hosted", "r2", "r2", ["Supabase", "Cloudflare"]],
-
-    ]) {
+  for (const [mode, destination, assets, hosting, accounts] of [
+    ["local", "github", "repository", "vercel", []],
+    ["local", "github", "repository", "self-hosted", []],
+    ["self-hosted", "r2", "r2", "cloudflare", ["Cloudflare"]],
+  ]) {
       const setup = createPublishingSetup({ projectName: "Selected blog", mode, destination, assets, hosting, contentPath: "data/journal", loginRoute: "/staff/sign-in" });
       const guide = getSetupGuide(setup);
       assert.deepEqual(guide.accounts, accounts);
       const titles = guide.steps.map(step => step.title).join("\n");
-      assert.equal(titles.includes("Implement GitHub content storage"), mode !== "local" && destination === "github");
-      assert.equal(titles.includes("Implement Cloudflare R2 content storage"), destination === "r2");
-      assert.equal(titles.includes("Connect Cloudflare R2 uploads"), assets === "r2");
+      assert.equal(titles.includes("Implement private Cloudflare R2 content storage"), mode !== "local");
+      assert.equal(titles.includes("Secure Cloudflare R2 uploads"), mode !== "local");
       assert.equal(titles.includes("Implement email login at /staff/sign-in"), mode !== "local");
       assert.equal(titles.includes("Deploy the website to Vercel"), hosting === "vercel");
       assert.equal(titles.includes("Host on your own Node.js server"), hosting === "self-hosted");
+      assert.equal(titles.includes("Deploy to Cloudflare Workers"), hosting === "cloudflare");
       const markdown = renderSetupGuideMarkdown(setup);
       assert.ok(markdown.includes("data/journal/posts"));
       for (const step of guide.steps) for (const point of step.points) assert.ok(markdown.includes(`- ${point}`));
       assert.ok(markdown.includes("Recovery and completion"));
       if (mode !== "local") assert.ok(markdown.includes("current local runtime deliberately rejects a remote configuration"));
-    }
   }
 });
 
@@ -87,21 +80,26 @@ test("hosting is independent of operating mode and unsupported databases fail cl
 });
 
 test("OSS setups have one project and managed is unavailable", () => {
-  for (const mode of ["local", "self-hosted"]) {
-    const setup = createPublishingSetup({ projectName: "Project", mode, destination: "github", projectScope: "multi-project" });
+  for (const [mode, destination] of [["local", "github"], ["self-hosted", "r2"]]) {
+    const setup = createPublishingSetup({ projectName: "Project", mode, destination, projectScope: "multi-project" });
     assert.equal(setup.projectScope, "single-project");
   }
   assert.throws(() => createPublishingSetup({ projectName: "Project", mode: "managed", destination: "github" }), /coming soon/);
 });
 
-test("login-based content uses GitHub or R2 and always needs authentication", () => {
-  for (const destination of ["github", "r2"]) {
-    const setup = createPublishingSetup({ projectName: "Test", mode: "self-hosted", destination, loginRoute: "/team/sign-in", assets: "r2" });
-    assert.equal(setup.database, "supabase");
-    assert.equal(setup.authentication, "email-password");
-    assert.equal(setup.loginRoute, "/team/sign-in");
-    assert.equal(setup.assets, "r2");
-    assert.equal(setup.oauth, false);
+test("login-based content uses the complete Cloudflare stack", () => {
+  const setup = createPublishingSetup({ projectName: "Test", mode: "self-hosted", destination: "r2", loginRoute: "/team/sign-in", assets: "r2" });
+  assert.equal(setup.database, "d1");
+  assert.equal(setup.hosting, "cloudflare");
+  assert.equal(setup.authentication, "email-password");
+  assert.equal(setup.loginRoute, "/team/sign-in");
+  assert.equal(setup.assets, "r2");
+  assert.equal(setup.oauth, false);
+  for (const destination of ["github", "supabase", "neon", "aws-s3"]) {
+    assert.throws(() => createPublishingSetup({ projectName: "Test", mode: "self-hosted", destination }), /coming soon/);
+  }
+  for (const hosting of ["existing", "vercel", "self-hosted"]) {
+    assert.throws(() => createPublishingSetup({ projectName: "Test", mode: "self-hosted", destination: "r2", hosting }), /hosting target|Cloudflare Workers/);
   }
   for (const destination of ["aws", "azure", "supabase", "r2", "gcp", "__proto__"]) {
     assert.throws(() => createPublishingSetup({ projectName: "Test", mode: "local", destination }));
@@ -155,7 +153,7 @@ test("content policy and public route choices survive serialization; disabled st
   assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, installation: "existing", existingContent: "delete-all" }));
   assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, existingContent: "replace" }));
   for (const blogRoute of ["/", "/api/blog", "//evil.com", "/a?x=1", "/a/../b"]) assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, blogRoute }));
-  for (const [blogRoute, loginRoute] of [["/journal", "/journal"], ["/journal", "/journal/login"], ["/staff/blog", "/staff"]]) assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, mode: "self-hosted", authentication: "email-password", database: "supabase", blogRoute, loginRoute }), /overlap/);
+  for (const [blogRoute, loginRoute] of [["/journal", "/journal"], ["/journal", "/journal/login"], ["/staff/blog", "/staff"]]) assert.throws(() => createPublishingSetup({ ...defaultPublishingSetup, mode: "self-hosted", destination: "r2", authentication: "email-password", database: "d1", assets: "r2", hosting: "cloudflare", blogRoute, loginRoute }), /overlap/);
 });
 
 

@@ -1,8 +1,8 @@
 # Next steps
 
-The source-available scope is one publication per installation: local repository authoring first, then email/password self-hosting with GitHub or Cloudflare R2 content and optional R2 uploads.
+The source-available scope is one publication per installation: local repository authoring first, then a Cloudflare-only hosted Studio using Workers, D1 and private R2.
 
-Remote runtime work still needs owner-bound Supabase sessions, server-protected Studio reads/writes, durable storage adapters and public publication readers. Verify expired/foreign sessions, unauthorized reads/writes, draft privacy, concurrent edits and persisted provider writes before enabling hosted editing. Never use ephemeral production filesystem writes for durable content.
+Remote runtime work needs owner-bound D1 sessions, server-protected Studio reads/writes, R2 storage adapters and public publication readers. Follow [the Cloudflare hosted Studio plan](../publishing/CLOUDFLARE_HOSTED_STUDIO.md). Verify expired/revoked sessions, unauthorized reads/writes, draft privacy, concurrent edits and persisted provider writes before enabling hosted editing. Never use a Worker filesystem for durable content.
 
 Keep Managed and OAuth disabled. Do not make billing, audit logs, workspaces or advanced roles prerequisites for basic setup.
 

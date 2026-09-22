@@ -5,10 +5,10 @@ Updated 2026-09-10. This describes the basic source-available setup and its curr
 | Mode | Blog data | Authentication | Status |
 | --- | --- | --- | --- |
 | Local (default) | Chosen folder in the user's repository | None | Local runtime available |
-| Login-based self-hosting | GitHub repository or Cloudflare R2 | Supabase email/password, `/login` or chosen route | Configuration and agent runbook; remote runtime still needs implementation |
+| Login-based self-hosting | Private Cloudflare R2 | Email/password and sessions in Cloudflare D1, `/login` or chosen route | Cloudflare-only setup contract; runtime implementation remains in progress |
 | Managed | Deferred | Deferred | Disabled, Coming soon |
 
-R2 stores all blog data when selected, or optionally images/uploads alongside GitHub. Supabase Storage is disabled; Supabase Auth remains available for email/password integration. OAuth is disabled. Audit logs, advanced roles, billing, workspaces and managed operations are outside the current basic scope.
+The initial hosted profile uses Cloudflare Workers, D1 and R2 together. Existing-stack, GitHub, Supabase, Neon and AWS integrations are disabled and labeled Coming soon. OAuth, public signup, advanced roles, billing, workspaces and managed operations are outside the first release. See [the Cloudflare hosted Studio plan](CLOUDFLARE_HOSTED_STUDIO.md).
 
 ## Local setup
 
@@ -22,6 +22,6 @@ Without publishing.json the app retains its current `content` directory. Configu
 
 The user copies a short setup prompt containing the `/agent-setup.md` link. The setup page adds validated non-secret choices via `?setup=...`. If an external agent cannot fetch the deployment URL, a collapsed fallback supplies the full instructions. Once this website is deployed, links use its actual origin automatically.
 
-The agent first asks the user to sign in to their selected provider accounts and confirm it may proceed. It verifies the account/project, then performs authorized setup and validation autonomously. Local writing needs no provider. GitHub remote content requires GitHub plus Supabase Auth; Supabase Storage requires Supabase; R2 additionally requires Cloudflare. Credentials stay in secure environment/secret storage, never links or prompts.
+The agent first asks the user to sign in to the selected Cloudflare account and confirm it may proceed. It verifies the account and intended Worker, D1 database, R2 bucket and domain, then performs authorized setup and validation autonomously. Local writing needs no provider. Credentials stay in Wrangler secret storage, never links, prompts or publishing.json.
 
 See [agent automation](AGENT_AUTOMATION.md) and [current state](../context/CURRENT_STATE.md) for honest runtime limitations. Connected authentication and remote storage are not implemented yet.

@@ -1,8 +1,8 @@
 import { validateContentPath, validateLoginRoute, validateBlogRoute } from "./paths.mjs";
 
 export type PublishingMode = "local" | "self-hosted" | "managed";
-export type ContentDestination = "github" | "supabase" | "r2";
-export type HostingTarget = "vercel" | "self-hosted" | "existing";
+export type ContentDestination = "github" | "supabase" | "neon" | "r2" | "aws-s3";
+export type HostingTarget = "vercel" | "self-hosted" | "existing" | "cloudflare";
 export type InstallationTarget = "fresh" | "existing";
 export type ExistingContent = "keep" | "migrate" | "replace";
 export type AssetStorage = "repository" | "supabase" | "r2";
@@ -21,7 +21,7 @@ export type PublishingSetup = {
   authentication: "none" | "email-password";
   oauth: false;
   assets: AssetStorage;
-  database: "none" | "supabase";
+  database: "none" | "d1";
   projectScope: "single-project";
   hosting: HostingTarget;
 };
@@ -32,7 +32,7 @@ export type SetupInput = {
   blogRoute?: string; existingContent?: ExistingContent | null;
   contentPath?: string; loginRoute?: string | null;
   authentication?: "none" | "email-password"; oauth?: boolean;
-  assets?: AssetStorage; hosting?: HostingTarget; database?: "none" | "supabase";
+  assets?: AssetStorage; hosting?: HostingTarget; database?: "none" | "d1";
 };
 
 export const defaultPublishingSetup: PublishingSetup = {
@@ -44,7 +44,7 @@ export const defaultPublishingSetup: PublishingSetup = {
 
 export function allowedDestinations(mode: PublishingMode): readonly ContentDestination[] {
   if (mode === "local") return ["github"];
-  if (mode === "self-hosted") return ["github", "r2"];
+  if (mode === "self-hosted") return ["r2"];
   return [];
 }
 
@@ -57,21 +57,25 @@ export function createPublishingSetup(input: SetupInput): PublishingSetup {
     throw new Error("Use a project name between 1 and 80 characters, without control characters.");
   }
   if (input.mode === "managed") throw new Error("Managed is coming soon. Choose Local or login-based self-hosting.");
-  if (input.destination === "supabase") throw new Error("Supabase Storage is coming soon. Choose GitHub or Cloudflare R2.");
-  if (!allowedDestinations(input.mode).includes(input.destination)) {
-    throw new Error("Local content stays in your repository. Login-based setups support GitHub or Cloudflare R2.");
+  if (["github", "supabase", "neon", "aws-s3"].includes(input.destination) && input.mode === "self-hosted") {
+    throw new Error("Cloudflare R2 is the only available login-based content provider. Other providers are coming soon.");
   }
-  const hosting = input.hosting ?? (installation === "existing" ? "existing" : "vercel");
-  if (!["vercel", "self-hosted", "existing"].includes(hosting) || (hosting === "existing" && installation !== "existing")) throw new Error("Keep existing hosting for an existing website, or choose Vercel or self-hosted hosting.");
+  if (!allowedDestinations(input.mode).includes(input.destination)) {
+    throw new Error("Local content stays in your repository. Login-based setups currently use Cloudflare R2.");
+  }
   const local = input.mode === "local";
+  const hosting = input.hosting ?? (local ? (installation === "existing" ? "existing" : "vercel") : "cloudflare");
+  if (!["vercel", "self-hosted", "existing", "cloudflare"].includes(hosting) || (hosting === "existing" && installation !== "existing")) throw new Error("Choose a supported hosting target.");
+  if (!local && hosting !== "cloudflare") throw new Error("Login-based setup currently requires the complete Cloudflare Workers stack.");
+  if (local && hosting === "cloudflare") throw new Error("Cloudflare Workers hosting is currently enabled only for login-based setup.");
   const authentication = local ? "none" : "email-password";
   if (input.oauth) throw new Error("OAuth is coming soon. Use email and password for now.");
   if (input.authentication !== undefined && input.authentication !== authentication) throw new Error("Choose the authentication supported by this mode.");
-  const database = local ? "none" : "supabase";
-  if (input.database !== undefined && input.database !== database) throw new Error("Login-based setups use Supabase Auth, including when content lives on GitHub.");
+  const database = local ? "none" : "d1";
+  if (input.database !== undefined && input.database !== database) throw new Error("Login-based setups currently store authentication and sessions in Cloudflare D1.");
   const assets = input.assets ?? (input.destination === "r2" ? "r2" : "repository");
   if (!(local ? ["repository"] : input.destination === "r2" ? ["r2"] : ["repository", "r2"]).includes(assets)) {
-    throw new Error("Store assets with your content, or choose Cloudflare R2 for a login-based setup.");
+    throw new Error("Login-based setup stores posts, settings and uploads in Cloudflare R2.");
   }
   const blogRoute = validateBlogRoute(input.blogRoute ?? "/blog");
   const loginRoute = local ? null : validateLoginRoute(input.loginRoute ?? "/login");
