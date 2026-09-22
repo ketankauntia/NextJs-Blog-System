@@ -6,6 +6,7 @@ import { BlogThemeToggle } from "@/components/blog-theme-toggle";
 import { siteConfig } from "@/lib/site";
 import { isStudioVisible } from "@/lib/studio-access";
 import { productConfig } from "@/lib/product";
+import {getSettings} from '@/lib/settings';
 
 const primaryLinks = [
   { label: "Product", href: "/#product" },
@@ -15,6 +16,7 @@ const primaryLinks = [
 
 export function BlogSiteHeader() {
   const showStudio = isStudioVisible();
+  const {publicationName}=getSettings();
 
   return (
     <header className="site-header sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
@@ -25,13 +27,13 @@ export function BlogSiteHeader() {
         <Link
           href="/"
           className="group flex min-w-0 items-center gap-2.5"
-          aria-label={`${siteConfig.name} home`}
+          aria-label={`${publicationName || siteConfig.name} home`}
         >
           <span aria-hidden className="brand-glyph shrink-0">
             {productConfig.glyph}
           </span>
           <span className="brand-name truncate">
-            {productConfig.shortWordmark} <small className="hidden sm:inline">/ {productConfig.nameSuffix}</small>
+            {publicationName || <>{productConfig.shortWordmark} <small className="hidden sm:inline">/ {productConfig.nameSuffix}</small></>}
           </span>
         </Link>
 

@@ -1,6 +1,8 @@
 # npm release readiness
 
-The current repository is a Next.js application and source-integration starter. It has no published library API or installer. Development and integration verification come before an npm release. The root manifest is `private: true` to prevent accidental publication of the full website; the repository remains available under the custom source-available license.
+The root repository is a Next.js application and source-integration starter. A separate, locally packable alpha now lives in [`packages/blog-system-next`](../../packages/blog-system-next/README.md), with typed exports, an explicit CLI, a local Markdown Studio, and packed-consumer tests. It has not been published to the registry. The root manifest stays `private: true` to prevent publication of the full website; the existing source-available license is preserved.
+
+The alpha targets npm, the documented Next/React versions, Node App Router runtime, private local content folders and scoped publication styles. Alpha.6 packages the actual OSS dashboard/editor/templates, excludes website analytics and demo identity, and refreshes unchanged generated routes on init. Wider router/runtime/version coverage and content or edited-route migrations remain release work. Passing build/unit checks alone does not establish visual or interaction parity; run the browser suite against the packed artifact.
 
 ## Package boundary to implement
 

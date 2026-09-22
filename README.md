@@ -24,6 +24,8 @@ A repository native publishing system for Next.js. Markdown remains the source o
 
 ## Quick start
 
+**npm package alpha:** An installable package and CLI are available locally under [`packages/blog-system-next`](packages/blog-system-next/README.md). Run `npm run test:package`, then `npm pack ./packages/blog-system-next` and install the tarball into a separate Next.js app. It includes local Markdown authoring and adds no analytics. This is not yet a registry release; the commands below start the full source application.
+
 **License conditions:** Personal and business blogs may use this software with a visible **Powered by nextjsblog.com** footer link on every public blog page. Reselling, white-labeling, or offering the software or derivatives as a commercial product or service is prohibited, even with attribution. Read the [full license](LICENSE) and [terms](https://nextjsblog.com/terms) before installing.
 
 ```bash

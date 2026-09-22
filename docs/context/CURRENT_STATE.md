@@ -2,6 +2,11 @@
 
 ## Available
 
+- npm alpha.6 setup has two numbered questions: blog URL and private content folder. Enter accepts defaults; interactive setup applies without another confirmation, and `--yes` skips questions. No sample posts are created or offered. The publication name defaults to the project folder name alone; its navbar link returns to the host homepage. Description/author start blank. Studio Settings controls publication name, description, author and HTTPS domain; changes are revision-checked and saved to `<contentPath>/settings.json`.
+- An empty local blog shows a compact welcome page linking to `/blog-studio`. Alpha.6 builds the original OSS dashboard, board, rich editor, settings, font picker and template previews into the package, using the host project’s data. Its CSS is compiled and scoped; fonts use the original next/font definitions. Publication fields live in Settings. Production hides Studio; an unset domain keeps pages noindex and feeds unavailable until configured.
+
+- The package build compiles an explicit OSS component dependency graph without copying the website layout, analytics, maintainer identity or sample posts. Raster uploads and revision-checked review/settings/post saves use local storage. Public listing/article templates respond to appearance settings. Setup binds the dev script to loopback, and repeated init updates unchanged generated routes. Email/password hosted editing remains deferred. See the package README for dependencies and limits; run all packed-consumer/browser checks before release.
+
 - The site-wide Open Graph card uses `assets/social/opengraph-image.png`, an edited landing-page screenshot with the centered product headline, buttons and CMS editor. The metadata route renders it at 1200 × 630. Per-article social cards retain their existing design.
 - The landing hero keeps its descriptive paragraph and early-stage/attribution/team footnote in the live page. The site-wide OG image removes those supporting blocks for a cleaner social preview.
 
@@ -27,7 +32,7 @@
 
 ## Not implemented
 
-An installable npm package or automated migration tool. Existing websites currently use guided source integration. The application manifest blocks npm publication while the package boundary and consumer-fixture checks in [npm readiness](../publishing/NPM_READINESS.md) are pending.
+An npm registry release, automated content migration, and migration of user-edited generated routes. The local package alpha targets the documented App Router/npm/version combination; guided source integration remains available for broader customization. The root website manifest remains private; only the separate package directory is intended for packing after validation.
 
 Supabase sessions, a working custom login page, authenticated hosted editing, GitHub remote writes, Supabase Storage and R2 adapters. These are integration work, not active features. A remote publishing.json fails closed in the current local runtime. Local saves do not automatically commit, push or deploy.
 
@@ -36,3 +41,5 @@ Managed hosting, OAuth, audit logs, billing, workspaces and advanced team roles 
 ## Validation
 
 Use `npm run test:publishing`, `npm run test:content` and `npm run validate`. Production route smoke tests should verify the public guide, personalized contract, invalid input rejection and all editor mutation guards. Never treat a selector or mocked provider test as proof of a working cloud integration.
+
+Package checks: `npm run test:package` covers filesystem, parsing, installer recovery and Studio authorization. `npm run test:package:consumer` packs and installs the actual artifact into isolated TypeScript and JavaScript consumer apps, builds them, verifies HTTP reader/SEO/privacy behavior and local authoring, and checks uninstall preservation. The consumer test requires npm access on a cold cache and leaves artifacts under a temporary folder (or `BSN_CONSUMER_ROOT`).

@@ -1,4 +1,5 @@
 "use client";
+import {useUnsavedChanges} from '@/lib/use-unsaved-changes';
 
 import { useState } from "react";
 import Link from "next/link";
@@ -34,7 +35,7 @@ const POST_META: Record<PostTemplate, { name: string; blurb: string }> = {
   hero: { name: "Hero", blurb: "Full-width cover banner with overlaid title, then a centered column." },
 };
 
-type SettingsCategory = "templates" | "seo";
+type SettingsCategory = "publication" | "templates" | "seo";
 
 export function SettingsClient({ initial, canSave }: { initial: SiteSettings; canSave: boolean }) {
   const router = useRouter();
@@ -42,12 +43,18 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
   const [postTemplate, setPostTemplate] = useState<PostTemplate>(initial.postTemplate);
   const [seoRedMax, setSeoRedMax] = useState(initial.seoScoreThresholds.redMax);
   const [seoYellowMax, setSeoYellowMax] = useState(initial.seoScoreThresholds.yellowMax);
+  const [publicationName, setPublicationName] = useState(initial.publicationName);
+  const [publicationDescription, setPublicationDescription] = useState(initial.publicationDescription);
+  const [defaultAuthor, setDefaultAuthor] = useState(initial.defaultAuthor);
+  const [websiteUrl, setWebsiteUrl] = useState(initial.websiteUrl);
+  const [dashboardAccess, setDashboardAccess] = useState(initial.dashboardAccess);
   const [category, setCategory] = useState<SettingsCategory>("templates");
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [message, setMessage] = useState("");
 
   const thresholdsValid = Number.isInteger(seoRedMax) && Number.isInteger(seoYellowMax) && seoRedMax >= 0 && seoRedMax < seoYellowMax && seoYellowMax <= 100;
-  const dirty = blogTemplate !== initial.blogTemplate || postTemplate !== initial.postTemplate || seoRedMax !== initial.seoScoreThresholds.redMax || seoYellowMax !== initial.seoScoreThresholds.yellowMax;
+  const dirty = blogTemplate !== initial.blogTemplate || postTemplate !== initial.postTemplate || seoRedMax !== initial.seoScoreThresholds.redMax || seoYellowMax !== initial.seoScoreThresholds.yellowMax || publicationName !== initial.publicationName || publicationDescription !== initial.publicationDescription || defaultAuthor !== initial.defaultAuthor || websiteUrl !== initial.websiteUrl || dashboardAccess !== initial.dashboardAccess;
+  useUnsavedChanges(dirty);
 
   async function save() {
     setState("saving");
@@ -56,12 +63,12 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // Spread `initial` so saving one category cannot drop another setting.
-        body: JSON.stringify({ ...initial, blogTemplate, postTemplate, seoScoreThresholds: { redMax: seoRedMax, yellowMax: seoYellowMax } }),
+        body: JSON.stringify({ ...initial, publicationName, publicationDescription, defaultAuthor, websiteUrl, dashboardAccess, blogTemplate, postTemplate, seoScoreThresholds: { redMax: seoRedMax, yellowMax: seoYellowMax } }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Save failed");
       setState("saved");
-      setMessage("Saved. Your settings are now active.");
+      setMessage(data.restartRequired ? "Saved. Restart npm run dev to refresh publication metadata. Commit and redeploy to update your live site." : "Saved. Your settings are now active.");
       router.refresh();
     } catch (e) {
       setState("error");
@@ -112,6 +119,10 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
             <span className="text-sm font-medium">Templates</span>
             <span className="mt-0.5 text-xs text-muted-foreground">Blog and article layouts</span>
           </button>
+          <button type="button" onClick={() => setCategory("publication")} aria-pressed={category === "publication"} className={cn("mt-1 flex w-full flex-col rounded-lg px-3 py-2.5 text-left transition-colors", category === "publication" ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted")}>
+            <span className="text-sm font-medium">Publication</span>
+            <span className="mt-0.5 text-xs text-muted-foreground">Identity and dashboard access</span>
+          </button>
           <button type="button" onClick={() => setCategory("seo")} aria-pressed={category === "seo"} className={cn("mt-1 flex w-full flex-col rounded-lg px-3 py-2.5 text-left transition-colors", category === "seo" ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted")}>
             <span className="text-sm font-medium">SEO score colors</span>
             <span className="mt-0.5 text-xs text-muted-foreground">Dashboard score bands</span>
@@ -119,7 +130,7 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
         </nav>
 
         <div className="min-w-0">
-        {category === "templates" ? <>
+        {category === "publication" ? <PublicationSettings publicationName={publicationName} publicationDescription={publicationDescription} defaultAuthor={defaultAuthor} websiteUrl={websiteUrl} dashboardAccess={dashboardAccess} onName={setPublicationName} onDescription={setPublicationDescription} onAuthor={setDefaultAuthor} onWebsite={setWebsiteUrl} onAccess={setDashboardAccess} /> : category === "templates" ? <>
       <section>
         <h2 className="font-heading text-lg font-semibold">Blog listing template</h2>
         <p className="text-sm text-muted-foreground">Layout of /blog and its pagination pages.</p>
@@ -166,6 +177,36 @@ export function SettingsClient({ initial, canSave }: { initial: SiteSettings; ca
       </div>
     </main>
   );
+}
+
+function PublicationSettings({
+  publicationName, publicationDescription, defaultAuthor, websiteUrl, dashboardAccess,
+  onName, onDescription, onAuthor, onWebsite, onAccess,
+}: {
+  publicationName: string; publicationDescription: string; defaultAuthor: string; websiteUrl: string; dashboardAccess: "local" | "login";
+  onName: (v: string) => void; onDescription: (v: string) => void; onAuthor: (v: string) => void; onWebsite: (v: string) => void; onAccess: (v: "local" | "login") => void;
+}) {
+  return <div className="space-y-10">
+    <section>
+      <h2 className="font-heading text-lg font-semibold">Publication identity</h2>
+      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">These values appear in your blog navigation, metadata and new post defaults.</p>
+      <div className="mt-5 grid max-w-2xl gap-4">
+        <label className="text-sm font-medium">Publication name<Input value={publicationName} maxLength={120} placeholder="Your project name" onChange={e => onName(e.target.value)} /><span className="mt-1 block text-xs font-normal text-muted-foreground">Defaults to your project name. Clicking it always returns to your website homepage.</span></label>
+        <label className="text-sm font-medium">Description<Input value={publicationDescription} maxLength={500} placeholder="What will readers find here?" onChange={e => onDescription(e.target.value)} /><span className="mt-1 block text-xs font-normal text-muted-foreground">Optional summary for the blog page and sharing previews.</span></label>
+        <label className="text-sm font-medium">Default author<Input value={defaultAuthor} maxLength={120} placeholder={publicationName || "Your name"} onChange={e => onAuthor(e.target.value)} /><span className="mt-1 block text-xs font-normal text-muted-foreground">Used when a post does not specify an author.</span></label>
+        <label className="text-sm font-medium">Website address<Input type="url" value={websiteUrl} placeholder="https://example.com" onChange={e => onWebsite(e.target.value)} /><span className="mt-1 block text-xs font-normal text-muted-foreground">HTTPS origin used for canonical links, RSS and sitemap in production.</span></label>
+      </div>
+    </section>
+    <section>
+      <h2 className="font-heading text-lg font-semibold">Dashboard access</h2>
+      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Local development is active in this release. A hosted login dashboard is planned for a future version.</p>
+      <div className="mt-5 grid max-w-2xl gap-3 sm:grid-cols-2">
+        <button type="button" onClick={() => onAccess("local")} aria-pressed={dashboardAccess === "local"} className={cn("rounded-xl border p-4 text-left", dashboardAccess === "local" ? "border-primary ring-2 ring-primary/20" : "border-border")}><strong className="block text-sm">Local development</strong><span className="mt-1 block text-xs text-muted-foreground">Active. Run <code>npm run dev</code> and open Studio.</span></button>
+        <button type="button" disabled title="Available in a future release" aria-pressed={dashboardAccess === "login"} className={cn("rounded-xl border p-4 text-left", dashboardAccess === "login" ? "border-warning ring-2 ring-warning/20" : "border-border")}><strong className="block text-sm">Login dashboard</strong><span className="mt-1 block text-xs text-muted-foreground">Coming next version. Email/password, sessions and deployment setup are not active yet.</span></button>
+      </div>
+      {dashboardAccess === "login" && <p className="mt-3 max-w-2xl rounded-lg border border-warning/30 bg-warning/5 px-4 py-3 text-sm">This selection is saved as a reminder only. Login is unavailable until a future release; no credentials are collected or stored.</p>}
+    </section>
+  </div>;
 }
 
 function SeoScoreSettings({

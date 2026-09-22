@@ -20,5 +20,8 @@ export const authors: Author[] = [
 export const DEFAULT_AUTHOR_SLUG = authors[0].slug;
 
 export function getAuthor(slug: string): Author {
-  return authors.find((a) => a.slug === slug) ?? authors[0];
+  return authors.find((a) => a.slug === slug) ?? {
+    slug, name: slug, role: "", bio: "",
+    initials: slug.split(/\s+/).map(part => part[0]).join("").slice(0, 2).toUpperCase(),
+  };
 }

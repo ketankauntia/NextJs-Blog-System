@@ -3,6 +3,7 @@ import { readPostSources } from "@/lib/blog/source.mjs";
 import { PostEditor, type EditablePost } from "@/components/editor/post-editor";
 import { authors, DEFAULT_AUTHOR_SLUG } from "@/lib/blog/authors";
 import { canMutateStudio } from "@/lib/studio-access";
+import {getSettings} from '@/lib/settings';
 
 export const metadata: Metadata = {
   title: "Post editor",
@@ -54,7 +55,7 @@ export default async function EditorPage({
   return (
     <PostEditor
       posts={loadEditablePosts()}
-      authorSlugs={authors.map((a) => a.slug)}
+      authorSlugs={[...new Set([getSettings().defaultAuthor || DEFAULT_AUTHOR_SLUG,...authors.map((a) => a.slug)])]}
       canSave={canMutateStudio()}
       initialSlug={newPost === "1" ? "__new__" : slug}
     />

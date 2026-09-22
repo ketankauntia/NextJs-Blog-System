@@ -21,6 +21,13 @@ export const DEFAULT_SEO_SCORE_THRESHOLDS: SeoScoreThresholds = {
 };
 
 export type SiteSettings = {
+  /** Publication identity shown by the blog and Studio. */
+  publicationName: string;
+  publicationDescription: string;
+  defaultAuthor: string;
+  websiteUrl: string;
+  /** Login access is reserved for a future release; local is the only active mode. */
+  dashboardAccess: "local" | "login";
   /** Layout of /blog (and its pagination pages). */
   blogTemplate: BlogTemplate;
   /** Layout of individual post pages. */
@@ -32,6 +39,11 @@ export type SiteSettings = {
 };
 
 export const DEFAULT_SETTINGS: SiteSettings = {
+  publicationName: "",
+  publicationDescription: "",
+  defaultAuthor: "",
+  websiteUrl: "",
+  dashboardAccess: "local",
   blogTemplate: "classic",
   postTemplate: "standard",
   fontPairing: "modern",

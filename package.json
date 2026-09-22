@@ -6,6 +6,10 @@
   "author": "Ketan",
   "description": "A repository-native, SEO-first publishing system for Next.js with a local authoring studio.",
   "scripts": {
+    "build:package": "node scripts/build-package.mjs",
+    "test:package": "npm run build:package && node --test packages/blog-system-next/test/*.test.mjs",
+    "test:package:consumer": "node scripts/test-package-consumer.mjs",
+    "test:package:onboarding": "node scripts/test-package-onboarding.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

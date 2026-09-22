@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/blog-ui/badge";
 import { DEFAULT_AUTHOR_SLUG } from "@/lib/blog/authors";
 import { siteConfig } from "@/lib/site";
+import {useUnsavedChanges} from '@/lib/use-unsaved-changes';
 import { Button } from "@/components/blog-ui/button";
 import { Input } from "@/components/blog-ui/input";
 import { Label } from "@/components/blog-ui/label";
@@ -72,7 +73,7 @@ export type EditablePost = {
   body: string;
 };
 
-function blankPost(): EditablePost {
+function blankPost(defaultAuthor = DEFAULT_AUTHOR_SLUG): EditablePost {
   return {
     slug: "",
     title: "",
@@ -81,7 +82,7 @@ function blankPost(): EditablePost {
     tags: [],
     publishedAt: new Date().toISOString().slice(0, 10),
     updatedAt: "",
-    author: DEFAULT_AUTHOR_SLUG,
+    author: defaultAuthor,
     featured: false,
     draft: true,
     cornerstone: false,
@@ -95,7 +96,7 @@ function blankPost(): EditablePost {
     tldr: "",
     keyTakeaways: [],
     faqs: [],
-    body: "## First section\n\nStart writing…",
+    body: "",
   };
 }
 
@@ -128,7 +129,7 @@ export function PostEditor({
   initialSlug?: string;
 }) {
   const [draft, setDraft] = useState<EditablePost>(
-    initialSlug === "__new__" ? blankPost() : posts.find((p) => p.slug === initialSlug) ?? posts[0] ?? blankPost(),
+    initialSlug === "__new__" ? blankPost(authorSlugs[0]) : posts.find((p) => p.slug === initialSlug) ?? posts[0] ?? blankPost(authorSlugs[0]),
   );
   const [slugTouched, setSlugTouched] = useState(initialSlug !== "__new__");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -143,6 +144,7 @@ export function PostEditor({
   const latestDraft = useRef(draft);
   useEffect(() => { latestDraft.current = draft; }, [draft]);
   const dirty = JSON.stringify(draft) !== JSON.stringify(savedDraft);
+  useUnsavedChanges(dirty);
   const [reviewOpen, setReviewOpen] = useState(false);
 
   const autosaveKey = (slug: string) => `be-editor:autosave:${slug || "__new__"}`;
@@ -225,7 +227,7 @@ export function PostEditor({
   }
 
   function loadPost(slug: string) {
-    const next = slug === "__new__" ? blankPost() : posts.find((p) => p.slug === slug);
+    const next = slug === "__new__" ? blankPost(authorSlugs[0]) : posts.find((p) => p.slug === slug);
     if (!next) return;
     if (dirty) {
       try { localStorage.setItem(autosaveKey(draft.slug), JSON.stringify(draft)); }

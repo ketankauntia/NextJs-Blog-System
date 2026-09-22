@@ -34,7 +34,7 @@ export default function BlogIndexPage() {
     slug: categoryToSlug(label),
     count: posts.filter((post) => post.category === label).length,
   }));
-  const { blogTemplate } = getSettings();
+  const { blogTemplate, publicationName, publicationDescription } = getSettings();
   const featured = posts.find((post) => post.featured);
   const rest = featured
     ? posts.filter((post) => post.slug !== featured.slug)
@@ -51,12 +51,12 @@ export default function BlogIndexPage() {
             <div className="max-w-3xl">
               <p className="eyebrow">THE LIVE PUBLICATION</p>
               <h1 className="journal-title mt-4">
-                The journal<span className="text-primary">.</span>
+                {publicationName || <>The journal<span className="text-primary">.</span></>}
               </h1>
               <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">
-                Ideas, observations, and useful rabbit holes.
+                {publicationDescription || <>Ideas, observations, and useful rabbit holes.
                 <br className="hidden sm:block" /> A little engineering. A
-                little design. A broader point of view.
+                little design. A broader point of view.</>}
               </p>
             </div>
             <div className="flex flex-wrap gap-3">

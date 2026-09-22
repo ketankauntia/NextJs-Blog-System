@@ -12,6 +12,8 @@ R2 stores all blog data when selected, or optionally images/uploads alongside Gi
 
 ## Local setup
 
+For the installable local package alpha, use the [package README](../../packages/blog-system-next/README.md). It has its own `blog-system-next.config.json` and CLI; the website's `publishing.json` guide below remains the source-integration workflow. The npm alpha does not activate remote provider adapters.
+
 Existing website is selected by default; Fresh project is disabled and points to create-next-app. Existing websites keep their identity and default to current hosting. The generated manual and agent guides inspect the target app and package manager, resolve route/auth/content conflicts, and preserve the host application's pages and deployment. In a monorepo, content paths are relative to the selected app root. Integration is currently from source; see [npm readiness](NPM_READINESS.md) for the package work required before release.
 
 Use `/docs#get-started`, select Local and enter a repository-relative content folder such as the default `app/blog`, `src/app/blog`, `content/blog` or `data/blog`. Use the inline `publishing.json` example in the manual guide to configure the app root; merge existing configuration deliberately. Before selecting a new root for existing content, copy posts/settings into that folder without overwriting or deleting originals. The app reads posts at `<contentPath>/posts/*.md` and settings at `<contentPath>/settings.json`; public image paths remain unchanged. Restart the app and validate. Paths cannot escape the repository or traverse symlinks/public/reserved folders. App Router colocation under app/ and src/app/ is allowed; only Markdown posts and settings belong in the data output, and route files must be preserved.
