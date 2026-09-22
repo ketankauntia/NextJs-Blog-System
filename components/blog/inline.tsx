@@ -1,4 +1,5 @@
 import { Fragment, type CSSProperties, type ReactNode } from "react";
+import {safeContentUrl} from '@/lib/blog/urls';
 
 /**
  * Renders inline markdown from parsed block text:
@@ -63,10 +64,12 @@ function renderPart(part: string): ReactNode {
   }
   const link = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
   if (link) {
+    const href=safeContentUrl(link[2]);
+    if(!href) return link[1];
     const external = link[2].startsWith("http");
     return (
       <a
-        href={link[2]}
+        href={href}
         {...(external && { target: "_blank", rel: "noreferrer" })}
         className="font-medium text-primary underline underline-offset-4 hover:no-underline"
       >

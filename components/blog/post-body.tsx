@@ -1,6 +1,7 @@
 import { IconInfoCircle } from "@tabler/icons-react";
 import type { PostBlock, PostSection } from "@/lib/blog/types";
 import { Inline } from "./inline";
+import {safeContentUrl} from '@/lib/blog/urls';
 
 /** Renders structured sections. Headings carry ids so the TOC and deep links work; sections are self-contained for LLM extractability. */
 export function PostBody({ sections }: { sections: PostSection[] }) {
@@ -142,6 +143,7 @@ function Block({ block }: { block: PostBlock }) {
         </div>
       );
     case "image":
+      if(!safeContentUrl(block.src,true)) return <p>{block.alt}</p>;
       return (
         <figure>
           {/*

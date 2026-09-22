@@ -45,8 +45,19 @@ export async function POST(req: Request) {
   if (!isValidSeoScoreThresholds(seoScoreThresholds)) {
     return Response.json({ error: "SEO score thresholds must be whole numbers from 0 to 100, with red below yellow." }, { status: 400 });
   }
+  const text = (value: unknown, max: number) => typeof value === "string" && value.length <= max && !/[\x00-\x1f\x7f]/.test(value) ? value.trim() : "";
+  const websiteUrl = text(body.websiteUrl, 2048);
+  if (websiteUrl) {
+    try { const url = new URL(websiteUrl); if (url.protocol !== "https:" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) throw new Error(); }
+    catch { return Response.json({ error: "Website address must be an HTTPS origin such as https://example.com." }, { status: 400 }); }
+  }
 
   const settings: SiteSettings = {
+    publicationName: text(body.publicationName, 120),
+    publicationDescription: text(body.publicationDescription, 500),
+    defaultAuthor: text(body.defaultAuthor, 120),
+    websiteUrl,
+    dashboardAccess: "local",
     blogTemplate: body.blogTemplate!,
     postTemplate: body.postTemplate!,
     fontPairing: body.fontPairing ?? DEFAULT_SETTINGS.fontPairing,
@@ -62,5 +73,5 @@ export async function POST(req: Request) {
     JSON.stringify(settings, null, 2) + "\n",
     "utf8",
   );
-  return Response.json({ ok: true });
+  return Response.json({ ok: true, restartRequired: true });
 }

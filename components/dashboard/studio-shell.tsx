@@ -8,7 +8,7 @@ import { StudioNavigation } from "@/components/dashboard/studio-navigation";
 import { cn } from "@/lib/utils";
 import styles from "./studio-shell.module.css";
 
-export function StudioShell({ children, readOnly }: { children: React.ReactNode; readOnly: boolean }) {
+export function StudioShell({ children, readOnly, publicationName = "Next.js Blog" }: { children: React.ReactNode; readOnly: boolean; publicationName?: string }) {
   const pathname = usePathname();
   const editor = pathname === "/dashboard/editor" || pathname.startsWith("/dashboard/editor/");
   const [openOnPath, setOpenOnPath] = useState<string | null>(null);
@@ -38,9 +38,9 @@ export function StudioShell({ children, readOnly }: { children: React.ReactNode;
         >
           {navigationOpen ? <IconX className="size-5" aria-hidden /> : <IconMenu2 className="size-5" aria-hidden />}
         </button>
-        <Link href="/dashboard" className={styles.brand} aria-label="Next.js Blog Studio home">
+        <Link href="/" className={styles.brand} aria-label={`${publicationName} homepage`}>
           <span className={styles.brandMark} aria-hidden>N</span>
-          <span className={styles.brandName}>Next.js Blog</span>
+          <span className={styles.brandName}>{publicationName}</span>
         </Link>
         <span className={styles.separator} aria-hidden>/</span>
         <span className={styles.studioLabel}>Studio</span>

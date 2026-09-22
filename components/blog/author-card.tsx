@@ -2,6 +2,7 @@ import { IconBrandLinkedin, IconBrandX, IconWorld } from "@tabler/icons-react";
 import { Avatar, AvatarFallback } from "@/components/blog-ui/avatar";
 import { Button } from "@/components/blog-ui/button";
 import type { Author } from "@/lib/blog/types";
+import Link from 'next/link';
 
 /**
  * Full author block shown after the article body (E-E-A-T signal).
@@ -26,9 +27,9 @@ export function AuthorCard({ author, profileHref }: { author: Author; profileHre
       <div className="flex-1">
         <p className="font-heading font-semibold">
           {profileHref ? (
-            <a href={profileHref} className="hover:underline">
+            <Link href={profileHref} className="hover:underline">
               {author.name}
-            </a>
+            </Link>
           ) : (
             author.name
           )}

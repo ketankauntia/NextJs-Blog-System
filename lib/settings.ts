@@ -51,6 +51,11 @@ export const getSettings = cache((): SiteSettings => {
   try {
     const raw = JSON.parse(fs.readFileSync(settingsFile, "utf8")) as Partial<SiteSettings>;
     return {
+      publicationName: typeof raw.publicationName === "string" ? raw.publicationName.slice(0, 120) : DEFAULT_SETTINGS.publicationName,
+      publicationDescription: typeof raw.publicationDescription === "string" ? raw.publicationDescription.slice(0, 500) : DEFAULT_SETTINGS.publicationDescription,
+      defaultAuthor: typeof raw.defaultAuthor === "string" ? raw.defaultAuthor.slice(0, 120) : DEFAULT_SETTINGS.defaultAuthor,
+      websiteUrl: typeof raw.websiteUrl === "string" ? raw.websiteUrl.slice(0, 2048) : DEFAULT_SETTINGS.websiteUrl,
+      dashboardAccess: "local",
       blogTemplate: pick<BlogTemplate>(raw.blogTemplate, BLOG_TEMPLATES, DEFAULT_SETTINGS.blogTemplate),
       postTemplate: pick<PostTemplate>(raw.postTemplate, POST_TEMPLATES, DEFAULT_SETTINGS.postTemplate),
       fontPairing: pick<FontPairing>(raw.fontPairing, FONT_PAIRINGS, DEFAULT_SETTINGS.fontPairing),

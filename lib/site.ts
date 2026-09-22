@@ -49,11 +49,11 @@ const SITE_URL = resolveSiteUrl();
  */
 export const siteConfig = {
   /** Used as the RSS channel title and the Open Graph `site_name`. */
-  name: productConfig.name,
+  name: process.env.NEXT_PUBLIC_PUBLICATION_NAME || productConfig.name,
   /** Compact identity used by the web manifest and generated social cards. */
   shortName: productConfig.shortName,
   /** Feed description and the fallback meta description. */
-  description:
+  description: process.env.NEXT_PUBLIC_PUBLICATION_DESCRIPTION ||
     "An open-source CMS and publishing layer for Next.js with an editorial Studio, practical SEO guidance, and content your team owns.",
   /** Absolute origin, no trailing slash. See {@link resolveSiteUrl}. */
   url: SITE_URL,
@@ -61,7 +61,7 @@ export const siteConfig = {
   ogImage: "/opengraph-image",
   /** Publisher used in Article/Organization JSON-LD. */
   organization: {
-    name: productConfig.name,
+    name: process.env.NEXT_PUBLIC_PUBLICATION_NAME || productConfig.name,
     url: SITE_URL,
     logo: "/icon.svg",
   },
